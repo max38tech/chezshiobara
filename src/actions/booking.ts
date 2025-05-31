@@ -1,28 +1,35 @@
+
 "use server";
 
 import type { BookingRequestFormValues } from "@/schemas/booking";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
   console.log("Booking request received:", data);
-  
-  // Simulate API call / payment processing / database interaction
-  await new Promise(resolve => setTimeout(resolve, 1500));
 
-  // Simulate success or failure for demonstration
-  // In a real app, this would involve checking availability, processing payment, etc.
-  if (data.name.toLowerCase() === "error") { // Simple way to test error state
-     return { success: false, message: "Simulated booking error: Could not process your request." };
-  }
-  
-  if (Math.random() > 0.1) { // 90% success rate
-    return { 
-      success: true, 
-      message: "Your booking request has been submitted! We will contact you shortly to confirm availability and payment." 
+  try {
+    // Prepare data for Firestore
+    // Firestore handles Date objects correctly for Timestamp fields
+    const bookingData = {
+      ...data,
+      guests: Number(data.guests), // Ensure guests is a number
+      createdAt: serverTimestamp(), // Add a server-side timestamp
     };
-  } else {
-    return { 
-      success: false, 
-      message: "We encountered an issue submitting your booking request. Please try again or contact us directly." 
+
+    // Add a new document with a generated ID to the "bookingRequests" collection
+    const docRef = await addDoc(collection(db, "bookingRequests"), bookingData);
+    console.log("Document written with ID: ", docRef.id);
+
+    return {
+      success: true,
+      message: "Your booking request has been successfully submitted! We will contact you shortly to confirm.",
+    };
+  } catch (error) {
+    console.error("Error adding document to Firestore: ", error);
+    return {
+      success: false,
+      message: "We encountered an issue submitting your booking request. Please try again or contact us directly.",
     };
   }
 }
