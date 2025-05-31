@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Home, Users, CalendarDays, ListChecks, BookOpenText, Sparkles } from "lucide-react";
+import { Menu, X, Home, Users, CalendarDays, ListChecks, BookOpenText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,6 @@ const navItems = [
   { href: "/booking", label: "Book Your Stay", icon: CalendarDays },
   { href: "/rules", label: "House Rules", icon: ListChecks },
   { href: "/house-guide", label: "House Guide", icon: BookOpenText },
-  { href: "/concierge", label: "AI Concierge", icon: Sparkles },
 ];
 
 export function Navbar() {
