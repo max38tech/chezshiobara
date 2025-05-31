@@ -23,8 +23,8 @@ body {
     --border: 45 30% 80%;
     --input: 45 40% 88%;
 
-    --primary: 160 100% 75%; /* Aqua #7FFFD4 */
-    --primary-foreground: 0 0% 10%; /* Dark color for text on aqua */
+    --primary: 30 40% 30%; /* Dark Brown */
+    --primary-foreground: 30 10% 95%; /* Off-white for text on dark brown */
 
     --secondary: 50 60% 85%; /* Lighter tan for secondary elements */
     --secondary-foreground: 0 0% 15%;
@@ -35,20 +35,20 @@ body {
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --ring: 160 100% 65%; /* Ring color based on primary (Aqua) */
+    --ring: 30 40% 50%; /* Brown for ring, lighter */
     --radius: 0.5rem;
 
     /* Sidebar specific variables, adjust if sidebar is used, keep for completeness */
     --sidebar-background: 45 56% 90%; 
     --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 160 100% 70%;
-    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-primary: 30 40% 35%; /* Slightly lighter brown for sidebar */
+    --sidebar-primary-foreground: 30 10% 95%;
     --sidebar-accent: 50 78% 70%;
     --sidebar-accent-foreground: 0 0% 15%;
     --sidebar-border: 45 30% 75%;
-    --sidebar-ring: 160 100% 60%;
+    --sidebar-ring: 30 40% 45%;
 
-    --chart-1: 160 70% 60%;
+    --chart-1: 30 50% 45%; /* A brown for charts */
     --chart-2: 50 70% 60%;
     --chart-3: 200 70% 60%;
     --chart-4: 30 70% 60%;
@@ -72,8 +72,8 @@ body {
     --border: 0 0% 20%;
     --input: 0 0% 20%;
 
-    --primary: 160 100% 65%;
-    --primary-foreground: 0 0% 10%;
+    --primary: 30 35% 40%; /* Dark Mode Brown */
+    --primary-foreground: 30 10% 90%; /* Light text for dark mode */
 
     --secondary: 50 60% 70%;
     --secondary-foreground: 0 0% 95%;
@@ -84,18 +84,18 @@ body {
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --ring: 160 100% 55%;
+    --ring: 30 35% 60%; /* Dark Mode Brown Ring */
 
     --sidebar-background: 0 0% 8%; 
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 160 100% 60%;
-    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-primary: 30 35% 45%; /* Dark Mode Sidebar Brown */
+    --sidebar-primary-foreground: 30 10% 90%;
     --sidebar-accent: 50 78% 60%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 160 100% 50%;
+    --sidebar-ring: 30 35% 55%;
 
-    --chart-1: 160 60% 50%;
+    --chart-1: 30 45% 55%; /* Dark Mode Brown for charts */
     --chart-2: 50 60% 50%;
     --chart-3: 200 60% 50%;
     --chart-4: 30 60% 50%;
