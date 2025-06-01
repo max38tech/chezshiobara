@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { PageContentWrapper } from '@/components/layout/page-content-wrapper';
 import { PageTitle } from '@/components/ui/page-title';
@@ -26,7 +27,7 @@ export default function WhoWeArePage() {
           <div className="lg:w-1/2">
             <SectionTitle as="h2" className="text-left">Our Story</SectionTitle>
             <p className="font-body text-lg text-foreground mb-6 leading-relaxed">
-              Welcome to Chez Shiobara! We are [Host Name 1] and [Host Name 2], your hosts and the proud owners of this little piece of paradise. 
+              Welcome to Chez Shiobara! We are Shino and Shawn Shiobara, your hosts and the proud owners of this little piece of paradise. 
               Our journey into the world of hospitality began with a shared dream: to create a welcoming space where guests could escape the everyday 
               and immerse themselves in the beauty and tranquility of Shiobara.
             </p>
