@@ -107,9 +107,10 @@ export default function HouseGuidePage() {
         <CardContent>
           <p className="font-body text-base text-foreground leading-relaxed">
             If you encounter any issues with the amenities or need further assistance, please contact us immediately. 
-            You can reach us by phone at <a href="tel:+8107090582258" className="text-primary hover:text-primary/80 transition-colors font-medium">+81 070 9058 2258</a>, 
-            email at <a href="mailto:us@shiobara.love" className="text-primary hover:text-primary/80 transition-colors font-medium">us@shiobara.love</a>, 
-            or by finding us in the main reception area during daytime hours. 
+            You can reach us by phone at <a href="tel:+8107090582258" className="text-primary hover:text-primary/80 transition-colors font-medium">+81 070 9058 2258</a> or 
+            email at <a href="mailto:us@shiobara.love" className="text-primary hover:text-primary/80 transition-colors font-medium">us@shiobara.love</a>. 
+            For quick communication, especially if you primarily use data, we'll create a WhatsApp group with you upon check-in. You can also reach us directly on WhatsApp: <a href="https://wa.me/8107090582258" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors font-medium">Message us on WhatsApp</a>.
+            Alternatively, you can find us in the main reception area during daytime hours. 
             We're here to ensure your stay is comfortable and enjoyable!
           </p>
         </CardContent>
