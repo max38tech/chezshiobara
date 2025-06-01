@@ -22,7 +22,7 @@ export default function WelcomePage() {
       
       <section className="text-center mb-12">
         <p className="font-body text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          Discover a hidden gem nestled in the heart of scenic Shiobara. Experience unparalleled comfort, 
+          Discover a hidden gem nestled in Yokohama, perfectly positioned for exploring the greater Tokyo area. Experience unparalleled comfort, 
           charming hospitality, and unforgettable moments. Your perfect getaway starts here.
         </p>
       </section>
@@ -49,7 +49,7 @@ export default function WelcomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Comfortable Rooms</CardTitle>
+              <CardTitle className="font-headline text-2xl">Comfortable Guest Room</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
@@ -59,11 +59,11 @@ export default function WelcomePage() {
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Local Experiences</CardTitle>
+              <CardTitle className="font-headline text-2xl">Explore the Region</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                Discover the hidden gems of Shiobara. We'll share our favorite spots, from scenic trails and cultural landmarks to authentic local dining, helping you craft unforgettable memories.
+                Discover the vibrant culture and attractions of the greater Tokyo area. We'll share our favorite spots, from bustling cityscapes in Tokyo and historic temples in Kamakura to scenic local trails and authentic dining, helping you craft unforgettable memories.
               </p>
             </CardContent>
           </Card>
