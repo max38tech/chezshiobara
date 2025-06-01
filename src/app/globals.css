@@ -8,99 +8,98 @@ body {
 
 @layer base {
   :root {
-    --background: 60 56% 92%; /* Off-white #F5F5DC */
-    --foreground: 0 0% 15%; /* Dark Gray for text #262626 */
+    --background: 60 56% 92%; /* Off-white #F5F5DC - KEEPING THIS */
+    --foreground: 0 0% 15%; /* Dark Gray for text #262626 - KEEPING THIS */
 
-    --muted: 60 40% 88%; /* Derived from new background */
+    --muted: 60 40% 88%; /* Derived from background */
     --muted-foreground: 0 0% 40%;
 
-    --popover: 60 56% 95%; /* Derived from new background */
+    --popover: 60 56% 95%; /* Derived from background */
     --popover-foreground: 0 0% 15%;
 
-    --card: 60 56% 97%; /* Derived from new background, slightly whiter */
+    --card: 60 56% 97%; /* Derived from background, slightly whiter */
     --card-foreground: 0 0% 15%;
 
-    --border: 60 30% 85%; /* Derived from new background */
-    --input: 60 40% 90%; /* Derived from new background */
+    --border: 60 30% 85%; /* Derived from background */
+    --input: 60 40% 90%; /* Derived from background */
 
-    --primary: 160 100% 75%; /* Aqua #7FFFD4 */
-    --primary-foreground: 0 0% 10%; /* Dark text for contrast on Aqua */
+    --primary: 25 74% 31%; /* Woody Brown (e.g., Sienna-like) */
+    --primary-foreground: 30 60% 95%; /* Light warm off-white for contrast */
 
     --secondary: 54 60% 85%; /* Lighter version of accent tan for secondary elements */
     --secondary-foreground: 0 0% 15%;
 
-    --accent: 54 78% 75%; /* Light Tan #F0E68C */
-    --accent-foreground: 0 0% 15%; /* Dark color for text on light tan */
+    --accent: 54 78% 75%; /* Light Tan #F0E68C - KEEPING THIS */
+    --accent-foreground: 0 0% 15%; /* Dark color for text on light tan - KEEPING THIS */
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --ring: 160 100% 65%; /* Aqua-based for ring */
+    --ring: 25 74% 41%; /* Woody Brown-based for ring */
     --radius: 0.5rem;
 
     /* Sidebar specific variables */
-    --sidebar-background: 60 56% 90%; /* Derived from new background */
+    --sidebar-background: 60 56% 90%; /* Derived from background */
     --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 160 100% 70%; /* Slightly muted/darker Aqua */
-    --sidebar-primary-foreground: 0 0% 10%; /* Dark text */
+    --sidebar-primary: 25 74% 31%; /* Woody Brown */
+    --sidebar-primary-foreground: 30 60% 95%; /* Light text */
     --sidebar-accent: 54 78% 70%; /* Slightly darker/muted Light Tan */
     --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 60 30% 82%; /* Derived from new background */
-    --sidebar-ring: 160 100% 60%; /* Aqua-based, darker */
+    --sidebar-border: 60 30% 82%; /* Derived from background */
+    --sidebar-ring: 25 74% 36%; /* Woody Brown-based, slightly lighter */
 
-    --chart-1: 170 70% 55%; /* Adjusted chart colors, can be refined */
+    --chart-1: 30 70% 55%; /* Adjusted chart colors to fit brown/tan theme */
     --chart-2: 54 70% 60%;
-    --chart-3: 200 70% 60%;
-    --chart-4: 170 80% 65%;
-    --chart-5: 280 70% 60%;
+    --chart-3: 20 60% 50%;
+    --chart-4: 35 80% 65%;
+    --chart-5: 45 70% 60%;
   }
 
   .dark {
-    /* Define dark theme if needed, for now keep it similar or adjust as per a dark mode design */
-    /* These are placeholders and may need significant adjustment if a dark Aqua/Tan theme is desired */
-    --background: 160 20% 10%; /* Dark Aqua/Teal background */
-    --foreground: 160 10% 90%; /* Light Aqua/Teal text */
+    /* Dark theme adjustments for Woody Brown primary */
+    --background: 30 10% 10%; /* Dark brown-ish background */
+    --foreground: 30 10% 90%; /* Light text */
 
-    --muted: 160 15% 15%;
-    --muted-foreground: 160 10% 60%;
+    --muted: 30 8% 15%;
+    --muted-foreground: 30 10% 60%;
 
-    --popover: 160 20% 8%;
-    --popover-foreground: 160 10% 90%;
+    --popover: 30 10% 8%;
+    --popover-foreground: 30 10% 90%;
 
-    --card: 160 20% 12%;
-    --card-foreground: 160 10% 90%;
+    --card: 30 10% 12%;
+    --card-foreground: 30 10% 90%;
 
-    --border: 160 15% 20%;
-    --input: 160 15% 20%;
+    --border: 30 8% 20%;
+    --input: 30 8% 20%;
 
-    --primary: 160 90% 65%; /* Brighter Aqua for dark mode */
-    --primary-foreground: 160 50% 10%; /* Very dark text on Aqua */
+    --primary: 25 60% 55%; /* Lighter Woody Brown for dark mode */
+    --primary-foreground: 30 60% 95%; /* Light text */
 
-    --secondary: 54 70% 60%; /* Tan for dark mode */
+    --secondary: 54 50% 50%; /* Muted Tan for dark mode */
     --secondary-foreground: 54 20% 10%;
 
-    --accent: 54 80% 65%; /* Brighter Tan for dark mode */
+    --accent: 54 60% 60%; /* Muted Tan for dark mode accent */
     --accent-foreground: 54 30% 10%; /* Dark text on Tan */
     
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --ring: 160 90% 55%; /* Aqua Ring for dark mode */
+    --ring: 25 60% 50%; /* Woody Brown Ring for dark mode */
 
-    --sidebar-background: 160 20% 8%; 
-    --sidebar-foreground: 160 10% 90%;
-    --sidebar-primary: 160 90% 60%; 
-    --sidebar-primary-foreground: 160 50% 10%;
-    --sidebar-accent: 54 80% 60%;
+    --sidebar-background: 30 10% 8%; 
+    --sidebar-foreground: 30 10% 90%;
+    --sidebar-primary: 25 60% 50%; 
+    --sidebar-primary-foreground: 30 60% 95%;
+    --sidebar-accent: 54 60% 55%;
     --sidebar-accent-foreground: 54 30% 10%;
-    --sidebar-border: 160 15% 18%;
-    --sidebar-ring: 160 90% 50%;
+    --sidebar-border: 30 8% 18%;
+    --sidebar-ring: 25 60% 45%;
 
-    --chart-1: 160 70% 60%;
-    --chart-2: 54 60% 50%;
-    --chart-3: 200 60% 50%;
-    --chart-4: 160 60% 50%;
-    --chart-5: 280 60% 50%;
+    --chart-1: 25 60% 60%;
+    --chart-2: 54 50% 50%;
+    --chart-3: 20 50% 45%;
+    --chart-4: 35 50% 55%;
+    --chart-5: 45 50% 50%;
   }
 }
 
