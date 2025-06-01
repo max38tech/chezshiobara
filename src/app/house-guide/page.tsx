@@ -1,8 +1,9 @@
+
 import { PageContentWrapper } from '@/components/layout/page-content-wrapper';
 import { PageTitle } from '@/components/ui/page-title';
 import { Accordion } from '@/components/ui/accordion';
 import { AmenityGuideItem } from '@/components/specific/house-guide/amenity-guide-item';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Wifi, Coffee, Tv, Thermometer, WashingMachine, Info } from 'lucide-react'; // Example icons
 
 const guides = [
