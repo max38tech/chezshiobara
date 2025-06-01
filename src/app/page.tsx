@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { PageContentWrapper } from '@/components/layout/page-content-wrapper';
 import { PageTitle } from '@/components/ui/page-title';
 import { SectionTitle } from '@/components/ui/section-title';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle as SectionCardTitle } from '@/components/ui/card'; // Renamed CardTitle to avoid conflict
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowRight } from 'lucide-react';
 import {
   Carousel,
@@ -109,7 +109,7 @@ export default function WelcomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Comfortable Guest Room</CardTitle>
+              <SectionCardTitle className="font-headline text-2xl">Comfortable Guest Room</SectionCardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
@@ -119,7 +119,7 @@ export default function WelcomePage() {
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Explore the Region</CardTitle>
+              <SectionCardTitle className="font-headline text-2xl">Explore the Region</SectionCardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
@@ -129,7 +129,7 @@ export default function WelcomePage() {
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Warm Hospitality</CardTitle>
+              <SectionCardTitle className="font-headline text-2xl">Warm Hospitality</SectionCardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
