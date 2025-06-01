@@ -16,8 +16,10 @@ const firebaseConfig: FirebaseOptions = {
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
+  console.log("Firebase attempting to initialize. Project ID from config:", firebaseConfig.projectId || "NOT FOUND (check .env variables)");
 } else {
   app = getApp();
+  console.log("Firebase app already initialized. Project ID:", app.options.projectId || "NOT FOUND");
 }
 
 const db = getFirestore(app);
