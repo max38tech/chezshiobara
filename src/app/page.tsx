@@ -1,11 +1,15 @@
 
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from "react";
 import { Button } from '@/components/ui/button';
 import { PageContentWrapper } from '@/components/layout/page-content-wrapper';
 import { PageTitle } from '@/components/ui/page-title';
 import { SectionTitle } from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { ArrowRight } from 'lucide-react';
 import {
   Carousel,
@@ -21,7 +25,17 @@ export default function WelcomePage() {
     { src: "https://placehold.co/600x400.png", alt: "Cozy room interior", hint: "bedroom interior" },
     { src: "https://placehold.co/600x400.png", alt: "Scenic local view", hint: "nature landscape" },
     { src: "https://placehold.co/600x400.png", alt: "Delicious breakfast", hint: "breakfast food" },
+    { src: "https://placehold.co/600x400.png", alt: "Garden area", hint: "garden flowers" },
+    { src: "https://placehold.co/600x400.png", alt: "Nearby attraction", hint: "local landmark" },
   ];
+
+  const [selectedImage, setSelectedImage] = useState<typeof images[0] | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleImageClick = (image: typeof images[0]) => {
+    setSelectedImage(image);
+    setIsDialogOpen(true);
+  };
 
   return (
     <PageContentWrapper>
@@ -38,31 +52,57 @@ export default function WelcomePage() {
         <Carousel
           opts={{
             align: "start",
-            loop: true,
+            loop: images.length > 3, // Loop if more than 3 images (typical for lg view)
           }}
           className="w-full max-w-3xl mx-auto"
         >
-          <CarouselContent>
+          <CarouselContent className="-ml-2 md:-ml-4">
             {images.map((image, index) => (
-              <CarouselItem key={index} className="md:basis-1/1 lg:basis-1/1"> {/* Adjust basis for number of items visible */}
-                <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CarouselItem key={index} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                <div
+                  className="aspect-[3/2] overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group bg-muted"
+                  onClick={() => handleImageClick(image)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleImageClick(image); }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View image ${index + 1}: ${image.alt}`}
+                >
                   <Image
                     src={image.src}
                     alt={image.alt}
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-cover aspect-[3/2]"
+                    width={300}
+                    height={200}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint={image.hint}
-                    priority={index === 0}
+                    priority={index < 3} // Prioritize first few thumbnails
                   />
-                </Card>
+                </div>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="ml-[-12px] sm:ml-0" />
+          <CarouselNext className="mr-[-12px] sm:mr-0" />
         </Carousel>
       </section>
+
+      {selectedImage && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl p-2 sm:p-4">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{selectedImage.alt}</DialogTitle>
+            </DialogHeader>
+            <div className="relative w-full aspect-video">
+              <Image
+                src={selectedImage.src}
+                alt="" // Alt is in DialogTitle for SR; image is decorative here
+                fill
+                className="object-contain rounded-md"
+                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, (max-width: 1280px) 70vw, 65vw"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <section className="mb-16 text-center">
         <SectionTitle>Explore Our B&amp;B</SectionTitle>
