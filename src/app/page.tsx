@@ -7,6 +7,13 @@ import { PageTitle } from '@/components/ui/page-title';
 import { SectionTitle } from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function WelcomePage() {
   const images = [
@@ -28,20 +35,33 @@ export default function WelcomePage() {
       </section>
 
       <section className="mb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {images.map((image, index) => (
-            <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <Image
-                src={image.src}
-                alt={image.alt}
-                width={600}
-                height={400}
-                className="w-full h-auto object-cover aspect-[3/2]"
-                data-ai-hint={image.hint}
-              />
-            </Card>
-          ))}
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full max-w-3xl mx-auto"
+        >
+          <CarouselContent>
+            {images.map((image, index) => (
+              <CarouselItem key={index} className="md:basis-1/1 lg:basis-1/1"> {/* Adjust basis for number of items visible */}
+                <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    width={600}
+                    height={400}
+                    className="w-full h-auto object-cover aspect-[3/2]"
+                    data-ai-hint={image.hint}
+                    priority={index === 0}
+                  />
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </section>
 
       <section className="mb-16 text-center">
