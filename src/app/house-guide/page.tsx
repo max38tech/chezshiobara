@@ -107,8 +107,8 @@ export default function HouseGuidePage() {
         <CardContent>
           <p className="font-body text-base text-foreground leading-relaxed">
             If you encounter any issues with the amenities or need further assistance, please contact us immediately. 
-            You can reach us by phone at <a href="tel:+8107090582258" className="text-accent hover:text-accent/80 transition-colors">+81 070 9058 2258</a>, 
-            email at <a href="mailto:us@shiobara.love" className="text-accent hover:text-accent/80 transition-colors">us@shiobara.love</a>, 
+            You can reach us by phone at <a href="tel:+8107090582258" className="text-primary hover:text-primary/80 transition-colors font-medium">+81 070 9058 2258</a>, 
+            email at <a href="mailto:us@shiobara.love" className="text-primary hover:text-primary/80 transition-colors font-medium">us@shiobara.love</a>, 
             or by finding us in the main reception area during daytime hours. 
             We're here to ensure your stay is comfortable and enjoyable!
           </p>
