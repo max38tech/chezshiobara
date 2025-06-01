@@ -33,8 +33,8 @@ export default function ContactPage() {
               <Mail className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
               <div>
                 <h3 className="font-headline text-lg text-foreground">Email Us</h3>
-                <a href="mailto:info@chezshiobara.com" className="font-body text-accent hover:text-accent/80 transition-colors">
-                  info@chezshiobara.com
+                <a href="mailto:us@shiobara.love" className="font-body text-accent hover:text-accent/80 transition-colors">
+                  us@shiobara.love
                 </a>
               </div>
             </div>
@@ -42,10 +42,9 @@ export default function ContactPage() {
               <Phone className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
               <div>
                 <h3 className="font-headline text-lg text-foreground">Call Us</h3>
-                <a href="tel:+81-XXX-XXXX-XXXX" className="font-body text-accent hover:text-accent/80 transition-colors">
-                  +81-XXX-XXXX-XXXX
+                <a href="tel:+8107090582258" className="font-body text-accent hover:text-accent/80 transition-colors">
+                  +81 070 9058 2258
                 </a>
-                <p className="font-body text-xs text-muted-foreground">(Please replace with actual number)</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -53,11 +52,10 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-headline text-lg text-foreground">Our Address</h3>
                 <p className="font-body text-foreground">
-                  123 Shiobara Valley Rd<br />
-                  Shiobara, Tochigi Prefecture<br />
-                  Japan, 329-2921
+                  16-7 Karasawa, Minami-ku<br />
+                  Yokohama, Kanagawa 232-0034<br />
+                  Japan
                 </p>
-                 <p className="font-body text-xs text-muted-foreground">(Please replace with actual address)</p>
               </div>
             </div>
           </CardContent>
@@ -70,9 +68,8 @@ export default function ContactPage() {
         </CardHeader>
         <CardContent>
           <div className="aspect-video bg-muted rounded-md overflow-hidden">
-            {/* Replace with an actual map embed, e.g., Google Maps iframe */}
             <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3208.690916895786!2d139.8160053152708!3d36.94693297991958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x601f8e3a8f8b8f8b%3A0x8f8b8f8b8f8b8f8b!2sShiobara%20Onsen!5e0!3m2!1sen!2sjp!4v1622000000000!5m2!1sen!2sjp" 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3251.645906652188!2d139.6079729768349!3d35.41398777266832!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60185bc00782a467%3A0xc6b9495f88a74921!2s16-7%20Karasawa%2C%20Minami%20Ward%2C%20Yokohama%2C%20Kanagawa%20232-0034%2C%20Japan!5e0!3m2!1sen!2sus!4v1716490000000!5m2!1sen!2sus"
               width="100%" 
               height="100%" 
               style={{ border:0 }} 
@@ -82,7 +79,6 @@ export default function ContactPage() {
               title="Location of Chez Shiobara B&B on Google Maps"
             ></iframe>
           </div>
-          <p className="font-body text-xs text-muted-foreground mt-2 text-center">Note: This is a placeholder map. Please replace the iframe `src` with your actual Google Maps embed code.</p>
         </CardContent>
       </Card>
     </PageContentWrapper>
