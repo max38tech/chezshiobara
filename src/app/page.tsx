@@ -73,7 +73,7 @@ export default function WelcomePage() {
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                As your hosts, Shino and Shawn are dedicated to making your visit special. Expect a personal touch, helpful advice, and a genuinely warm welcome to our home.
+                As your hosts, Shino and Shawn are dedicated to making your visit special. We invite you to treat our home as your own – feel free to use the kitchen, store groceries in the fridge, relax with TV in the living room, or use the dining table as a workspace. Expect a personal touch, helpful advice, and a genuinely warm welcome.
               </p>
             </CardContent>
           </Card>
