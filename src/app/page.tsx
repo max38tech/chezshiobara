@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,7 @@ export default function WelcomePage() {
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                Relax in our beautifully appointed rooms, designed for your ultimate comfort.
+                Unwind in our thoughtfully designed guest room, a sanctuary of peace offering modern comforts and a touch of local charm, ensuring a restful and rejuvenating stay.
               </p>
             </CardContent>
           </Card>
@@ -62,7 +63,7 @@ export default function WelcomePage() {
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                Explore the best of Shiobara with our curated local tips and suggestions.
+                Discover the hidden gems of Shiobara. We'll share our favorite spots, from scenic trails and cultural landmarks to authentic local dining, helping you craft unforgettable memories.
               </p>
             </CardContent>
           </Card>
@@ -72,7 +73,7 @@ export default function WelcomePage() {
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                Our friendly hosts are here to make your stay exceptional.
+                As your hosts, Shino and Shawn are dedicated to making your visit special. Expect a personal touch, helpful advice, and a genuinely warm welcome to our home.
               </p>
             </CardContent>
           </Card>
