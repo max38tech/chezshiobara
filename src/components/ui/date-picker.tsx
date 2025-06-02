@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -6,7 +7,7 @@ import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar, type CalendarProps } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
@@ -17,14 +18,16 @@ interface DatePickerProps {
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   placeholder?: string;
-  disabled?: (date: Date) => boolean;
-  fromDate?: Date;
-  toDate?: Date;
+  disabled?: CalendarProps["disabled"];
+  fromDate?: CalendarProps["fromDate"];
+  toDate?: CalendarProps["toDate"];
 }
 
 export function DatePicker({ value, onChange, placeholder = "Pick a date", disabled, fromDate, toDate }: DatePickerProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
@@ -32,6 +35,7 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date", disab
             "w-full justify-start text-left font-normal",
             !value && "text-muted-foreground"
           )}
+          onClick={() => setIsOpen(true)} // Ensure button click opens popover
         >
           <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
@@ -41,7 +45,10 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date", disab
         <Calendar
           mode="single"
           selected={value}
-          onSelect={onChange}
+          onSelect={(currentDay) => { // For mode="single", first arg is the selected date
+            onChange(currentDay);    // Call the passed onChange handler
+            setIsOpen(false);        // Close the popover
+          }}
           initialFocus
           disabled={disabled}
           fromDate={fromDate}
