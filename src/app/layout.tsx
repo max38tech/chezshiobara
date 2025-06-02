@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Navbar } from '@/components/layout/navbar';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
+import { LayoutClientWrapper } from '@/components/layout/layout-client-wrapper';
 
 export const metadata: Metadata = {
   title: 'Chez Shiobara B&B',
@@ -23,11 +23,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased flex flex-col")}>
-        <Navbar />
-        <div className="flex-grow flex flex-col">
-          {children}
-        </div>
-        <Toaster />
+        <LayoutClientWrapper>
+          <div className="flex-grow flex flex-col">
+            {children}
+          </div>
+          <Toaster />
+        </LayoutClientWrapper>
       </body>
     </html>
   );
