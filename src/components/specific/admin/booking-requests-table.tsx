@@ -14,9 +14,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button'; // Added Button
-import { Loader2, Inbox, CheckCircle, XCircle } from 'lucide-react'; // Added icons
+import { Button } from '@/components/ui/button';
+import { Loader2, Inbox, CheckCircle, XCircle, Info } from 'lucide-react';
 import { format } from 'date-fns';
+import { approveBookingRequest, declineBookingRequest } from '@/actions/booking';
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface BookingRequest {
   id: string;
@@ -27,51 +30,62 @@ interface BookingRequest {
   guests: number;
   message?: string;
   createdAt: Timestamp;
-  // We'll likely add a 'status' field here later (e.g., 'pending', 'confirmed', 'declined')
+  status: 'pending' | 'confirmed' | 'declined';
 }
 
 export function BookingRequestsTable() {
   const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
+
+
+  const fetchBookingRequests = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const requestsCollection = collection(db, 'bookingRequests');
+      const q = query(requestsCollection, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const requests = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      } as BookingRequest));
+      setBookingRequests(requests);
+    } catch (err) {
+      console.error("Error fetching booking requests:", err);
+      setError('Failed to load booking requests. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchBookingRequests = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const requestsCollection = collection(db, 'bookingRequests');
-        // Assuming we'll want to see all requests, regardless of status for now.
-        // Later we might filter by status: e.g., where('status', '==', 'pending')
-        const q = query(requestsCollection, orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const requests = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as BookingRequest));
-        setBookingRequests(requests);
-      } catch (err) {
-        console.error("Error fetching booking requests:", err);
-        setError('Failed to load booking requests. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBookingRequests();
   }, []);
 
-  const handleAccept = (requestId: string) => {
-    console.log(`Accept booking request with ID: ${requestId}`);
-    // Here we would typically call a server action to update Firestore
-    // e.g., updateDoc(doc(db, "bookingRequests", requestId), { status: "confirmed" });
-    // And then potentially re-fetch or update local state
+  const handleStatusUpdate = async (requestId: string, newStatus: 'confirmed' | 'declined') => {
+    setIsUpdating(prev => ({ ...prev, [requestId]: true }));
+    const action = newStatus === 'confirmed' ? approveBookingRequest : declineBookingRequest;
+    const result = await action(requestId);
+
+    toast({
+      title: result.success ? "Success" : "Error",
+      description: result.message,
+      variant: result.success ? "default" : "destructive",
+    });
+
+    if (result.success) {
+      setBookingRequests(prevRequests =>
+        prevRequests.map(req =>
+          req.id === requestId ? { ...req, status: newStatus } : req
+        )
+      );
+    }
+    setIsUpdating(prev => ({ ...prev, [requestId]: false }));
   };
 
-  const handleDecline = (requestId: string) => {
-    console.log(`Decline booking request with ID: ${requestId}`);
-    // Similar to accept, call a server action to update status to "declined"
-  };
 
   if (loading) {
     return (
@@ -85,6 +99,7 @@ export function BookingRequestsTable() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-destructive">
+        <Info className="h-8 w-8 mb-2" />
         <p className="font-body">{error}</p>
       </div>
     );
@@ -103,15 +118,14 @@ export function BookingRequestsTable() {
   const formatDate = (timestamp: Timestamp | Date | undefined) => {
     if (!timestamp) return 'N/A';
     const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
-    return format(date, 'PPP p'); // e.g., Jun 20, 2024 10:30 AM
+    return format(date, 'PPP p'); 
   };
   
   const formatDateOnly = (timestamp: Timestamp | Date | undefined) => {
     if (!timestamp) return 'N/A';
     const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
-    return format(date, 'PPP'); // e.g., Jun 20, 2024
+    return format(date, 'PPP'); 
   };
-
 
   return (
     <Card className="shadow-lg">
@@ -129,6 +143,7 @@ export function BookingRequestsTable() {
               <TableHead className="font-headline">Check-in</TableHead>
               <TableHead className="font-headline">Check-out</TableHead>
               <TableHead className="font-headline text-right">Guests</TableHead>
+              <TableHead className="font-headline">Status</TableHead>
               <TableHead className="font-headline">Message</TableHead>
               <TableHead className="font-headline text-center">Actions</TableHead>
             </TableRow>
@@ -146,6 +161,22 @@ export function BookingRequestsTable() {
                 <TableCell>{formatDateOnly(request.checkInDate)}</TableCell>
                 <TableCell>{formatDateOnly(request.checkOutDate)}</TableCell>
                 <TableCell className="text-right">{request.guests}</TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={
+                      request.status === 'confirmed' ? 'default' 
+                      : request.status === 'declined' ? 'destructive' 
+                      : 'secondary'
+                    }
+                    className={
+                        request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
+                      : request.status === 'declined' ? ''
+                      : 'bg-yellow-500 text-black hover:bg-yellow-600'
+                    }
+                  >
+                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                  </Badge>
+                </TableCell>
                 <TableCell className="max-w-[200px] truncate" title={request.message}>
                   {request.message || <span className="text-muted-foreground italic">No message</span>}
                 </TableCell>
@@ -154,18 +185,20 @@ export function BookingRequestsTable() {
                     <Button 
                       variant="default" 
                       size="sm" 
-                      onClick={() => handleAccept(request.id)}
-                      className="bg-green-600 hover:bg-green-700 text-white" // Example custom styling
+                      onClick={() => handleStatusUpdate(request.id, 'confirmed')}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      disabled={isUpdating[request.id] || request.status !== 'pending'}
                     >
-                      <CheckCircle className="mr-1 h-4 w-4" />
+                      {isUpdating[request.id] && request.status === 'pending' ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-1 h-4 w-4" />}
                       Accept
                     </Button>
                     <Button 
                       variant="destructive" 
                       size="sm" 
-                      onClick={() => handleDecline(request.id)}
+                      onClick={() => handleStatusUpdate(request.id, 'declined')}
+                      disabled={isUpdating[request.id] || request.status !== 'pending'}
                     >
-                      <XCircle className="mr-1 h-4 w-4" />
+                       {isUpdating[request.id] && request.status === 'pending' ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />}
                       Decline
                     </Button>
                   </div>
