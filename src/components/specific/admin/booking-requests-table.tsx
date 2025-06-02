@@ -14,8 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageTitle } from '@/components/ui/page-title';
-import { Loader2, Inbox } from 'lucide-react';
+import { Button } from '@/components/ui/button'; // Added Button
+import { Loader2, Inbox, CheckCircle, XCircle } from 'lucide-react'; // Added icons
 import { format } from 'date-fns';
 
 interface BookingRequest {
@@ -27,6 +27,7 @@ interface BookingRequest {
   guests: number;
   message?: string;
   createdAt: Timestamp;
+  // We'll likely add a 'status' field here later (e.g., 'pending', 'confirmed', 'declined')
 }
 
 export function BookingRequestsTable() {
@@ -40,6 +41,8 @@ export function BookingRequestsTable() {
       setError(null);
       try {
         const requestsCollection = collection(db, 'bookingRequests');
+        // Assuming we'll want to see all requests, regardless of status for now.
+        // Later we might filter by status: e.g., where('status', '==', 'pending')
         const q = query(requestsCollection, orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
         const requests = querySnapshot.docs.map(doc => ({
@@ -57,6 +60,18 @@ export function BookingRequestsTable() {
 
     fetchBookingRequests();
   }, []);
+
+  const handleAccept = (requestId: string) => {
+    console.log(`Accept booking request with ID: ${requestId}`);
+    // Here we would typically call a server action to update Firestore
+    // e.g., updateDoc(doc(db, "bookingRequests", requestId), { status: "confirmed" });
+    // And then potentially re-fetch or update local state
+  };
+
+  const handleDecline = (requestId: string) => {
+    console.log(`Decline booking request with ID: ${requestId}`);
+    // Similar to accept, call a server action to update status to "declined"
+  };
 
   if (loading) {
     return (
@@ -105,7 +120,7 @@ export function BookingRequestsTable() {
       </CardHeader>
       <CardContent>
         <Table>
-          <TableCaption className="font-body">A list of recent booking requests.</TableCaption>
+          <TableCaption className="font-body">A list of recent booking requests. Click Accept or Decline to manage.</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="font-headline w-[150px]">Submitted</TableHead>
@@ -115,7 +130,7 @@ export function BookingRequestsTable() {
               <TableHead className="font-headline">Check-out</TableHead>
               <TableHead className="font-headline text-right">Guests</TableHead>
               <TableHead className="font-headline">Message</TableHead>
-              {/* Add Actions column later */}
+              <TableHead className="font-headline text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -133,6 +148,27 @@ export function BookingRequestsTable() {
                 <TableCell className="text-right">{request.guests}</TableCell>
                 <TableCell className="max-w-[200px] truncate" title={request.message}>
                   {request.message || <span className="text-muted-foreground italic">No message</span>}
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex gap-2 justify-center">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={() => handleAccept(request.id)}
+                      className="bg-green-600 hover:bg-green-700 text-white" // Example custom styling
+                    >
+                      <CheckCircle className="mr-1 h-4 w-4" />
+                      Accept
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => handleDecline(request.id)}
+                    >
+                      <XCircle className="mr-1 h-4 w-4" />
+                      Decline
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
