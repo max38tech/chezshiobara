@@ -30,7 +30,7 @@ interface BookingRequest {
   guests: number;
   message?: string;
   createdAt: Timestamp;
-  status: 'pending' | 'confirmed' | 'declined';
+  status?: 'pending' | 'confirmed' | 'declined'; // Status can be optional for older records
 }
 
 export function BookingRequestsTable() {
@@ -48,10 +48,14 @@ export function BookingRequestsTable() {
       const requestsCollection = collection(db, 'bookingRequests');
       const q = query(requestsCollection, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      const requests = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      } as BookingRequest));
+      const requests = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          status: data.status || 'pending', // Default to 'pending' if status is falsy
+        } as BookingRequest;
+      });
       setBookingRequests(requests);
     } catch (err) {
       console.error("Error fetching booking requests:", err);
@@ -86,6 +90,24 @@ export function BookingRequestsTable() {
     setIsUpdating(prev => ({ ...prev, [requestId]: false }));
   };
 
+  const formatDate = (timestamp: Timestamp | Date | undefined) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'PPP p');
+  };
+
+  const formatDateOnly = (timestamp: Timestamp | Date | undefined) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'PPP');
+  };
+
+  const getDisplayStatus = (statusValue: any) => {
+    if (typeof statusValue === 'string' && statusValue.length > 0) {
+      return statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
+    }
+    return 'Pending'; // Default for any non-string, empty string, null, or undefined status
+  };
 
   if (loading) {
     return (
@@ -114,18 +136,6 @@ export function BookingRequestsTable() {
       </div>
     );
   }
-
-  const formatDate = (timestamp: Timestamp | Date | undefined) => {
-    if (!timestamp) return 'N/A';
-    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
-    return format(date, 'PPP p'); 
-  };
-  
-  const formatDateOnly = (timestamp: Timestamp | Date | undefined) => {
-    if (!timestamp) return 'N/A';
-    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
-    return format(date, 'PPP'); 
-  };
 
   return (
     <Card className="shadow-lg">
@@ -162,19 +172,21 @@ export function BookingRequestsTable() {
                 <TableCell>{formatDateOnly(request.checkOutDate)}</TableCell>
                 <TableCell className="text-right">{request.guests}</TableCell>
                 <TableCell>
-                  <Badge 
+                  <Badge
                     variant={
-                      request.status === 'confirmed' ? 'default' 
-                      : request.status === 'declined' ? 'destructive' 
-                      : 'secondary'
+                      request.status === 'confirmed' ? 'default'
+                      : request.status === 'declined' ? 'destructive'
+                      : request.status === 'pending' ? 'secondary'
+                      : 'secondary' // Default for undefined or other statuses
                     }
                     className={
                         request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
-                      : request.status === 'declined' ? ''
-                      : 'bg-yellow-500 text-black hover:bg-yellow-600'
+                      : request.status === 'declined' ? '' // Uses default destructive badge style
+                      : request.status === 'pending' ? 'bg-yellow-500 text-black hover:bg-yellow-600'
+                      : 'bg-gray-400 text-white hover:bg-gray-500' // Style for undefined or other statuses
                     }
                   >
-                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                    {getDisplayStatus(request.status)}
                   </Badge>
                 </TableCell>
                 <TableCell className="max-w-[200px] truncate" title={request.message}>
@@ -182,9 +194,9 @@ export function BookingRequestsTable() {
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="flex gap-2 justify-center">
-                    <Button 
-                      variant="default" 
-                      size="sm" 
+                    <Button
+                      variant="default"
+                      size="sm"
                       onClick={() => handleStatusUpdate(request.id, 'confirmed')}
                       className="bg-green-600 hover:bg-green-700 text-white"
                       disabled={isUpdating[request.id] || request.status !== 'pending'}
@@ -192,9 +204,9 @@ export function BookingRequestsTable() {
                       {isUpdating[request.id] && request.status === 'pending' ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-1 h-4 w-4" />}
                       Accept
                     </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => handleStatusUpdate(request.id, 'declined')}
                       disabled={isUpdating[request.id] || request.status !== 'pending'}
                     >
