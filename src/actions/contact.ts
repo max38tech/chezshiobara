@@ -19,23 +19,23 @@ export async function handleContactSubmission(data: ContactFormValues) {
     const docRef = await addDoc(collection(db, "contactMessages"), contactData);
     console.log("Contact message written to Firestore with ID: ", docRef.id);
 
-    // 2. Send email notification
+    // 2. Send email notification via Gmail
+    // Ensure EMAIL_USER and EMAIL_PASS are set in your .env file
+    // For Gmail, if 2-Step Verification is ON, EMAIL_PASS must be an App Password.
+    // If 2-Step Verification is OFF, you might need to enable "Less secure app access" (not recommended).
     const transporter = nodemailer.createTransport({
-      host: "smtp.office365.com",
-      port: 587,
-      secure: false, // true for 465, false for other ports (like 587 with STARTTLS)
+      host: "smtp.gmail.com",
+      port: 465, // For SSL
+      secure: true, // Use true for port 465, false for other ports (like 587 with STARTTLS)
       auth: {
-        user: process.env.EMAIL_USER, // Your Microsoft 365 email address
-        pass: process.env.EMAIL_PASS, // Your Microsoft 365 password or App Password
+        user: process.env.EMAIL_USER, // Your Gmail address (e.g., shawn.shiobara@gmail.com)
+        pass: process.env.EMAIL_PASS, // Your Gmail App Password or regular password (see notes above)
       },
-      tls: {
-        ciphers:'SSLv3' // Necessary for Office365
-      }
     });
 
     const mailOptions = {
-      from: `"Chez Shiobara B&B Contact <${process.env.EMAIL_USER}>"`,
-      to: process.env.EMAIL_USER, // Send to your configured email address
+      from: `"Chez Shiobara B&B Contact <${process.env.EMAIL_USER}>"`, // Sender address (your Gmail)
+      to: process.env.EMAIL_USER, // Receiver address (your Gmail, to receive notifications)
       subject: `New Contact Form Submission: ${data.subject || "No Subject"}`,
       html: `
         <h1>New Contact Form Submission</h1>
