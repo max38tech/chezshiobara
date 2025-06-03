@@ -2,7 +2,7 @@
 "use server";
 
 import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import type { LucideIcon } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -243,10 +243,110 @@ export async function updateWelcomePageGalleryContent(newImages: GalleryImageIte
       ...img,
       id: img.id || uuidv4(), // Ensure ID exists
     }));
-    await setDoc(docRef, { galleryImages: imagesToSave }, { merge: true }); // merge: true might not be necessary if replacing the whole array
+    await setDoc(docRef, { galleryImages: imagesToSave }, { merge: true });
     return { success: true, message: "Welcome page gallery updated successfully." };
   } catch (error) {
     console.error("Error updating welcome page gallery content in Firestore: ", error);
     return { success: false, message: "Failed to update welcome page gallery." };
+  }
+}
+
+// --- Local Tips Page Content ---
+export interface LocalTipItem {
+  id: string;
+  title: string;
+  description: string;
+  category: string; // e.g., "Dining", "Sightseeing", "Activities", "Hidden Gem"
+  imageUrl?: string;
+  dataAiHint?: string;
+}
+
+export interface LocalTipsPageContent {
+  localTips: LocalTipItem[];
+}
+
+const initialLocalTipsData: LocalTipItem[] = [
+  {
+    id: uuidv4(),
+    title: "Gora Brewery & Grill",
+    description: "Enjoy craft beers and delicious grilled food in a relaxed atmosphere. Great for an evening out.",
+    category: "Dining",
+    imageUrl: "https://placehold.co/600x400.png",
+    dataAiHint: "restaurant interior",
+  },
+  {
+    id: uuidv4(),
+    title: "Hakone Open-Air Museum",
+    description: "Explore a stunning collection of contemporary sculptures set against the backdrop of Hakone's mountains. A must-visit for art lovers.",
+    category: "Sightseeing",
+    imageUrl: "https://placehold.co/600x400.png",
+    dataAiHint: "outdoor sculpture",
+  },
+  {
+    id: uuidv4(),
+    title: "Lake Ashi Boat Cruise",
+    description: "Take a scenic boat cruise on Lake Ashi for breathtaking views of Mt. Fuji (on clear days) and the surrounding nature.",
+    category: "Activities",
+    imageUrl: "https://placehold.co/600x400.png",
+    dataAiHint: "lake boat",
+  },
+  {
+    id: uuidv4(),
+    title: "Amazake-chaya Tea House",
+    description: "Step back in time at this traditional tea house serving amazake (sweet, non-alcoholic rice drink) and mochi. A unique cultural experience.",
+    category: "Hidden Gem",
+    imageUrl: "https://placehold.co/600x400.png",
+    dataAiHint: "traditional teahouse",
+  },
+];
+
+export async function getLocalTipsPageContent(): Promise<LocalTipsPageContent> {
+  try {
+    const docRef = doc(db, "siteContent", "localTipsPage");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data && Array.isArray(data.localTips) && data.localTips.length > 0) {
+        const validatedTips = data.localTips.map((tip: any) => ({
+          id: tip.id || uuidv4(),
+          title: tip.title || "Untitled Tip",
+          description: tip.description || "No description provided.",
+          category: tip.category || "General",
+          imageUrl: tip.imageUrl, // Optional
+          dataAiHint: tip.dataAiHint, // Optional
+        }));
+        return { localTips: validatedTips };
+      } else {
+        console.warn("Firestore 'localTipsPage' data malformed or empty. Seeding with initial data.");
+        const seededData = initialLocalTipsData.map(tip => ({ ...tip, id: tip.id || uuidv4() }));
+        await setDoc(docRef, { localTips: seededData });
+        return { localTips: seededData };
+      }
+    } else {
+      console.log("'localTipsPage' document does not exist. Creating and seeding.");
+      const seededData = initialLocalTipsData.map(tip => ({ ...tip, id: tip.id || uuidv4() }));
+      await setDoc(docRef, { localTips: seededData });
+      return { localTips: seededData };
+    }
+  } catch (error) {
+    console.error("Error fetching local tips from Firestore: ", error);
+    // Fallback to initial data, ensuring IDs are present
+    return { localTips: initialLocalTipsData.map(tip => ({ ...tip, id: tip.id || uuidv4() })) };
+  }
+}
+
+export async function updateLocalTipsPageContent(newTips: LocalTipItem[]): Promise<{ success: boolean; message: string }> {
+  try {
+    const docRef = doc(db, "siteContent", "localTipsPage");
+    const tipsToSave = newTips.map(tip => ({
+      ...tip,
+      id: tip.id || uuidv4(), // Ensure ID exists
+    }));
+    await setDoc(docRef, { localTips: tipsToSave }, { merge: true });
+    return { success: true, message: "Local tips updated successfully." };
+  } catch (error) {
+    console.error("Error updating local tips content in Firestore: ", error);
+    return { success: false, message: "Failed to update local tips." };
   }
 }
