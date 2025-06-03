@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
           <CardHeader>
             <CardTitle className="font-headline">Business Settings</CardTitle>
             <CardDescription className="font-body">
-              Configure core business settings like pricing.
+              Configure core business settings like pricing and payment methods.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
@@ -70,7 +70,11 @@ export default function AdminDashboardPage() {
                 <DollarSign className="mr-2 h-4 w-4" /> Manage Pricing
               </Link>
             </Button>
-            {/* Add other settings links here in the future */}
+             <Button asChild variant="outline">
+              <Link href="/admin/settings/payment-methods">
+                <CreditCard className="mr-2 h-4 w-4" /> Payment Methods
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
