@@ -44,7 +44,13 @@ export function EditablePricingConfiguration() {
           if (config.updatedAt) {
             // Firestore Timestamp to JS Date
             const updatedDate = (config.updatedAt as any).toDate ? (config.updatedAt as any).toDate() : new Date(config.updatedAt as any);
-            setLastUpdated(updatedDate);
+            if (updatedDate && !isNaN(updatedDate.getTime())) {
+              setLastUpdated(updatedDate);
+            } else {
+              setLastUpdated(null); // Set to null if conversion results in invalid date
+            }
+          } else {
+            setLastUpdated(null); // Explicitly set to null if no updatedAt
           }
         }
       } catch (error) {
@@ -54,6 +60,7 @@ export function EditablePricingConfiguration() {
           description: "Failed to load pricing configuration. Please try refreshing.",
           variant: "destructive",
         });
+        setLastUpdated(null); // Ensure lastUpdated is null on error
       } finally {
         setIsLoading(false);
       }
@@ -73,7 +80,13 @@ export function EditablePricingConfiguration() {
         const updatedConfig = await getPricingConfiguration(); // Re-fetch to get new timestamp
          if (updatedConfig.updatedAt) {
             const updatedDate = (updatedConfig.updatedAt as any).toDate ? (updatedConfig.updatedAt as any).toDate() : new Date(updatedConfig.updatedAt as any);
-            setLastUpdated(updatedDate);
+            if (updatedDate && !isNaN(updatedDate.getTime())) {
+                setLastUpdated(updatedDate);
+            } else {
+                setLastUpdated(null);
+            }
+          } else {
+            setLastUpdated(null);
           }
       } else {
         toast({
@@ -107,7 +120,7 @@ export function EditablePricingConfiguration() {
     <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="font-headline">Edit Prices (Currency: {currentCurrency})</CardTitle>
-            {lastUpdated && (
+            {lastUpdated && !isNaN(lastUpdated.getTime()) && (
               <CardDescription className="font-body text-xs text-muted-foreground">
                 Last updated: {format(lastUpdated, "PPP p")}
               </CardDescription>
