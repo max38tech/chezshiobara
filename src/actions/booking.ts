@@ -1,7 +1,7 @@
 
 "use server";
 
-import type { BookingRequestFormValues } from "@/schemas/booking";
+import type { BookingRequestFormValues, EditableBookingInvoiceFormValues } from "@/schemas/booking";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
 import { differenceInDays } from 'date-fns';
@@ -13,9 +13,9 @@ export async function handleBookingRequest(data: BookingRequestFormValues) {
   try {
     const bookingData = {
       ...data,
-      guests: Number(data.guests), 
-      createdAt: serverTimestamp(), 
-      status: "pending", 
+      guests: Number(data.guests),
+      createdAt: serverTimestamp(),
+      status: "pending",
     };
 
     const docRef = await addDoc(collection(db, "bookingRequests"), bookingData);
@@ -74,7 +74,7 @@ export async function getConfirmedBookings(): Promise<ConfirmedBooking[]> {
     const requestsCollection = collection(db, 'bookingRequests');
     const q = query(requestsCollection, where('status', '==', 'confirmed'));
     const querySnapshot = await getDocs(q);
-    
+
     const bookings = querySnapshot.docs.map(docSnapshot => {
       const data = docSnapshot.data();
       return {
@@ -102,7 +102,7 @@ export async function calculateInvoiceDetails(
   pricingConfig: ClientSafePricingConfiguration
 ) {
   const { checkInDate, checkOutDate, guests } = bookingDetails;
-  const nights = differenceInDays(checkOutDate, checkInDate);
+  const nights = differenceInDays(new Date(checkOutDate), new Date(checkInDate)); // Ensure dates are Date objects
 
   if (nights <= 0) {
     return {
@@ -126,13 +126,10 @@ export async function calculateInvoiceDetails(
 
   const rate = guests >= 2 ? twoPersonRate : onePersonRate;
 
-  // Strategy 1: Purely Nightly
   const nightlyTotal = nights * rate.nightly;
   let bestTotal = nightlyTotal;
   let bestStrategy = "Nightly";
-  let breakdownParts: string[] = [];
-  
-  // Strategy 2: Weekly Priority
+
   const weeks = Math.floor(nights / 7);
   const remainingNightsAfterWeeks = nights % 7;
   const weeklyPriorityTotal = (weeks * rate.weekly) + (remainingNightsAfterWeeks * rate.nightly);
@@ -142,33 +139,30 @@ export async function calculateInvoiceDetails(
     bestStrategy = "Weekly Priority";
   }
 
-  // Strategy 3: Monthly Priority
-  const approxDaysInMonth = 30; 
+  const approxDaysInMonth = 30;
   const months = Math.floor(nights / approxDaysInMonth);
   const remainingNightsAfterMonths = nights % approxDaysInMonth;
   const remainingWeeksAfterMonths = Math.floor(remainingNightsAfterMonths / 7);
   const finalRemainingNights = remainingNightsAfterMonths % 7;
-
   const monthlyPriorityTotal = (months * rate.monthly) + (remainingWeeksAfterMonths * rate.weekly) + (finalRemainingNights * rate.nightly);
 
   if (monthlyPriorityTotal < bestTotal) {
     bestTotal = monthlyPriorityTotal;
     bestStrategy = "Monthly Priority";
   }
-  
-  // Construct breakdown based on the chosen best strategy
+
+  let breakdownParts: string[] = [];
   if (bestStrategy === "Nightly") {
     breakdownParts.push(`${nights} night(s) at ${rate.nightly.toFixed(2)} ${pricingConfig.currency}/night`);
   } else if (bestStrategy === "Weekly Priority") {
     if (weeks > 0) breakdownParts.push(`${weeks} week(s) at ${rate.weekly.toFixed(2)} ${pricingConfig.currency}/week`);
     if (remainingNightsAfterWeeks > 0) breakdownParts.push(`${remainingNightsAfterWeeks} night(s) at ${rate.nightly.toFixed(2)} ${pricingConfig.currency}/night`);
   } else if (bestStrategy === "Monthly Priority") {
-    // Use the 'months', 'remainingWeeksAfterMonths', 'finalRemainingNights' calculated for this strategy
     if (months > 0) breakdownParts.push(`${months} month(s) at ${rate.monthly.toFixed(2)} ${pricingConfig.currency}/month`);
     if (remainingWeeksAfterMonths > 0) breakdownParts.push(`${remainingWeeksAfterMonths} week(s) at ${rate.weekly.toFixed(2)} ${pricingConfig.currency}/week`);
     if (finalRemainingNights > 0) breakdownParts.push(`${finalRemainingNights} night(s) at ${rate.nightly.toFixed(2)} ${pricingConfig.currency}/night`);
   }
-  
+
   const finalBreakdown = breakdownParts.length > 0 ? breakdownParts.join(' + ') : "Pricing applied directly.";
 
   return {
@@ -177,4 +171,35 @@ export async function calculateInvoiceDetails(
     breakdown: `Calculated as: ${finalBreakdown}`,
     appliedStrategy: bestStrategy,
   };
+}
+
+export async function updateBookingAndInvoiceDetails(
+  bookingId: string,
+  details: EditableBookingInvoiceFormValues
+) {
+  try {
+    const bookingRef = doc(db, "bookingRequests", bookingId);
+
+    // Prepare the data, ensuring Firestore Timestamps for dates
+    const dataToUpdate = {
+      name: details.name,
+      email: details.invoiceRecipientEmail, // Using the potentially new email for correspondence
+      checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
+      checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
+      guests: Number(details.guests),
+      finalInvoiceAmount: Number(details.finalInvoiceAmount),
+      finalInvoiceCurrency: details.finalInvoiceCurrency,
+      finalInvoiceBreakdown: details.finalInvoiceBreakdown,
+      finalInvoiceStrategy: details.finalInvoiceStrategy,
+      // We could also add an invoiceUpdatedAt timestamp here
+      invoiceUpdatedAt: serverTimestamp(),
+    };
+
+    await updateDoc(bookingRef, dataToUpdate);
+    console.log(`Booking ${bookingId} details and invoice finalized.`);
+    return { success: true, message: "Booking details and invoice information updated successfully." };
+  } catch (error) {
+    console.error("Error updating booking and invoice details: ", error);
+    return { success: false, message: "Failed to update booking and invoice details." };
+  }
 }
