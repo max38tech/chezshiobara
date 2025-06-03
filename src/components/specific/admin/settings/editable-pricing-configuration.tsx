@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { getPricingConfiguration, updatePricingConfiguration, type PricingConfiguration } from "@/actions/pricing";
+import { getPricingConfiguration, updatePricingConfiguration, type ClientSafePricingConfiguration } from "@/actions/pricing";
 import { pricingConfigurationSchema, type PricingConfigurationFormValues } from "@/schemas/pricing";
 import { Loader2, Save, Info } from "lucide-react";
 import { format } from 'date-fns';
@@ -37,20 +37,14 @@ export function EditablePricingConfiguration() {
     async function loadPricing() {
       setIsLoading(true);
       try {
-        const config = await getPricingConfiguration();
+        const config = await getPricingConfiguration(); // config.updatedAt is Date | undefined
         if (config) {
-          form.reset(config);
+          form.reset(config); // config is now plain
           setCurrentCurrency(config.currency);
-          if (config.updatedAt) {
-            // Firestore Timestamp to JS Date
-            const updatedDate = (config.updatedAt as any).toDate ? (config.updatedAt as any).toDate() : new Date(config.updatedAt as any);
-            if (updatedDate && !isNaN(updatedDate.getTime())) {
-              setLastUpdated(updatedDate);
-            } else {
-              setLastUpdated(null); // Set to null if conversion results in invalid date
-            }
+          if (config.updatedAt instanceof Date && !isNaN(config.updatedAt.getTime())) {
+            setLastUpdated(config.updatedAt);
           } else {
-            setLastUpdated(null); // Explicitly set to null if no updatedAt
+            setLastUpdated(null);
           }
         }
       } catch (error) {
@@ -60,7 +54,7 @@ export function EditablePricingConfiguration() {
           description: "Failed to load pricing configuration. Please try refreshing.",
           variant: "destructive",
         });
-        setLastUpdated(null); // Ensure lastUpdated is null on error
+        setLastUpdated(null);
       } finally {
         setIsLoading(false);
       }
@@ -78,16 +72,11 @@ export function EditablePricingConfiguration() {
           description: result.message,
         });
         const updatedConfig = await getPricingConfiguration(); // Re-fetch to get new timestamp
-         if (updatedConfig.updatedAt) {
-            const updatedDate = (updatedConfig.updatedAt as any).toDate ? (updatedConfig.updatedAt as any).toDate() : new Date(updatedConfig.updatedAt as any);
-            if (updatedDate && !isNaN(updatedDate.getTime())) {
-                setLastUpdated(updatedDate);
-            } else {
-                setLastUpdated(null);
-            }
-          } else {
+         if (updatedConfig.updatedAt instanceof Date && !isNaN(updatedConfig.updatedAt.getTime())) {
+            setLastUpdated(updatedConfig.updatedAt);
+        } else {
             setLastUpdated(null);
-          }
+        }
       } else {
         toast({
           title: "Save Failed",
@@ -226,3 +215,4 @@ export function EditablePricingConfiguration() {
     </Card>
   );
 }
+
