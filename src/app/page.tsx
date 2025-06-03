@@ -1,41 +1,18 @@
 
-"use client";
-
-import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from "react";
 import { Button } from '@/components/ui/button';
 import { PageContentWrapper } from '@/components/layout/page-content-wrapper';
 import { PageTitle } from '@/components/ui/page-title';
 import { SectionTitle } from '@/components/ui/section-title';
-import { Card, CardContent, CardHeader, CardTitle as SectionCardTitle } from '@/components/ui/card'; // Renamed CardTitle to avoid conflict
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle as SectionCardTitle } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { getWelcomePageGalleryContent } from '@/actions/content';
+import { WelcomePageGallery } from '@/components/specific/welcome/welcome-page-gallery';
 
-export default function WelcomePage() {
-  const images = [
-    { src: "https://placehold.co/600x400.png", alt: "Beautiful B&B exterior", hint: "house exterior" },
-    { src: "https://placehold.co/600x400.png", alt: "Cozy room interior", hint: "bedroom interior" },
-    { src: "https://placehold.co/600x400.png", alt: "Scenic local view", hint: "nature landscape" },
-    { src: "https://placehold.co/600x400.png", alt: "Delicious breakfast", hint: "breakfast food" },
-    { src: "https://placehold.co/600x400.png", alt: "Garden area", hint: "garden flowers" },
-    { src: "https://placehold.co/600x400.png", alt: "Nearby attraction", hint: "local landmark" },
-  ];
-
-  const [selectedImage, setSelectedImage] = useState<typeof images[0] | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleImageClick = (image: typeof images[0]) => {
-    setSelectedImage(image);
-    setIsDialogOpen(true);
-  };
+export default async function WelcomePage() {
+  const galleryContent = await getWelcomePageGalleryContent();
+  // Ensure images is always an array, even if galleryContent is null or galleryImages is undefined
+  const images = galleryContent?.galleryImages || [];
 
   return (
     <PageContentWrapper>
@@ -49,60 +26,8 @@ export default function WelcomePage() {
       </section>
 
       <section className="mb-16">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: images.length > 3, // Loop if more than 3 images (typical for lg view)
-          }}
-          className="w-full max-w-3xl mx-auto"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {images.map((image, index) => (
-              <CarouselItem key={index} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                <div
-                  className="aspect-[3/2] overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group bg-muted"
-                  onClick={() => handleImageClick(image)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleImageClick(image); }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`View image ${index + 1}: ${image.alt}`}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    width={300}
-                    height={200}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    data-ai-hint={image.hint}
-                    priority={index < 3} // Prioritize first few thumbnails
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="ml-[-12px] sm:ml-0" />
-          <CarouselNext className="mr-[-12px] sm:mr-0" />
-        </Carousel>
+        <WelcomePageGallery images={images} />
       </section>
-
-      {selectedImage && (
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="w-full max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl p-2 sm:p-4">
-            <DialogHeader className="sr-only">
-              <DialogTitle>{selectedImage.alt}</DialogTitle>
-            </DialogHeader>
-            <div className="relative w-full aspect-video">
-              <Image
-                src={selectedImage.src}
-                alt="" // Alt is in DialogTitle for SR; image is decorative here
-                fill
-                className="object-contain rounded-md"
-                sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, (max-width: 1280px) 70vw, 65vw"
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
 
       <section className="mb-16 text-center">
         <SectionTitle>Explore Our B&amp;B</SectionTitle>

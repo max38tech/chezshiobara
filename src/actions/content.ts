@@ -4,6 +4,7 @@
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import type { LucideIcon } from "lucide-react";
+import { v4 as uuidv4 } from 'uuid';
 
 // --- Rules Page Content ---
 export interface RuleItem {
@@ -177,5 +178,75 @@ export async function updateHouseGuideContent(newItems: HouseGuideItem[]): Promi
   } catch (error) {
     console.error("Error updating house guide content in Firestore: ", error);
     return { success: false, message: "Failed to update house guide." };
+  }
+}
+
+
+// --- Welcome Page Gallery Content ---
+export interface GalleryImageItem {
+  id: string;
+  src: string;
+  alt: string;
+  dataAiHint: string;
+}
+
+export interface WelcomePageGalleryContent {
+  galleryImages: GalleryImageItem[];
+}
+
+const initialGalleryData: GalleryImageItem[] = [
+  { id: "gallery_img_1", src: "https://placehold.co/600x400.png", alt: "Beautiful B&B exterior", dataAiHint: "house exterior" },
+  { id: "gallery_img_2", src: "https://placehold.co/600x400.png", alt: "Cozy room interior", dataAiHint: "bedroom interior" },
+  { id: "gallery_img_3", src: "https://placehold.co/600x400.png", alt: "Scenic local view", dataAiHint: "nature landscape" },
+  { id: "gallery_img_4", src: "https://placehold.co/600x400.png", alt: "Delicious breakfast", dataAiHint: "breakfast food" },
+  { id: "gallery_img_5", src: "https://placehold.co/600x400.png", alt: "Garden area", dataAiHint: "garden flowers" },
+  { id: "gallery_img_6", src: "https://placehold.co/600x400.png", alt: "Nearby attraction", dataAiHint: "local landmark" },
+];
+
+export async function getWelcomePageGalleryContent(): Promise<WelcomePageGalleryContent> {
+  try {
+    const docRef = doc(db, "siteContent", "welcomePageGallery");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data && Array.isArray(data.galleryImages) && data.galleryImages.length > 0) {
+        const validatedImages = data.galleryImages.map((img: any, index: number) => ({
+          id: img.id || uuidv4(),
+          src: img.src || "https://placehold.co/600x400.png",
+          alt: img.alt || "Placeholder image",
+          dataAiHint: img.dataAiHint || "image",
+        }));
+        return { galleryImages: validatedImages };
+      } else {
+        console.warn("Firestore 'welcomePageGallery' data malformed or empty. Seeding with initial data.");
+        const seededData = initialGalleryData.map(img => ({ ...img, id: img.id || uuidv4() }));
+        await setDoc(docRef, { galleryImages: seededData });
+        return { galleryImages: seededData };
+      }
+    } else {
+      console.log("'welcomePageGallery' document does not exist. Creating and seeding.");
+      const seededData = initialGalleryData.map(img => ({ ...img, id: img.id || uuidv4() }));
+      await setDoc(docRef, { galleryImages: seededData });
+      return { galleryImages: seededData };
+    }
+  } catch (error) {
+    console.error("Error fetching welcome page gallery from Firestore: ", error);
+    return { galleryImages: initialGalleryData.map(img => ({ ...img, id: img.id || uuidv4() })) }; // Fallback
+  }
+}
+
+export async function updateWelcomePageGalleryContent(newImages: GalleryImageItem[]): Promise<{ success: boolean; message: string }> {
+  try {
+    const docRef = doc(db, "siteContent", "welcomePageGallery");
+    const imagesToSave = newImages.map(img => ({
+      ...img,
+      id: img.id || uuidv4(), // Ensure ID exists
+    }));
+    await setDoc(docRef, { galleryImages: imagesToSave }, { merge: true }); // merge: true might not be necessary if replacing the whole array
+    return { success: true, message: "Welcome page gallery updated successfully." };
+  } catch (error) {
+    console.error("Error updating welcome page gallery content in Firestore: ", error);
+    return { success: false, message: "Failed to update welcome page gallery." };
   }
 }
