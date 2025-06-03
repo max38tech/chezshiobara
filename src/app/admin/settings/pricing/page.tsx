@@ -17,7 +17,7 @@ export default function AdminPricingSettingsPage() {
           </CardTitle>
           <CardDescription className="font-body">
             Set the different pricing tiers for your B&B. These prices will be used for generating invoices.
-            All prices are in JPY (Japanese Yen).
+            All prices are in USD (United States Dollar).
           </CardDescription>
         </CardHeader>
       </Card>
@@ -25,3 +25,4 @@ export default function AdminPricingSettingsPage() {
     </PageContentWrapper>
   );
 }
+

@@ -26,15 +26,15 @@ export interface ClientSafePricingConfiguration extends PricingTier {
 }
 
 const initialPricingDataValues: Omit<ClientSafePricingConfiguration, 'updatedAt' | 'currency'> = {
-  perNight1Person: 8000,
-  perNight2People: 12000,
-  perWeek1Person: 50000,
-  perWeek2People: 77000,
-  perMonth1Person: 180000,
-  perMonth2People: 270000,
+  perNight1Person: 80,
+  perNight2People: 120,
+  perWeek1Person: 500,
+  perWeek2People: 770,
+  perMonth1Person: 1800,
+  perMonth2People: 2700,
 };
 
-const defaultCurrency = "JPY";
+const defaultCurrency = "USD";
 
 export async function getPricingConfiguration(): Promise<ClientSafePricingConfiguration> {
   try {
@@ -56,17 +56,14 @@ export async function getPricingConfiguration(): Promise<ClientSafePricingConfig
         updatedAt: storedData.updatedAt ? storedData.updatedAt.toDate() : undefined,
       };
     } else {
-      console.log("'pricing' document does not exist in Firestore. Creating and seeding with initial data.");
+      console.log(`'pricing' document does not exist in Firestore. Creating and seeding with initial data (Currency: ${defaultCurrency}).`);
       const dataToSeed: PricingConfigurationStored = {
         ...initialPricingDataValues,
         currency: defaultCurrency,
         updatedAt: serverTimestamp() as Timestamp,
       };
       await setDoc(docRef, dataToSeed);
-      // After seeding, we return client-safe data. The timestamp will effectively be "now" but represented as Date.
-      // For simplicity on first load after seed, we can return undefined for updatedAt or fetch again.
-      // Returning undefined for updatedAt for the very first load post-seed is fine.
-      return { ...initialPricingDataValues, currency: defaultCurrency, updatedAt: new Date() }; // Or undefined if serverTimestamp is complex to convert here
+      return { ...initialPricingDataValues, currency: defaultCurrency, updatedAt: new Date() }; 
     }
   } catch (error) {
     console.error("Error fetching pricing configuration from Firestore: ", error);
@@ -77,19 +74,19 @@ export async function getPricingConfiguration(): Promise<ClientSafePricingConfig
 export async function updatePricingConfiguration(newConfig: Omit<ClientSafePricingConfiguration, 'currency' | 'updatedAt'>): Promise<{ success: boolean; message: string }> {
   try {
     const docRef = doc(db, "siteSettings", "pricing");
-    // Get current currency, as it's not part of the form submission directly
     const currentClientConfig = await getPricingConfiguration();
     
     const dataToSet: PricingConfigurationStored = {
-      ...newConfig, // new tier prices
-      currency: currentClientConfig.currency, // preserve existing currency
-      updatedAt: serverTimestamp() as Timestamp, // set new server timestamp
+      ...newConfig, 
+      currency: currentClientConfig.currency, 
+      updatedAt: serverTimestamp() as Timestamp, 
     };
 
-    await setDoc(docRef, dataToSet, { merge: true }); // merge to be safe, though we are setting all tiers
+    await setDoc(docRef, dataToSet, { merge: true }); 
     return { success: true, message: "Pricing configuration updated successfully." };
   } catch (error) {
     console.error("Error updating pricing configuration in Firestore: ", error);
     return { success: false, message: "Failed to update pricing configuration." };
   }
 }
+

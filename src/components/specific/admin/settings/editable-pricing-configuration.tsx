@@ -18,7 +18,7 @@ export function EditablePricingConfiguration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentCurrency, setCurrentCurrency] = useState<string>("JPY");
+  const [currentCurrency, setCurrentCurrency] = useState<string>("USD");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const form = useForm<PricingConfigurationFormValues>({
@@ -37,9 +37,16 @@ export function EditablePricingConfiguration() {
     async function loadPricing() {
       setIsLoading(true);
       try {
-        const config = await getPricingConfiguration(); // config.updatedAt is Date | undefined
+        const config = await getPricingConfiguration();
         if (config) {
-          form.reset(config); // config is now plain
+          form.reset({
+            perNight1Person: config.perNight1Person,
+            perNight2People: config.perNight2People,
+            perWeek1Person: config.perWeek1Person,
+            perWeek2People: config.perWeek2People,
+            perMonth1Person: config.perMonth1Person,
+            perMonth2People: config.perMonth2People,
+          });
           setCurrentCurrency(config.currency);
           if (config.updatedAt instanceof Date && !isNaN(config.updatedAt.getTime())) {
             setLastUpdated(config.updatedAt);
@@ -71,12 +78,14 @@ export function EditablePricingConfiguration() {
           title: "Success!",
           description: result.message,
         });
-        const updatedConfig = await getPricingConfiguration(); // Re-fetch to get new timestamp
+        const updatedConfig = await getPricingConfiguration(); 
          if (updatedConfig.updatedAt instanceof Date && !isNaN(updatedConfig.updatedAt.getTime())) {
             setLastUpdated(updatedConfig.updatedAt);
         } else {
             setLastUpdated(null);
         }
+        // Update current currency if it changed (though it's not editable in this form)
+        setCurrentCurrency(updatedConfig.currency);
       } else {
         toast({
           title: "Save Failed",
@@ -126,7 +135,7 @@ export function EditablePricingConfiguration() {
                         <FormItem>
                             <FormLabel>Nightly Rate (1 Person)</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 8000" {...field} />
+                            <Input type="number" placeholder="e.g., 80" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -139,7 +148,7 @@ export function EditablePricingConfiguration() {
                         <FormItem>
                             <FormLabel>Nightly Rate (2 People)</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 12000" {...field} />
+                            <Input type="number" placeholder="e.g., 120" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -152,7 +161,7 @@ export function EditablePricingConfiguration() {
                         <FormItem>
                             <FormLabel>Weekly Rate (1 Person)</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 50000" {...field} />
+                            <Input type="number" placeholder="e.g., 500" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -165,7 +174,7 @@ export function EditablePricingConfiguration() {
                         <FormItem>
                             <FormLabel>Weekly Rate (2 People)</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 77000" {...field} />
+                            <Input type="number" placeholder="e.g., 770" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -178,7 +187,7 @@ export function EditablePricingConfiguration() {
                         <FormItem>
                             <FormLabel>Monthly Rate (1 Person)</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 180000" {...field} />
+                            <Input type="number" placeholder="e.g., 1800" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -191,7 +200,7 @@ export function EditablePricingConfiguration() {
                         <FormItem>
                             <FormLabel>Monthly Rate (2 People)</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 270000" {...field} />
+                            <Input type="number" placeholder="e.g., 2700" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
