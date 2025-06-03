@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images } from "lucide-react"; // Added Images icon
+import { Edit, BookOpenText, Images, Lightbulb } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -20,14 +20,13 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="font-body">
-            Current functionalities: View and manage booking requests, edit house rules, house guide, and welcome page gallery.
+            Current functionalities: View and manage booking requests, edit house rules, house guide, welcome page gallery, and local tips.
           </p>
           <p className="font-body mt-2">
             Upcoming features:
           </p>
           <ul className="list-disc list-inside font-body mt-1 space-y-1 text-sm">
             <li>View a calendar of confirmed bookings</li>
-            <li>Edit local tips & attractions</li>
           </ul>
         </CardContent>
       </Card>
@@ -53,6 +52,11 @@ export default function AdminDashboardPage() {
           <Button asChild variant="outline">
             <Link href="/admin/content/gallery">
               <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/admin/content/local-tips">
+              <Lightbulb className="mr-2 h-4 w-4" /> Edit Local Tips
             </Link>
           </Button>
         </CardContent>

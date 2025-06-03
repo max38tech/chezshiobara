@@ -50,3 +50,21 @@ export const welcomePageGalleryContentFormSchema = z.object({
 });
 
 export type WelcomePageGalleryContentFormValues = z.infer<typeof welcomePageGalleryContentFormSchema>;
+
+// --- Local Tips Page Schemas ---
+export const localTipItemSchema = z.object({
+  id: z.string().min(1, "ID is required."),
+  title: z.string().min(3, "Title is required.").max(150, "Title too long."),
+  description: z.string().min(10, "Description is required.").max(1000, "Description too long."),
+  category: z.string().min(1, "Category is required.").max(50, "Category too long."),
+  imageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+  dataAiHint: z.string().max(50, "AI hint too long (max 2 words recommended).").optional().or(z.literal('')),
+});
+
+export type LocalTipItemFormValues = z.infer<typeof localTipItemSchema>;
+
+export const localTipsPageContentFormSchema = z.object({
+  localTips: z.array(localTipItemSchema),
+});
+
+export type LocalTipsPageContentFormValues = z.infer<typeof localTipsPageContentFormSchema>;
