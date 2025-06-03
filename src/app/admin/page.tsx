@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -20,41 +20,61 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="font-body">
-            Current functionalities: View and manage booking requests, edit site content, and view bookings calendar.
+            Current functionalities: View and manage booking requests, edit site content, view bookings calendar, and manage pricing.
           </p>
         </CardContent>
       </Card>
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="font-headline">Manage Site Content</CardTitle>
-          <CardDescription className="font-body">
-            Edit text and image content for various pages of your website.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
-          <Button asChild variant="outline">
-            <Link href="/admin/content/rules">
-              <Edit className="mr-2 h-4 w-4" /> Edit House Rules
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/content/house-guide">
-              <BookOpenText className="mr-2 h-4 w-4" /> Edit House Guide
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/content/gallery">
-              <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/content/local-tips">
-              <Lightbulb className="mr-2 h-4 w-4" /> Edit Local Tips
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Manage Site Content</CardTitle>
+            <CardDescription className="font-body">
+              Edit text and image content for various pages of your website.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            <Button asChild variant="outline">
+              <Link href="/admin/content/rules">
+                <Edit className="mr-2 h-4 w-4" /> Edit House Rules
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/content/house-guide">
+                <BookOpenText className="mr-2 h-4 w-4" /> Edit House Guide
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/content/gallery">
+                <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/content/local-tips">
+                <Lightbulb className="mr-2 h-4 w-4" /> Edit Local Tips
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Business Settings</CardTitle>
+            <CardDescription className="font-body">
+              Configure core business settings like pricing.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            <Button asChild variant="outline">
+              <Link href="/admin/settings/pricing">
+                <DollarSign className="mr-2 h-4 w-4" /> Manage Pricing
+              </Link>
+            </Button>
+            {/* Add other settings links here in the future */}
+          </CardContent>
+        </Card>
+      </div>
+
 
        <Card className="mb-8">
         <CardHeader>
@@ -69,6 +89,7 @@ export default function AdminDashboardPage() {
               <CalendarCheck className="mr-2 h-4 w-4" /> View Bookings Calendar
             </Link>
           </Button>
+          {/* Future: Link to "Create Invoice" or similar if it becomes a separate page */}
         </CardContent>
       </Card>
 
