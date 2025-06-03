@@ -14,8 +14,8 @@ const navItems = [
   { href: "/", label: "Welcome", icon: Home },
   { href: "/who-we-are", label: "Who We Are", icon: Users },
   { href: "/booking", label: "Book Your Stay", icon: CalendarDays },
-  { href: "/rules", label: "House Rules", icon: ListChecks },
   { href: "/house-guide", label: "House Guide", icon: BookOpenText },
+  { href: "/rules", label: "House Rules", icon: ListChecks },
   { href: "/contact", label: "Contact Us", icon: Mail },
 ];
 
