@@ -3,7 +3,7 @@
 
 import type { BookingRequestFormValues } from "@/schemas/booking";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
   console.log("Booking request received:", data);
@@ -59,5 +59,35 @@ export async function declineBookingRequest(requestId: string) {
   } catch (error) {
     console.error("Error declining booking request: ", error);
     return { success: false, message: "Failed to decline booking request." };
+  }
+}
+
+export interface ConfirmedBooking {
+  id: string;
+  name: string;
+  checkInDate: Date;
+  checkOutDate: Date;
+}
+
+export async function getConfirmedBookings(): Promise<ConfirmedBooking[]> {
+  try {
+    const requestsCollection = collection(db, 'bookingRequests');
+    const q = query(requestsCollection, where('status', '==', 'confirmed'));
+    const querySnapshot = await getDocs(q);
+    
+    const bookings = querySnapshot.docs.map(docSnapshot => {
+      const data = docSnapshot.data();
+      return {
+        id: docSnapshot.id,
+        name: data.name,
+        // Firestore Timestamps need to be converted to JS Date objects
+        checkInDate: (data.checkInDate as Timestamp).toDate(),
+        checkOutDate: (data.checkOutDate as Timestamp).toDate(),
+      };
+    });
+    return bookings;
+  } catch (error) {
+    console.error("Error fetching confirmed bookings: ", error);
+    return []; // Return empty array on error
   }
 }

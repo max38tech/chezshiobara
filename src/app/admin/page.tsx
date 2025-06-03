@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -20,14 +20,8 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="font-body">
-            Current functionalities: View and manage booking requests, edit house rules, house guide, welcome page gallery, and local tips.
+            Current functionalities: View and manage booking requests, edit site content, and view bookings calendar.
           </p>
-          <p className="font-body mt-2">
-            Upcoming features:
-          </p>
-          <ul className="list-disc list-inside font-body mt-1 space-y-1 text-sm">
-            <li>View a calendar of confirmed bookings</li>
-          </ul>
         </CardContent>
       </Card>
 
@@ -57,6 +51,22 @@ export default function AdminDashboardPage() {
           <Button asChild variant="outline">
             <Link href="/admin/content/local-tips">
               <Lightbulb className="mr-2 h-4 w-4" /> Edit Local Tips
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+       <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="font-headline">Booking Management</CardTitle>
+          <CardDescription className="font-body">
+            View incoming requests and see confirmed bookings on a calendar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
+          <Button asChild variant="outline">
+            <Link href="/admin/bookings-calendar">
+              <CalendarCheck className="mr-2 h-4 w-4" /> View Bookings Calendar
             </Link>
           </Button>
         </CardContent>
