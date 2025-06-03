@@ -2,6 +2,9 @@
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Edit } from "lucide-react";
 
 export default function AdminDashboardPage() {
   return (
@@ -17,17 +20,32 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="font-body">
-            Current functionalities: View booking requests.
+            Current functionalities: View and manage booking requests, edit house rules.
           </p>
           <p className="font-body mt-2">
             Upcoming features:
           </p>
           <ul className="list-disc list-inside font-body mt-1 space-y-1 text-sm">
-            <li>Accept/Decline booking requests</li>
             <li>Manage photos for the welcome page gallery</li>
-            <li>Edit text content for various pages (Rules, House Guide, etc.)</li>
+            <li>Edit text content for other pages (House Guide, etc.)</li>
             <li>View a calendar of confirmed bookings</li>
           </ul>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="font-headline">Manage Site Content</CardTitle>
+          <CardDescription className="font-body">
+            Edit text content for various pages of your website.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline">
+            <Link href="/admin/content/rules">
+              <Edit className="mr-2 h-4 w-4" /> Edit House Rules
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
