@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Inbox, CheckCircle, XCircle, Info } from 'lucide-react';
+import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { approveBookingRequest, declineBookingRequest } from '@/actions/booking';
 import { useToast } from "@/hooks/use-toast";
@@ -30,7 +30,7 @@ interface BookingRequest {
   guests: number;
   message?: string;
   createdAt: Timestamp;
-  status?: 'pending' | 'confirmed' | 'declined'; // Status can be optional for older records
+  status?: 'pending' | 'confirmed' | 'declined';
 }
 
 export function BookingRequestsTable() {
@@ -106,7 +106,7 @@ export function BookingRequestsTable() {
     if (typeof statusValue === 'string' && statusValue.length > 0) {
       return statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
     }
-    return 'Pending'; // Default for any non-string, empty string, null, or undefined status
+    return 'Pending'; 
   };
 
   if (loading) {
@@ -144,7 +144,7 @@ export function BookingRequestsTable() {
       </CardHeader>
       <CardContent>
         <Table>
-          <TableCaption className="font-body">A list of recent booking requests. Click Accept or Decline to manage.</TableCaption>
+          <TableCaption className="font-body">A list of recent booking requests. Manage their status below.</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="font-headline w-[150px]">Submitted</TableHead>
@@ -177,13 +177,13 @@ export function BookingRequestsTable() {
                       request.status === 'confirmed' ? 'default'
                       : request.status === 'declined' ? 'destructive'
                       : request.status === 'pending' ? 'secondary'
-                      : 'secondary' // Default for undefined or other statuses
+                      : 'secondary' 
                     }
                     className={
                         request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
-                      : request.status === 'declined' ? '' // Uses default destructive badge style
+                      : request.status === 'declined' ? '' 
                       : request.status === 'pending' ? 'bg-yellow-500 text-black hover:bg-yellow-600'
-                      : 'bg-gray-400 text-white hover:bg-gray-500' // Style for undefined or other statuses
+                      : 'bg-gray-400 text-white hover:bg-gray-500' 
                     }
                   >
                     {getDisplayStatus(request.status)}
@@ -193,26 +193,55 @@ export function BookingRequestsTable() {
                   {request.message || <span className="text-muted-foreground italic">No message</span>}
                 </TableCell>
                 <TableCell className="text-center">
-                  <div className="flex gap-2 justify-center">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleStatusUpdate(request.id, 'confirmed')}
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                      disabled={isUpdating[request.id] || request.status !== 'pending'}
-                    >
-                      {isUpdating[request.id] && request.status === 'pending' ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-1 h-4 w-4" />}
-                      Accept
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleStatusUpdate(request.id, 'declined')}
-                      disabled={isUpdating[request.id] || request.status !== 'pending'}
-                    >
-                       {isUpdating[request.id] && request.status === 'pending' ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />}
-                      Decline
-                    </Button>
+                  <div className="flex gap-2 justify-center items-center">
+                    {request.status === 'pending' && (
+                      <>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleStatusUpdate(request.id, 'confirmed')}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          disabled={isUpdating[request.id]}
+                        >
+                          {isUpdating[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-1 h-4 w-4" />}
+                          Accept
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleStatusUpdate(request.id, 'declined')}
+                          disabled={isUpdating[request.id]}
+                        >
+                           {isUpdating[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />}
+                          Decline
+                        </Button>
+                      </>
+                    )}
+                    {request.status === 'confirmed' && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleStatusUpdate(request.id, 'declined')}
+                        disabled={isUpdating[request.id]}
+                        title="Cancel this booking"
+                      >
+                        {isUpdating[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />}
+                        Decline
+                      </Button>
+                    )}
+                    {request.status === 'declined' && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleStatusUpdate(request.id, 'confirmed')}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        disabled={isUpdating[request.id]}
+                        title="Re-approve this booking"
+                      >
+                        {isUpdating[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-1 h-4 w-4" />}
+                        Approve
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -223,3 +252,4 @@ export function BookingRequestsTable() {
     </Card>
   );
 }
+
