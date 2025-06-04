@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -16,8 +17,19 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Add Stripe's image hostname if you plan to use product images from Stripe
+      // Example:
+      // {
+      //   protocol: 'https',
+      //   hostname: 'files.stripe.com',
+      // },
     ],
   },
+  env: {
+    NEXT_PUBLIC_BASE_URL: process.env.NODE_ENV === 'production' 
+      ? 'https://your-production-domain.com' // Replace with your actual production domain
+      : 'http://localhost:9002', // Ensure this matches your local dev port
+  }
 };
 
 export default nextConfig;

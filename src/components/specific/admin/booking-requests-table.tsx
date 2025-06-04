@@ -4,7 +4,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Table,
@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw, FileText, Calculator } from 'lucide-react';
+import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw, FileText, Calculator, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   approveBookingRequest,
@@ -31,11 +31,13 @@ import {
   type BookingCalculationRequest
 } from '@/actions/booking';
 import { getPricingConfiguration, type ClientSafePricingConfiguration } from '@/actions/pricing';
+import { getPaymentSettings, type PaymentSettings } from '@/actions/payment';
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { editableBookingInvoiceSchema, type EditableBookingInvoiceFormValues } from '@/schemas/booking';
+import Link from 'next/link';
 
-interface BookingRequest {
+export interface BookingRequest {
   id: string;
   name: string;
   email: string;
@@ -44,7 +46,7 @@ interface BookingRequest {
   guests: number;
   message?: string;
   createdAt: Timestamp;
-  status: 'pending' | 'confirmed' | 'declined';
+  status: 'pending' | 'confirmed' | 'declined' | 'paid'; // Added 'paid' status
   // Fields that might be populated after invoice finalization
   finalInvoiceAmount?: number;
   finalInvoiceCurrency?: string;
@@ -72,10 +74,8 @@ export function BookingRequestsTable() {
   const [isRecalculatingInvoice, setIsRecalculatingInvoice] = useState(false); // For recalculate button
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [pricingConfig, setPricingConfig] = useState<ClientSafePricingConfiguration | null>(null);
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
-  const form = useForm<EditableBookingInvoiceFormValues>({
-    resolver: zodResolver(editableBookingInvoiceSchema),
-  });
 
   const fetchBookingRequests = async () => {
     setLoading(true);
@@ -84,13 +84,15 @@ export function BookingRequestsTable() {
       const requestsCollection = collection(db, 'bookingRequests');
       const q = query(requestsCollection, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      const requests = querySnapshot.docs.map(doc => {
-        const data = doc.data();
+      const requests = querySnapshot.docs.map(docSnapshot => {
+        const data = docSnapshot.data();
         const status = data.status;
+        // Ensure status is one of the allowed types, default to 'pending'
+        const validStatus = ['pending', 'confirmed', 'declined', 'paid'].includes(status) ? status : 'pending';
         return {
-          id: doc.id,
+          id: docSnapshot.id,
           ...data,
-          status: (status === 'pending' || status === 'confirmed' || status === 'declined') ? status : 'pending',
+          status: validStatus,
         } as BookingRequest;
       });
       setBookingRequests(requests);
@@ -105,17 +107,35 @@ export function BookingRequestsTable() {
 
   useEffect(() => {
     fetchBookingRequests();
-    const fetchPricing = async () => {
-      const config = await getPricingConfiguration();
-      setPricingConfig(config);
+    const fetchInitialConfigs = async () => {
+      const pConfig = await getPricingConfiguration();
+      setPricingConfig(pConfig);
+      const paySettings = await getPaymentSettings();
+      setPaymentSettings(paySettings);
     };
-    fetchPricing();
+    fetchInitialConfigs();
   }, []);
 
-  const handleStatusUpdate = async (requestId: string, newStatus: 'confirmed' | 'declined') => {
+  const handleStatusUpdate = async (requestId: string, newStatus: BookingRequest['status']) => {
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: true }));
-    const action = newStatus === 'confirmed' ? approveBookingRequest : declineBookingRequest;
-    const result = await action(requestId);
+    
+    let result;
+    if (newStatus === 'confirmed') {
+      result = await approveBookingRequest(requestId);
+    } else if (newStatus === 'declined') {
+      result = await declineBookingRequest(requestId);
+    } else {
+      // For 'paid' or other statuses, might need a different action or direct update
+      // For now, only handle confirm/decline via dedicated actions
+      const requestRef = doc(db, "bookingRequests", requestId);
+      try {
+        await (await import('firebase/firestore')).updateDoc(requestRef, { status: newStatus });
+        result = { success: true, message: `Booking status updated to ${newStatus}.` };
+      } catch (e) {
+        result = { success: false, message: `Failed to update status to ${newStatus}.` };
+      }
+    }
+
 
     toast({
       title: result.success ? "Success" : "Error",
@@ -168,17 +188,16 @@ export function BookingRequestsTable() {
         checkInDate: booking.checkInDate.toDate(),
         checkOutDate: booking.checkOutDate.toDate(),
         guests: booking.guests,
-        finalInvoiceAmount: details.totalAmount,
+        finalInvoiceAmount: booking.finalInvoiceAmount || details.totalAmount, // Use existing if set, else new calc
       });
     } else {
-      // Handle error or set default form values if calculation fails
       form.reset({
         name: booking.name,
         invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email,
         checkInDate: booking.checkInDate.toDate(),
         checkOutDate: booking.checkOutDate.toDate(),
         guests: booking.guests,
-        finalInvoiceAmount: 0,
+        finalInvoiceAmount: booking.finalInvoiceAmount || 0,
       });
     }
     setIsCalculatingInvoice(false);
@@ -204,13 +223,13 @@ export function BookingRequestsTable() {
 
   const onInvoiceFormSubmit = async (values: EditableBookingInvoiceFormValues) => {
     if (!editingBooking || !currentInvoiceCalculation) {
-      toast({ title: "Error", description: "Missing booking or calculation details.", variant: "destructive" });
+      toast({ title: "Error", description: "Missing booking or calculation details for saving.", variant: "destructive" });
       return;
     }
     setIsSavingInvoice(true);
 
     const dataToUpdate = {
-      ...values, // name, invoiceRecipientEmail, checkInDate, checkOutDate, guests, finalInvoiceAmount
+      ...values, 
       finalInvoiceBreakdown: currentInvoiceCalculation.breakdown,
       finalInvoiceStrategy: currentInvoiceCalculation.appliedStrategy,
       finalInvoiceCurrency: currentInvoiceCalculation.currency,
@@ -219,8 +238,15 @@ export function BookingRequestsTable() {
     const result = await updateBookingAndInvoiceDetails(editingBooking.id, dataToUpdate);
     if (result.success) {
       toast({ title: "Success", description: result.message });
-      fetchBookingRequests(); // Re-fetch to get updated data
-      setIsInvoiceModalOpen(false);
+      await fetchBookingRequests(); 
+      // Keep modal open to show Stripe button, or close and let admin click again?
+      // For now, let's update the editingBooking state so the Stripe button shows if applicable
+      const updatedBookingSnap = await getDoc(doc(db, "bookingRequests", editingBooking.id));
+      if (updatedBookingSnap.exists()) {
+        setEditingBooking({ id: updatedBookingSnap.id, ...updatedBookingSnap.data() } as BookingRequest);
+      } else {
+        setIsInvoiceModalOpen(false); // Close if booking somehow disappeared
+      }
     } else {
       toast({ title: "Error", description: result.message, variant: "destructive" });
     }
@@ -243,11 +269,11 @@ export function BookingRequestsTable() {
     return statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
   };
 
-  if (loading && bookingRequests.length === 0) {
+  if (loading && bookingRequests.length === 0 && !pricingConfig && !paymentSettings) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2 font-body text-muted-foreground">Loading booking requests...</p>
+        <p className="ml-2 font-body text-muted-foreground">Loading booking requests and settings...</p>
       </div>
     );
   }
@@ -272,7 +298,6 @@ export function BookingRequestsTable() {
   }
 
   const checkInDateForForm = form.watch("checkInDate");
-
 
   return (
     <>
@@ -313,11 +338,13 @@ export function BookingRequestsTable() {
                     <Badge
                       variant={
                         request.status === 'confirmed' ? 'default'
+                        : request.status === 'paid' ? 'default' 
                         : request.status === 'declined' ? 'destructive'
                         : 'secondary'
                       }
                       className={
                           request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
+                        : request.status === 'paid' ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : request.status === 'declined' ? '' 
                         : 'bg-yellow-500 text-black hover:bg-yellow-600'
                       }
@@ -329,7 +356,7 @@ export function BookingRequestsTable() {
                     {request.message || <span className="text-muted-foreground italic">No message</span>}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex gap-2 justify-center items-center">
+                    <div className="flex gap-2 justify-center items-center flex-wrap">
                       {request.status === 'pending' && (
                         <>
                           <Button
@@ -353,7 +380,7 @@ export function BookingRequestsTable() {
                           </Button>
                         </>
                       )}
-                      {request.status === 'confirmed' && (
+                      {request.status === 'confirmed' && request.status !== 'paid' && (
                         <Button
                           variant="destructive"
                           size="sm"
@@ -365,6 +392,9 @@ export function BookingRequestsTable() {
                           Decline
                         </Button>
                       )}
+                       {request.status === 'paid' && (
+                         <Badge variant="default" className="bg-blue-600 text-white">Paid</Badge>
+                       )}
                       {request.status === 'declined' && (
                         <Button
                           variant="default"
@@ -378,7 +408,7 @@ export function BookingRequestsTable() {
                           Approve
                         </Button>
                       )}
-                      {(request.status === 'pending' || request.status === 'confirmed') && (
+                      {(request.status === 'pending' || request.status === 'confirmed') && request.status !== 'paid' && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -386,7 +416,15 @@ export function BookingRequestsTable() {
                           disabled={isCalculatingInvoice || isUpdatingStatus[request.id]}
                         >
                           {isCalculatingInvoice && editingBooking?.id === request.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}
-                          Invoice
+                          Finalize Invoice
+                        </Button>
+                      )}
+                       {request.status === 'confirmed' && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
+                        <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                          <Link href={`/checkout/${request.id}`}>
+                            <CreditCard className="mr-1 h-4 w-4" />
+                            Pay via Stripe
+                          </Link>
                         </Button>
                       )}
                     </div>
@@ -401,7 +439,7 @@ export function BookingRequestsTable() {
       {editingBooking && (
         <Dialog open={isInvoiceModalOpen} onOpenChange={(isOpen) => {
           if (!isOpen) {
-            form.reset({}); // Clear form when closing
+            form.reset({}); 
             setCurrentInvoiceCalculation(null);
             setEditingBooking(null);
           }
@@ -412,9 +450,10 @@ export function BookingRequestsTable() {
               <DialogTitle className="font-headline">Edit & Finalize Invoice for {editingBooking.name}</DialogTitle>
               <DialogDescription className="font-body">
                 Adjust booking details and finalize the invoice amount. Original request: {formatDateOnly(editingBooking.checkInDate)} to {formatDateOnly(editingBooking.checkOutDate)} for {editingBooking.guests} guest(s).
+                 {editingBooking.finalInvoiceAmount && <span className="block mt-1">Current finalized amount: {editingBooking.finalInvoiceAmount.toFixed(2)} {editingBooking.finalInvoiceCurrency}</span>}
               </DialogDescription>
             </DialogHeader>
-            {isCalculatingInvoice && !currentInvoiceCalculation ? (
+            {isCalculatingInvoice && !currentInvoiceCalculation && !editingBooking.finalInvoiceAmount ? (
               <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <p className="ml-3 font-body">Calculating initial invoice...</p>
@@ -455,7 +494,6 @@ export function BookingRequestsTable() {
                             value={field.value}
                             onChange={(date) => {
                               field.onChange(date);
-                              // Potentially clear checkOutDate if it's before new checkInDate
                               const currentCheckout = form.getValues("checkOutDate");
                               if (date && currentCheckout && currentCheckout <= date) {
                                 form.setValue("checkOutDate", undefined, {shouldValidate: true});
@@ -521,13 +559,24 @@ export function BookingRequestsTable() {
                       </FormItem>
                     )}
                   />
-                  <DialogFooter className="pt-4">
-                     <Button type="button" variant="ghost" onClick={() => setIsInvoiceModalOpen(false)} disabled={isSavingInvoice}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSavingInvoice || isRecalculatingInvoice} className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                      {isSavingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Changes & Finalize Invoice"}
-                    </Button>
+                  <DialogFooter className="pt-4 flex flex-col sm:flex-row sm:justify-between items-center">
+                    <div>
+                     {paymentSettings?.isCardPaymentEnabled && editingBooking.finalInvoiceAmount && editingBooking.finalInvoiceAmount > 0 && editingBooking.status === 'confirmed' && (
+                        <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground mt-2 sm:mt-0">
+                          <Link href={`/checkout/${editingBooking.id}`} onClick={() => setIsInvoiceModalOpen(false)}>
+                            <CreditCard className="mr-2 h-4 w-4" /> Pay with Stripe
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex gap-2 mt-2 sm:mt-0">
+                        <Button type="button" variant="ghost" onClick={() => setIsInvoiceModalOpen(false)} disabled={isSavingInvoice}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSavingInvoice || isRecalculatingInvoice} className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                        {isSavingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Invoice"}
+                        </Button>
+                    </div>
                   </DialogFooter>
                 </form>
               </Form>
@@ -538,4 +587,3 @@ export function BookingRequestsTable() {
     </>
   );
 }
-      
