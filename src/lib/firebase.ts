@@ -5,22 +5,20 @@ import { getAuth } from "firebase/auth";
 
 // Explicitly check for required environment variables
 if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  const errorMessage = "Missing Firebase API Key. CRITICAL: Check .env.local file in project root & RESTART server.";
   console.error(
     "Firebase Configuration Error: NEXT_PUBLIC_FIREBASE_API_KEY is not defined. " +
-    "Please ensure it is set in your .env.local file and that you have restarted your development server."
+    errorMessage
   );
-  throw new Error(
-    "Missing Firebase API Key. Check server logs and .env.local configuration."
-  );
+  throw new Error(errorMessage);
 }
 if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+  const errorMessage = "Missing Firebase Project ID. CRITICAL: Check .env.local file in project root & RESTART server.";
   console.error(
     "Firebase Configuration Error: NEXT_PUBLIC_FIREBASE_PROJECT_ID is not defined. " +
-    "Please ensure it is set in your .env.local file and that you have restarted your development server."
+    errorMessage
   );
-  throw new Error(
-    "Missing Firebase Project ID. Check server logs and .env.local configuration."
-  );
+  throw new Error(errorMessage);
 }
 
 const firebaseConfig: FirebaseOptions = {
@@ -34,8 +32,8 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 console.log(
-  "Firebase attempting to initialize. Project ID from config:", firebaseConfig.projectId,
-  "API Key from config starts with:", firebaseConfig.apiKey ? firebaseConfig.apiKey.substring(0, 8) + "..." : "UNDEFINED"
+  "Firebase attempting to initialize. Project ID from env: ", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  "API Key from env starts with:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? process.env.NEXT_PUBLIC_FIREBASE_API_KEY.substring(0, 8) + "..." : "UNDEFINED"
 );
 
 // Initialize Firebase
@@ -43,7 +41,7 @@ let app;
 if (!getApps().length) {
   try {
     app = initializeApp(firebaseConfig);
-    console.log("Firebase initialized successfully. Project ID:", app.options.projectId);
+    console.log("Firebase initialized successfully. Project ID from app options:", app.options.projectId);
   } catch (error) {
     console.error("Firebase SDK initialization error:", error);
     // Re-throw the error to make it clear initialization failed.
@@ -51,7 +49,7 @@ if (!getApps().length) {
   }
 } else {
   app = getApp();
-  console.log("Firebase app already initialized. Project ID:", app.options.projectId);
+  console.log("Firebase app already initialized. Project ID from app options:", app.options.projectId);
 }
 
 const db = getFirestore(app);
