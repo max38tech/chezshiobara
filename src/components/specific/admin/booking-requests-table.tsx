@@ -4,7 +4,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { collection, getDocs, query, orderBy, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Table,
@@ -15,8 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -46,8 +46,7 @@ export interface BookingRequest {
   guests: number;
   message?: string;
   createdAt: Timestamp;
-  status: 'pending' | 'confirmed' | 'declined' | 'paid'; // Added 'paid' status
-  // Fields that might be populated after invoice finalization
+  status: 'pending' | 'confirmed' | 'declined' | 'paid';
   finalInvoiceAmount?: number;
   finalInvoiceCurrency?: string;
   invoiceRecipientEmail?: string;
@@ -70,12 +69,21 @@ export function BookingRequestsTable() {
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<BookingRequest | null>(null);
   const [currentInvoiceCalculation, setCurrentInvoiceCalculation] = useState<InvoiceCalculationResult | null>(null);
-  const [isCalculatingInvoice, setIsCalculatingInvoice] = useState(false); // For initial calc
-  const [isRecalculatingInvoice, setIsRecalculatingInvoice] = useState(false); // For recalculate button
+  const [isCalculatingInvoice, setIsCalculatingInvoice] = useState(false);
+  const [isRecalculatingInvoice, setIsRecalculatingInvoice] = useState(false);
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [pricingConfig, setPricingConfig] = useState<ClientSafePricingConfiguration | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
+  const form = useForm<EditableBookingInvoiceFormValues>({
+    resolver: zodResolver(editableBookingInvoiceSchema),
+    defaultValues: {
+      name: "",
+      invoiceRecipientEmail: "",
+      guests: 1,
+      finalInvoiceAmount: 0,
+    },
+  });
 
   const fetchBookingRequests = async () => {
     setLoading(true);
@@ -87,7 +95,6 @@ export function BookingRequestsTable() {
       const requests = querySnapshot.docs.map(docSnapshot => {
         const data = docSnapshot.data();
         const status = data.status;
-        // Ensure status is one of the allowed types, default to 'pending'
         const validStatus = ['pending', 'confirmed', 'declined', 'paid'].includes(status) ? status : 'pending';
         return {
           id: docSnapshot.id,
@@ -125,17 +132,14 @@ export function BookingRequestsTable() {
     } else if (newStatus === 'declined') {
       result = await declineBookingRequest(requestId);
     } else {
-      // For 'paid' or other statuses, might need a different action or direct update
-      // For now, only handle confirm/decline via dedicated actions
       const requestRef = doc(db, "bookingRequests", requestId);
       try {
-        await (await import('firebase/firestore')).updateDoc(requestRef, { status: newStatus });
+        await updateDoc(requestRef, { status: newStatus });
         result = { success: true, message: `Booking status updated to ${newStatus}.` };
       } catch (e) {
         result = { success: false, message: `Failed to update status to ${newStatus}.` };
       }
     }
-
 
     toast({
       title: result.success ? "Success" : "Error",
@@ -180,25 +184,17 @@ export function BookingRequestsTable() {
     };
     const details = await performInvoiceCalculation(initialCalcRequest);
     
+    form.reset({
+      name: booking.name,
+      invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email,
+      checkInDate: booking.checkInDate.toDate(),
+      checkOutDate: booking.checkOutDate.toDate(),
+      guests: booking.guests,
+      finalInvoiceAmount: booking.finalInvoiceAmount !== undefined ? booking.finalInvoiceAmount : (details ? details.totalAmount : 0),
+    });
+
     if (details) {
       setCurrentInvoiceCalculation(details);
-      form.reset({
-        name: booking.name,
-        invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email,
-        checkInDate: booking.checkInDate.toDate(),
-        checkOutDate: booking.checkOutDate.toDate(),
-        guests: booking.guests,
-        finalInvoiceAmount: booking.finalInvoiceAmount || details.totalAmount, // Use existing if set, else new calc
-      });
-    } else {
-      form.reset({
-        name: booking.name,
-        invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email,
-        checkInDate: booking.checkInDate.toDate(),
-        checkOutDate: booking.checkOutDate.toDate(),
-        guests: booking.guests,
-        finalInvoiceAmount: booking.finalInvoiceAmount || 0,
-      });
     }
     setIsCalculatingInvoice(false);
     setIsInvoiceModalOpen(true);
@@ -239,13 +235,11 @@ export function BookingRequestsTable() {
     if (result.success) {
       toast({ title: "Success", description: result.message });
       await fetchBookingRequests(); 
-      // Keep modal open to show Stripe button, or close and let admin click again?
-      // For now, let's update the editingBooking state so the Stripe button shows if applicable
       const updatedBookingSnap = await getDoc(doc(db, "bookingRequests", editingBooking.id));
       if (updatedBookingSnap.exists()) {
         setEditingBooking({ id: updatedBookingSnap.id, ...updatedBookingSnap.data() } as BookingRequest);
       } else {
-        setIsInvoiceModalOpen(false); // Close if booking somehow disappeared
+        setIsInvoiceModalOpen(false);
       }
     } else {
       toast({ title: "Error", description: result.message, variant: "destructive" });
@@ -296,8 +290,6 @@ export function BookingRequestsTable() {
       </div>
     );
   }
-
-  const checkInDateForForm = form.watch("checkInDate");
 
   return (
     <>
@@ -453,7 +445,7 @@ export function BookingRequestsTable() {
                  {editingBooking.finalInvoiceAmount && <span className="block mt-1">Current finalized amount: {editingBooking.finalInvoiceAmount.toFixed(2)} {editingBooking.finalInvoiceCurrency}</span>}
               </DialogDescription>
             </DialogHeader>
-            {isCalculatingInvoice && !currentInvoiceCalculation && !editingBooking.finalInvoiceAmount ? (
+            {isCalculatingInvoice && !currentInvoiceCalculation && editingBooking.finalInvoiceAmount === undefined ? (
               <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <p className="ml-3 font-body">Calculating initial invoice...</p>
@@ -509,18 +501,21 @@ export function BookingRequestsTable() {
                     <FormField
                       control={form.control}
                       name="checkOutDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Check-out Date</FormLabel>
-                           <DatePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select check-out"
-                            fromDate={checkInDateForForm ? new Date(checkInDateForForm.getTime() + 86400000) : new Date(new Date().getTime() + 86400000)}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const watchedCheckInDate = form.watch("checkInDate");
+                        return (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Check-out Date</FormLabel>
+                            <DatePicker
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Select check-out"
+                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : new Date(new Date().getTime() + 86400000)}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                   </div>
                    <FormField
@@ -554,7 +549,7 @@ export function BookingRequestsTable() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Final Invoice Amount ({pricingConfig?.currency || 'USD'})</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -587,3 +582,5 @@ export function BookingRequestsTable() {
     </>
   );
 }
+
+    
