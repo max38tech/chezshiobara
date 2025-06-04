@@ -34,8 +34,8 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 console.log(
-  "Firebase attempting to initialize. Project ID from env:", firebaseConfig.projectId,
-  "API Key from env starts with:", firebaseConfig.apiKey ? firebaseConfig.apiKey.substring(0, 8) + "..." : "UNDEFINED"
+  "Firebase attempting to initialize. Project ID from config:", firebaseConfig.projectId,
+  "API Key from config starts with:", firebaseConfig.apiKey ? firebaseConfig.apiKey.substring(0, 8) + "..." : "UNDEFINED"
 );
 
 // Initialize Firebase
@@ -55,6 +55,6 @@ if (!getApps().length) {
 }
 
 const db = getFirestore(app);
-const auth = getAuth(app); // This is where the original error was often thrown by Firebase
+const auth = getAuth(app);
 
 export { app, db, auth };
