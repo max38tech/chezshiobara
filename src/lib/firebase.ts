@@ -3,6 +3,26 @@ import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/a
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
+// Explicitly check for required environment variables
+if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  console.error(
+    "Firebase Configuration Error: NEXT_PUBLIC_FIREBASE_API_KEY is not defined. " +
+    "Please ensure it is set in your .env.local file and that you have restarted your development server."
+  );
+  throw new Error(
+    "Missing Firebase API Key. Check server logs and .env.local configuration."
+  );
+}
+if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+  console.error(
+    "Firebase Configuration Error: NEXT_PUBLIC_FIREBASE_PROJECT_ID is not defined. " +
+    "Please ensure it is set in your .env.local file and that you have restarted your development server."
+  );
+  throw new Error(
+    "Missing Firebase Project ID. Check server logs and .env.local configuration."
+  );
+}
+
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,17 +33,28 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Optional
 };
 
+console.log(
+  "Firebase attempting to initialize. Project ID from env:", firebaseConfig.projectId,
+  "API Key from env starts with:", firebaseConfig.apiKey ? firebaseConfig.apiKey.substring(0, 8) + "..." : "UNDEFINED"
+);
+
 // Initialize Firebase
 let app;
 if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-  console.log("Firebase attempting to initialize. Project ID from config:", firebaseConfig.projectId || "NOT FOUND (check .env variables)");
+  try {
+    app = initializeApp(firebaseConfig);
+    console.log("Firebase initialized successfully. Project ID:", app.options.projectId);
+  } catch (error) {
+    console.error("Firebase SDK initialization error:", error);
+    // Re-throw the error to make it clear initialization failed.
+    throw new Error(`Firebase SDK initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 } else {
   app = getApp();
-  console.log("Firebase app already initialized. Project ID:", app.options.projectId || "NOT FOUND");
+  console.log("Firebase app already initialized. Project ID:", app.options.projectId);
 }
 
 const db = getFirestore(app);
-const auth = getAuth(app);
+const auth = getAuth(app); // This is where the original error was often thrown by Firebase
 
 export { app, db, auth };
