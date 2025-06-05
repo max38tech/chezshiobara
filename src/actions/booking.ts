@@ -4,8 +4,9 @@
 import type { BookingRequestFormValues, EditableBookingInvoiceFormValues, ManualCalendarEntryFormValues } from "@/schemas/booking";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, format as formatDateFn } from 'date-fns';
 import type { ClientSafePricingConfiguration } from '@/actions/pricing';
+import nodemailer from "nodemailer";
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
   console.log("Booking request received:", data);
@@ -68,8 +69,8 @@ export interface CalendarEvent {
   checkInDate: Date;
   checkOutDate: Date;
   status: 'confirmed' | 'blocked' | 'manual_booking' | 'paid' | 'manual_confirmed';
-  notes?: string; // Added for editing
-  entryType?: 'blocked' | 'manual_booking'; // Added for editing manual entries
+  notes?: string; 
+  entryType?: 'blocked' | 'manual_booking'; 
 }
 
 export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
@@ -80,7 +81,6 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
 
     const events = querySnapshot.docs.map(docSnapshot => {
       const data = docSnapshot.data();
-      // Determine entryType based on status for manual entries
       let entryType: CalendarEvent['entryType'] | undefined = undefined;
       if (data.status === 'blocked') {
         entryType = 'blocked';
@@ -188,6 +188,74 @@ export async function calculateInvoiceDetails(
   };
 }
 
+async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn("Email credentials (EMAIL_USER, EMAIL_PASS) not set. Skipping payment link email.");
+    return { success: false, message: "Email not sent: Server email configuration missing." };
+  }
+  if (!details.invoiceRecipientEmail) {
+    console.warn("No invoice recipient email provided. Skipping payment link email for booking:", bookingId);
+    return { success: false, message: "Email not sent: Recipient email missing." };
+  }
+
+  // Ensure NEXT_PUBLIC_BASE_URL is used correctly for server-side context
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+  const paymentLink = `${baseUrl}/checkout/${bookingId}`;
+
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: `"Chez Shiobara B&B <${process.env.EMAIL_USER}>"`,
+    to: details.invoiceRecipientEmail,
+    subject: `Your Booking Confirmation & Payment Link - Chez Shiobara B&B (Booking ID: ${bookingId})`,
+    html: `
+      <h1>Booking Confirmed & Payment Due</h1>
+      <p>Dear ${details.name},</p>
+      <p>Thank you for your booking with Chez Shiobara B&B! Your stay has been confirmed, and the invoice details are finalized.</p>
+      
+      <h2>Booking Summary:</h2>
+      <ul>
+        <li><strong>Guest Name:</strong> ${details.name}</li>
+        <li><strong>Check-in Date:</strong> ${formatDateFn(new Date(details.checkInDate), 'PPP')}</li>
+        <li><strong>Check-out Date:</strong> ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li>
+        <li><strong>Number of Guests:</strong> ${details.guests}</li>
+      </ul>
+      
+      <h2>Payment Information:</h2>
+      <p><strong>Amount Due:</strong> ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p>
+      <p><strong>Payment Breakdown:</strong> ${details.finalInvoiceBreakdown || 'As per agreed rate'}</p>
+      
+      <p>To complete your payment and secure your booking, please follow this link:</p>
+      <p><a href="${paymentLink}" target="_blank" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Pay Now</a></p>
+      <p>Or copy and paste this URL into your browser: ${paymentLink}</p>
+      
+      <p>If you have any questions, please don't hesitate to contact us.</p>
+      <p>We look forward to welcoming you!</p>
+      <br>
+      <p>Best regards,</p>
+      <p>The Chez Shiobara Team</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Payment link email sent to ${details.invoiceRecipientEmail} for booking ${bookingId}.`);
+    return { success: true, message: "Payment link email sent successfully." };
+  } catch (error) {
+    console.error(`Error sending payment link email for booking ${bookingId}:`, error);
+    return { success: false, message: `Failed to send payment link email: ${error instanceof Error ? error.message : "Unknown email error"}` };
+  }
+}
+
+
 export async function updateBookingAndInvoiceDetails(
   bookingId: string,
   details: EditableBookingInvoiceFormValues
@@ -204,15 +272,31 @@ export async function updateBookingAndInvoiceDetails(
       finalInvoiceCurrency: details.finalInvoiceCurrency,
       finalInvoiceBreakdown: details.finalInvoiceBreakdown,
       finalInvoiceStrategy: details.finalInvoiceStrategy,
+      invoiceRecipientEmail: details.invoiceRecipientEmail, // Ensure this is also saved
       invoiceUpdatedAt: serverTimestamp(),
     };
 
     await updateDoc(bookingRef, dataToUpdate);
     console.log(`Booking ${bookingId} details and invoice finalized.`);
-    return { success: true, message: "Booking details and invoice information updated successfully." };
+    
+    let emailStatusMessage = "";
+    // Attempt to send email only if status is confirmed or manual_confirmed
+    // This check might need to be more sophisticated if status changes before/after invoice finalization
+    // For now, assume if we're finalizing an invoice, it's for a confirmed state.
+    const emailResult = await sendPaymentLinkEmail(bookingId, details);
+    if (emailResult.success) {
+        emailStatusMessage = " Payment link email also sent to the guest.";
+    } else {
+        emailStatusMessage = ` Note: ${emailResult.message}`;
+    }
+
+    return { 
+        success: true, 
+        message: `Booking details and invoice updated successfully.${emailStatusMessage}` 
+    };
   } catch (error) {
     console.error("Error updating booking and invoice details: ", error);
-    return { success: false, message: "Failed to update booking and invoice details." };
+    return { success: false, message: `Failed to update booking and invoice details. ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
 
@@ -260,7 +344,6 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
       notes: data.notes || "",
       updatedAt: serverTimestamp(),
-      // Preserve email and guests if appropriate for the type, or reset
       email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com',
       guests: data.entryType === 'manual_booking' ? 1 : 0,
     };
