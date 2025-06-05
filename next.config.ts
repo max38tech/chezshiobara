@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_BASE_URL: process.env.NODE_ENV === 'production' 
-      ? 'https://your-production-domain.com' // Replace with your actual production domain
+      ? 'https://chezshiobara.com' // Updated to actual production domain
       : 'http://localhost:9002', // Ensure this matches your local dev port
   }
 };
