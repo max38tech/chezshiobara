@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, FileText, ShieldCheck } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-8 mb-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">Manage Site Content</CardTitle>
@@ -75,6 +75,23 @@ export default function AdminDashboardPage() {
                 <CreditCard className="mr-2 h-4 w-4" /> Payment Methods
               </Link>
             </Button>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Site Information Pages</CardTitle>
+            <CardDescription className="font-body">
+              Review important static pages on your site.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            <Button asChild variant="outline">
+              <Link href="/commerce-disclosure" target="_blank" rel="noopener noreferrer">
+                <ShieldCheck className="mr-2 h-4 w-4" /> View Commerce Disclosure
+              </Link>
+            </Button>
+            {/* Add links to Privacy Policy and Terms of Service here when created */}
           </CardContent>
         </Card>
       </div>
