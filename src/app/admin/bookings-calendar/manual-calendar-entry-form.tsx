@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { manualCalendarEntrySchema, type ManualCalendarEntryFormValues } from "@/schemas/booking";
 import { addManualCalendarEntry } from "@/actions/booking";
 import { Loader2 } from "lucide-react";
+import { DialogFooter } from "@/components/ui/dialog"; // Added DialogFooter import
 
 interface ManualCalendarEntryFormProps {
   onSuccess: () => void;
