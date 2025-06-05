@@ -24,7 +24,6 @@ export const editableBookingInvoiceSchema = z.object({
   checkOutDate: z.date({ required_error: "Check-out date is required." }),
   guests: z.coerce.number().min(1, { message: "At least 1 guest is required." }),
   finalInvoiceAmount: z.coerce.number().positive({ message: "Invoice amount must be a positive number." }),
-  // These are for storing the context of the final amount
   finalInvoiceBreakdown: z.string().optional(),
   finalInvoiceStrategy: z.string().optional(),
   finalInvoiceCurrency: z.string().optional(),
@@ -34,3 +33,16 @@ export const editableBookingInvoiceSchema = z.object({
 });
 
 export type EditableBookingInvoiceFormValues = z.infer<typeof editableBookingInvoiceSchema>;
+
+export const manualCalendarEntrySchema = z.object({
+  entryName: z.string().min(2, { message: "Entry name or description must be at least 2 characters."}),
+  checkInDate: z.date({ required_error: "Check-in date is required." }),
+  checkOutDate: z.date({ required_error: "Check-out date is required." }),
+  entryType: z.enum(["blocked", "manual_booking"], { required_error: "Entry type is required."}),
+  notes: z.string().max(300, "Notes cannot exceed 300 characters.").optional(),
+}).refine(data => data.checkOutDate > data.checkInDate, {
+  message: "End date must be after start date.",
+  path: ["checkOutDate"],
+});
+
+export type ManualCalendarEntryFormValues = z.infer<typeof manualCalendarEntrySchema>;

@@ -40,16 +40,17 @@ import Link from 'next/link';
 export interface BookingRequest {
   id: string;
   name: string;
-  email: string;
+  email?: string; // Can be undefined for 'blocked' type
   checkInDate: Timestamp;
   checkOutDate: Timestamp;
-  guests: number;
+  guests?: number; // Can be undefined for 'blocked' type
   message?: string;
   createdAt: Timestamp;
-  status: 'pending' | 'confirmed' | 'declined' | 'paid';
+  status: 'pending' | 'confirmed' | 'declined' | 'paid' | 'blocked' | 'manual_booking' | 'manual_confirmed';
   finalInvoiceAmount?: number;
   finalInvoiceCurrency?: string;
   invoiceRecipientEmail?: string;
+  entryName?: string; // For 'blocked' or 'manual_booking' types
 }
 
 interface InvoiceCalculationResult {
@@ -95,7 +96,8 @@ export function BookingRequestsTable() {
       const requests = querySnapshot.docs.map(docSnapshot => {
         const data = docSnapshot.data();
         const status = data.status;
-        const validStatus = ['pending', 'confirmed', 'declined', 'paid'].includes(status) ? status : 'pending';
+        const validStatusValues: BookingRequest['status'][] = ['pending', 'confirmed', 'declined', 'paid', 'blocked', 'manual_booking', 'manual_confirmed'];
+        const validStatus = validStatusValues.includes(status) ? status : 'pending';
         return {
           id: docSnapshot.id,
           ...data,
@@ -131,13 +133,14 @@ export function BookingRequestsTable() {
       result = await approveBookingRequest(requestId);
     } else if (newStatus === 'declined') {
       result = await declineBookingRequest(requestId);
-    } else {
+    } else { // For other statuses like 'paid', 'blocked', 'manual_confirmed'
       const requestRef = doc(db, "bookingRequests", requestId);
       try {
         await updateDoc(requestRef, { status: newStatus });
         result = { success: true, message: `Booking status updated to ${newStatus}.` };
       } catch (e) {
-        result = { success: false, message: `Failed to update status to ${newStatus}.` };
+        console.error("Error updating status:", e);
+        result = { success: false, message: `Failed to update status to ${newStatus}. Error: ${e instanceof Error ? e.message : String(e)}` };
       }
     }
 
@@ -148,11 +151,7 @@ export function BookingRequestsTable() {
     });
 
     if (result.success) {
-      setBookingRequests(prevRequests =>
-        prevRequests.map(req =>
-          req.id === requestId ? { ...req, status: newStatus } : req
-        )
-      );
+      fetchBookingRequests(); // Re-fetch all requests to ensure UI consistency
     }
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: false }));
   };
@@ -180,16 +179,16 @@ export function BookingRequestsTable() {
     const initialCalcRequest: BookingCalculationRequest = {
       checkInDate: booking.checkInDate.toDate(),
       checkOutDate: booking.checkOutDate.toDate(),
-      guests: booking.guests,
+      guests: booking.guests || 1, // Default to 1 if guests undefined
     };
     const details = await performInvoiceCalculation(initialCalcRequest);
     
     form.reset({
-      name: booking.name,
-      invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email,
+      name: booking.name || booking.entryName || "",
+      invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email || "",
       checkInDate: booking.checkInDate.toDate(),
       checkOutDate: booking.checkOutDate.toDate(),
-      guests: booking.guests,
+      guests: booking.guests || 1,
       finalInvoiceAmount: booking.finalInvoiceAmount !== undefined ? booking.finalInvoiceAmount : (details ? details.totalAmount : 0),
     });
 
@@ -260,7 +259,7 @@ export function BookingRequestsTable() {
   };
   
   const getDisplayStatus = (statusValue: BookingRequest['status']) => {
-    return statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
+    return statusValue.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   if (loading && bookingRequests.length === 0 && !pricingConfig && !paymentSettings) {
@@ -295,21 +294,21 @@ export function BookingRequestsTable() {
     <>
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Incoming Booking Requests</CardTitle>
+          <CardTitle className="font-headline text-2xl">Incoming Booking Requests & Calendar Entries</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
-            <TableCaption className="font-body">A list of recent booking requests. Manage their status and view invoice details.</TableCaption>
+            <TableCaption className="font-body">A list of recent booking requests and manual calendar entries.</TableCaption>
             <TableHeader>
               <TableRow>
                 <TableHead className="font-headline w-[150px]">Submitted</TableHead>
-                <TableHead className="font-headline">Name</TableHead>
+                <TableHead className="font-headline">Name/Entry</TableHead>
                 <TableHead className="font-headline">Email</TableHead>
                 <TableHead className="font-headline">Check-in</TableHead>
                 <TableHead className="font-headline">Check-out</TableHead>
                 <TableHead className="font-headline text-right">Guests</TableHead>
                 <TableHead className="font-headline">Status</TableHead>
-                <TableHead className="font-headline">Message</TableHead>
+                <TableHead className="font-headline">Message/Notes</TableHead>
                 <TableHead className="font-headline text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -317,108 +316,85 @@ export function BookingRequestsTable() {
               {bookingRequests.map((request) => (
                 <TableRow key={request.id} className="font-body">
                   <TableCell>{formatDate(request.createdAt)}</TableCell>
-                  <TableCell className="font-medium">{request.name}</TableCell>
+                  <TableCell className="font-medium">{request.name || request.entryName}</TableCell>
                   <TableCell>
-                    <a href={`mailto:${request.email}`} className="text-accent hover:text-accent/80">
-                      {request.email}
-                    </a>
+                    {request.email && request.email !== 'blocked@internal.com' && request.email !== 'manual@example.com' ? (
+                        <a href={`mailto:${request.email}`} className="text-accent hover:text-accent/80">
+                        {request.email}
+                        </a>
+                    ) : (
+                        <span className="text-muted-foreground italic">N/A</span>
+                    )}
                   </TableCell>
                   <TableCell>{formatDateOnly(request.checkInDate)}</TableCell>
                   <TableCell>{formatDateOnly(request.checkOutDate)}</TableCell>
-                  <TableCell className="text-right">{request.guests}</TableCell>
+                  <TableCell className="text-right">{request.guests ?? <span className="text-muted-foreground italic">N/A</span>}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
                         request.status === 'confirmed' ? 'default'
                         : request.status === 'paid' ? 'default' 
                         : request.status === 'declined' ? 'destructive'
-                        : 'secondary'
+                        : request.status === 'blocked' ? 'destructive'
+                        : request.status === 'manual_booking' || request.status === 'manual_confirmed' ? 'secondary'
+                        : 'secondary' // pending
                       }
                       className={
                           request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
                         : request.status === 'paid' ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : request.status === 'declined' ? '' 
-                        : 'bg-yellow-500 text-black hover:bg-yellow-600'
+                        : request.status === 'blocked' ? 'bg-gray-500 text-white hover:bg-gray-600 opacity-80'
+                        : request.status === 'manual_booking' || request.status === 'manual_confirmed' ? 'bg-purple-600 text-white hover:bg-purple-700'
+                        : 'bg-yellow-500 text-black hover:bg-yellow-600' // pending
                       }
                     >
                       {getDisplayStatus(request.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={request.message}>
-                    {request.message || <span className="text-muted-foreground italic">No message</span>}
+                  <TableCell className="max-w-[200px] truncate" title={request.message || request.notes}>
+                    {request.message || request.notes || <span className="text-muted-foreground italic">No message/notes</span>}
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex gap-2 justify-center items-center flex-wrap">
                       {request.status === 'pending' && (
                         <>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleStatusUpdate(request.id, 'confirmed')}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            disabled={isUpdatingStatus[request.id]}
-                          >
-                            {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-1 h-4 w-4" />}
-                            Accept
+                          <Button variant="default" size="sm" onClick={() => handleStatusUpdate(request.id, 'confirmed')} className="bg-green-600 hover:bg-green-700 text-white" disabled={isUpdatingStatus[request.id]}>
+                            {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-1 h-4 w-4" />} Accept
                           </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleStatusUpdate(request.id, 'declined')}
-                            disabled={isUpdatingStatus[request.id]}
-                          >
-                             {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />}
-                            Decline
+                          <Button variant="destructive" size="sm" onClick={() => handleStatusUpdate(request.id, 'declined')} disabled={isUpdatingStatus[request.id]}>
+                             {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />} Decline
                           </Button>
                         </>
                       )}
                       {request.status === 'confirmed' && request.status !== 'paid' && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleStatusUpdate(request.id, 'declined')}
-                          disabled={isUpdatingStatus[request.id]}
-                          title="Decline this booking"
-                        >
-                          {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />}
-                          Decline
+                        <Button variant="destructive" size="sm" onClick={() => handleStatusUpdate(request.id, 'declined')} disabled={isUpdatingStatus[request.id]} title="Decline this booking">
+                          {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />} Decline
                         </Button>
                       )}
-                       {request.status === 'paid' && (
-                         <Badge variant="default" className="bg-blue-600 text-white">Paid</Badge>
-                       )}
+                       {request.status === 'paid' && (<Badge variant="default" className="bg-blue-600 text-white">Paid</Badge>)}
                       {request.status === 'declined' && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleStatusUpdate(request.id, 'confirmed')}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          disabled={isUpdatingStatus[request.id]}
-                          title="Re-approve this booking"
-                        >
-                          {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-1 h-4 w-4" />}
-                          Approve
+                        <Button variant="default" size="sm" onClick={() => handleStatusUpdate(request.id, 'confirmed')} className="bg-green-600 hover:bg-green-700 text-white" disabled={isUpdatingStatus[request.id]} title="Re-approve this booking">
+                          {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-1 h-4 w-4" />} Approve
                         </Button>
                       )}
-                      {(request.status === 'pending' || request.status === 'confirmed') && request.status !== 'paid' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenInvoiceModal(request)}
-                          disabled={isCalculatingInvoice || isUpdatingStatus[request.id]}
-                        >
+                      {(request.status === 'pending' || request.status === 'confirmed' || request.status === 'manual_confirmed') && request.status !== 'paid' && request.status !== 'blocked' && (
+                        <Button variant="outline" size="sm" onClick={() => handleOpenInvoiceModal(request)} disabled={isCalculatingInvoice || isUpdatingStatus[request.id]}>
                           {isCalculatingInvoice && editingBooking?.id === request.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}
                           Finalize Invoice
                         </Button>
                       )}
-                       {request.status === 'confirmed' && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
+                       {(request.status === 'confirmed' || request.status === 'manual_confirmed') && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
                         <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
                           <Link href={`/checkout/${request.id}`}>
-                            <CreditCard className="mr-1 h-4 w-4" />
-                            Pay via Stripe
+                            <CreditCard className="mr-1 h-4 w-4" /> Pay via Stripe
                           </Link>
                         </Button>
                       )}
+                       {(request.status === 'blocked' || request.status === 'manual_confirmed' || request.status === 'manual_booking') && (
+                         <Button variant="destructive" size="sm" onClick={() => {/* Implement delete action */ alert('Delete functionality not yet implemented.')}} title="Delete this entry">
+                            <Trash2 className="mr-1 h-4 w-4" /> Delete
+                         </Button>
+                       )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -439,9 +415,9 @@ export function BookingRequestsTable() {
         }}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle className="font-headline">Edit & Finalize Invoice for {editingBooking.name}</DialogTitle>
+              <DialogTitle className="font-headline">Edit & Finalize Invoice for {editingBooking.name || editingBooking.entryName}</DialogTitle>
               <DialogDescription className="font-body">
-                Adjust booking details and finalize the invoice amount. Original request: {formatDateOnly(editingBooking.checkInDate)} to {formatDateOnly(editingBooking.checkOutDate)} for {editingBooking.guests} guest(s).
+                Adjust booking details and finalize the invoice amount. Original request: {formatDateOnly(editingBooking.checkInDate)} to {formatDateOnly(editingBooking.checkOutDate)} for {editingBooking.guests || 'N/A'} guest(s).
                  {editingBooking.finalInvoiceAmount && <span className="block mt-1">Current finalized amount: {editingBooking.finalInvoiceAmount.toFixed(2)} {editingBooking.finalInvoiceCurrency}</span>}
               </DialogDescription>
             </DialogHeader>
@@ -458,7 +434,7 @@ export function BookingRequestsTable() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Guest Name</FormLabel>
+                        <FormLabel>Guest Name / Entry Name</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -469,7 +445,7 @@ export function BookingRequestsTable() {
                     name="invoiceRecipientEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Invoice Recipient Email</FormLabel>
+                        <FormLabel>Invoice Recipient Email (if applicable)</FormLabel>
                         <FormControl><Input type="email" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -523,8 +499,8 @@ export function BookingRequestsTable() {
                     name="guests"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Number of Guests</FormLabel>
-                        <FormControl><Input type="number" min="1" {...field} /></FormControl>
+                        <FormLabel>Number of Guests (if applicable)</FormLabel>
+                        <FormControl><Input type="number" min="0" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -538,7 +514,7 @@ export function BookingRequestsTable() {
                     </Card>
                   )}
 
-                  <Button type="button" variant="outline" size="sm" onClick={handleRecalculateInvoice} disabled={isRecalculatingInvoice || !pricingConfig} className="w-full">
+                  <Button type="button" variant="outline" size="sm" onClick={handleRecalculateInvoice} disabled={isRecalculatingInvoice || !pricingConfig || !editingBooking?.guests || editingBooking.guests <=0} className="w-full">
                     {isRecalculatingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calculator className="mr-2 h-4 w-4" />}
                     Recalculate Based on Above Dates/Guests
                   </Button>
@@ -549,14 +525,14 @@ export function BookingRequestsTable() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Final Invoice Amount ({pricingConfig?.currency || 'USD'})</FormLabel>
-                        <FormControl><Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} /></FormControl>
+                        <FormControl><Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <DialogFooter className="pt-4 flex flex-col sm:flex-row sm:justify-between items-center">
                     <div>
-                     {paymentSettings?.isCardPaymentEnabled && editingBooking.finalInvoiceAmount && editingBooking.finalInvoiceAmount > 0 && editingBooking.status === 'confirmed' && (
+                     {paymentSettings?.isCardPaymentEnabled && editingBooking.finalInvoiceAmount && editingBooking.finalInvoiceAmount > 0 && (editingBooking.status === 'confirmed' || editingBooking.status === 'manual_confirmed') && (
                         <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground mt-2 sm:mt-0">
                           <Link href={`/checkout/${editingBooking.id}`} onClick={() => setIsInvoiceModalOpen(false)}>
                             <CreditCard className="mr-2 h-4 w-4" /> Pay with Stripe
@@ -582,5 +558,3 @@ export function BookingRequestsTable() {
     </>
   );
 }
-
-    

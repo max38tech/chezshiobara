@@ -1,7 +1,7 @@
 
 "use server";
 
-import type { BookingRequestFormValues, EditableBookingInvoiceFormValues } from "@/schemas/booking";
+import type { BookingRequestFormValues, EditableBookingInvoiceFormValues, ManualCalendarEntryFormValues } from "@/schemas/booking";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
 import { differenceInDays } from 'date-fns';
@@ -15,7 +15,7 @@ export async function handleBookingRequest(data: BookingRequestFormValues) {
       ...data,
       guests: Number(data.guests),
       createdAt: serverTimestamp(),
-      status: "pending",
+      status: "pending", // Default status for new requests
     };
 
     const docRef = await addDoc(collection(db, "bookingRequests"), bookingData);
@@ -62,34 +62,38 @@ export async function declineBookingRequest(requestId: string) {
   }
 }
 
-export interface ConfirmedBooking {
+export interface CalendarEvent {
   id: string;
-  name: string;
+  name: string; // Guest name or block description
   checkInDate: Date;
   checkOutDate: Date;
+  status: 'confirmed' | 'blocked' | 'manual_booking' | 'paid'; // Added more statuses
 }
 
-export async function getConfirmedBookings(): Promise<ConfirmedBooking[]> {
+// Renamed and updated to fetch more types of events for the calendar
+export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
   try {
     const requestsCollection = collection(db, 'bookingRequests');
-    const q = query(requestsCollection, where('status', '==', 'confirmed'));
+    const q = query(requestsCollection, where('status', 'in', ['confirmed', 'blocked', 'manual_booking', 'paid']));
     const querySnapshot = await getDocs(q);
 
-    const bookings = querySnapshot.docs.map(docSnapshot => {
+    const events = querySnapshot.docs.map(docSnapshot => {
       const data = docSnapshot.data();
       return {
         id: docSnapshot.id,
-        name: data.name,
+        name: data.name || data.entryName || 'Unnamed Event', // Use name or entryName
         checkInDate: (data.checkInDate as Timestamp).toDate(),
         checkOutDate: (data.checkOutDate as Timestamp).toDate(),
+        status: data.status as CalendarEvent['status'],
       };
     });
-    return bookings;
+    return events;
   } catch (error) {
-    console.error("Error fetching confirmed bookings: ", error);
+    console.error("Error fetching calendar events: ", error);
     return [];
   }
 }
+
 
 export interface BookingCalculationRequest {
   checkInDate: Date;
@@ -102,7 +106,7 @@ export async function calculateInvoiceDetails(
   pricingConfig: ClientSafePricingConfiguration
 ) {
   const { checkInDate, checkOutDate, guests } = bookingDetails;
-  const nights = differenceInDays(new Date(checkOutDate), new Date(checkInDate)); // Ensure dates are Date objects
+  const nights = differenceInDays(new Date(checkOutDate), new Date(checkInDate));
 
   if (nights <= 0) {
     return {
@@ -139,7 +143,7 @@ export async function calculateInvoiceDetails(
     bestStrategy = "Weekly Priority";
   }
 
-  const approxDaysInMonth = 30;
+  const approxDaysInMonth = 30; // More robust would be to use date-fns month diff
   const months = Math.floor(nights / approxDaysInMonth);
   const remainingNightsAfterMonths = nights % approxDaysInMonth;
   const remainingWeeksAfterMonths = Math.floor(remainingNightsAfterMonths / 7);
@@ -179,11 +183,9 @@ export async function updateBookingAndInvoiceDetails(
 ) {
   try {
     const bookingRef = doc(db, "bookingRequests", bookingId);
-
-    // Prepare the data, ensuring Firestore Timestamps for dates
     const dataToUpdate = {
       name: details.name,
-      email: details.invoiceRecipientEmail, // Using the potentially new email for correspondence
+      email: details.invoiceRecipientEmail, 
       checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
       checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
       guests: Number(details.guests),
@@ -191,7 +193,6 @@ export async function updateBookingAndInvoiceDetails(
       finalInvoiceCurrency: details.finalInvoiceCurrency,
       finalInvoiceBreakdown: details.finalInvoiceBreakdown,
       finalInvoiceStrategy: details.finalInvoiceStrategy,
-      // We could also add an invoiceUpdatedAt timestamp here
       invoiceUpdatedAt: serverTimestamp(),
     };
 
@@ -201,5 +202,46 @@ export async function updateBookingAndInvoiceDetails(
   } catch (error) {
     console.error("Error updating booking and invoice details: ", error);
     return { success: false, message: "Failed to update booking and invoice details." };
+  }
+}
+
+export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues) {
+  console.log("Manual calendar entry received:", data);
+  try {
+    const entryData: any = {
+      entryName: data.entryName, // Using entryName to distinguish from guest 'name'
+      name: data.entryName, // Also populate 'name' for consistent display on calendar
+      checkInDate: Timestamp.fromDate(data.checkInDate),
+      checkOutDate: Timestamp.fromDate(data.checkOutDate),
+      status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
+      notes: data.notes || "",
+      createdAt: serverTimestamp(),
+      // Fields typically in a booking request but not relevant here can be omitted or set to null/default
+      email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com', // Placeholder email
+      guests: data.entryType === 'manual_booking' ? 1 : 0, // Placeholder guests
+    };
+
+    if (data.entryType === 'manual_booking') {
+      // For manual_booking, you might want to calculate a price or set a default amount
+      // For simplicity now, we'll skip invoice details, or they can be added later.
+      // entryData.finalInvoiceAmount = 0; 
+      // entryData.finalInvoiceCurrency = "USD"; 
+    }
+
+
+    const docRef = await addDoc(collection(db, "bookingRequests"), entryData);
+    console.log("Manual calendar entry written with ID: ", docRef.id);
+
+    return {
+      success: true,
+      message: `Calendar entry "${data.entryName}" added successfully as type: ${data.entryType}.`,
+      id: docRef.id,
+    };
+  } catch (error) {
+    console.error("Error adding manual calendar entry to Firestore: ", error);
+    return {
+      success: false,
+      message: "We encountered an issue adding your calendar entry. Please try again.",
+    };
   }
 }

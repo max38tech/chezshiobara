@@ -7,9 +7,18 @@ import { useEffect, type ReactNode } from 'react';
 import { AppLogo } from '@/components/layout/app-logo';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { AdminSidebarNav } from '@/components/specific/admin/admin-sidebar-nav';
 
 function AdminLayoutContent({ children }: { children: ReactNode }) {
-  const { adminUser, loading, logout, error: authError } = useAdminAuth(); // Added authError for potential debugging
+  const { adminUser, loading, logout, error: authError } = useAdminAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -33,9 +42,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
     );
   }
 
-  // This case handles rendering the login page or redirecting if auth state isn't ready or user is not found
   if (!adminUser && pathname !== '/admin/login') {
-     // If still loading or redirecting, show a minimal loader or nothing to avoid flashes
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -44,11 +51,10 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
   }
   
   if (!adminUser && pathname === '/admin/login') {
-    return <>{children}</>; // Render login page children
+    return <>{children}</>; 
   }
 
   if (adminUser && pathname === '/admin/login') {
-    // This should be handled by useEffect redirect, but as a fallback
      return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -57,33 +63,49 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
     );
   }
 
-
-  // Render admin content if user is authenticated and not on login page
   return (
-    <div className="min-h-screen flex flex-col bg-muted/20">
-      <header className="sticky top-0 z-40 w-full border-b bg-background shadow-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="p-4 justify-between items-center">
           <AppLogo />
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {adminUser?.email}
-            </span>
-            <Button variant="outline" size="sm" onClick={async () => {
-              await logout();
-              router.replace('/admin/login'); // Ensure redirect after logout
-            }}>
-              Logout
-            </Button>
+        </SidebarHeader>
+        <SidebarContent>
+          <AdminSidebarNav />
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset className="flex flex-col min-h-screen">
+        <header className="sticky top-0 z-40 w-full border-b bg-background shadow-sm">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <div className="md:hidden"> {/* Show trigger only on mobile if sidebar is collapsible */}
+              <SidebarTrigger />
+            </div>
+            <div className="hidden md:block w-[calc(1rem+28px)]"> {/* Placeholder for AppLogo width to align items */}
+                {/* If AppLogo is always visible in header, put it here instead of sidebar header only */}
+            </div>
+             <div className="flex-1 flex md:hidden justify-center"> <AppLogo /></div>
+
+
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-sm text-muted-foreground hidden sm:inline">
+                {adminUser?.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={async () => {
+                await logout();
+                router.replace('/admin/login');
+              }}>
+                Logout
+              </Button>
+            </div>
           </div>
-        </div>
-      </header>
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
-      <footer className="py-4 text-center text-xs text-muted-foreground border-t bg-background">
-        Chez Shiobara B&B Admin Portal
-      </footer>
-    </div>
+        </header>
+        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </main>
+        <footer className="py-4 text-center text-xs text-muted-foreground border-t bg-background">
+          Chez Shiobara B&B Admin Portal
+        </footer>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 

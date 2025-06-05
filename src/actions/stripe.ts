@@ -4,7 +4,7 @@
 import Stripe from 'stripe';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { BookingRequest } from '@/components/specific/admin/booking-requests-table'; // Assuming this type is sufficiently detailed
+import type { BookingRequest } from '@/components/specific/admin/booking-requests-table'; 
 
 interface CreateCheckoutSessionResponse {
   sessionId?: string;
@@ -21,7 +21,7 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2024-06-20', // Use the latest API version
+    apiVersion: '2024-06-20', 
   });
 
   try {
@@ -34,15 +34,15 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
 
     const bookingData = bookingSnap.data() as BookingRequest;
 
-    if (bookingData.status !== 'confirmed' && bookingData.status !== 'pending') { // Allow payment for pending if admin initiates
-        // Or just 'confirmed'. For now, let's assume admin might want to take payment for a pending one they are about to confirm.
-        // return { error: "Booking must be confirmed to proceed with payment." };
+    const allowedStatusesForPayment: BookingRequest['status'][] = ['confirmed', 'manual_confirmed'];
+    if (!allowedStatusesForPayment.includes(bookingData.status)) {
+        return { error: "Booking must be confirmed (or a manual confirmed booking) to proceed with payment." };
     }
 
     const amount = bookingData.finalInvoiceAmount;
     const currency = bookingData.finalInvoiceCurrency?.toLowerCase() || 'usd'; // Default to USD if not set
     const customerEmail = bookingData.invoiceRecipientEmail || bookingData.email;
-    const bookingName = bookingData.name;
+    const bookingName = bookingData.name || bookingData.entryName || "Chez Shiobara Booking";
 
     if (!amount || amount <= 0) {
       return { error: "Invalid invoice amount for payment." };
@@ -51,7 +51,6 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
         return { error: "Customer email not found for this booking." };
     }
 
-
     const lineItems = [
       {
         price_data: {
@@ -59,16 +58,19 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
           product_data: {
             name: `Booking at Chez Shiobara for ${bookingName}`,
             description: `Payment for booking ID: ${bookingId}`,
-            images: [], // Optional: Add B&B image URL here
+            images: [], 
           },
-          unit_amount: Math.round(amount * 100), // Amount in smallest currency unit (e.g., cents)
+          unit_amount: Math.round(amount * 100), 
         },
         quantity: 1,
       },
     ];
 
-    // Ensure URLs are absolute for Stripe
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'; // Fallback for local dev
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) {
+      console.error("NEXT_PUBLIC_BASE_URL is not set. Stripe success/cancel URLs will be broken.");
+      return { error: "Application base URL is not configured. Cannot create payment session." };
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -88,8 +90,7 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
 
     return { sessionId: session.id };
 
-  } catch (error)
- {
+  } catch (error) {
     console.error("Error creating Stripe Checkout session:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during payment processing.";
     return { error: `Failed to create payment session: ${errorMessage}` };
