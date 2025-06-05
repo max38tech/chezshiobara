@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw, FileText, Calculator, CreditCard } from 'lucide-react';
+import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw, FileText, Calculator, CreditCard, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   approveBookingRequest,
@@ -558,3 +558,4 @@ export function BookingRequestsTable() {
     </>
   );
 }
+
