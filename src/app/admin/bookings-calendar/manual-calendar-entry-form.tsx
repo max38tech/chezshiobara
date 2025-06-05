@@ -3,7 +3,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,16 +19,18 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { manualCalendarEntrySchema, type ManualCalendarEntryFormValues } from "@/schemas/booking";
-import { addManualCalendarEntry } from "@/actions/booking";
+import { addManualCalendarEntry, updateManualCalendarEntry } from "@/actions/booking";
 import { Loader2 } from "lucide-react";
-import { DialogFooter } from "@/components/ui/dialog"; // Added DialogFooter import
+import { DialogFooter } from "@/components/ui/dialog";
 
 interface ManualCalendarEntryFormProps {
   onSuccess: () => void;
-  initialData?: Partial<ManualCalendarEntryFormValues>; // For editing in future
+  onCancel?: () => void;
+  initialData?: Partial<ManualCalendarEntryFormValues>;
+  editingEntryId?: string;
 }
 
-export function ManualCalendarEntryForm({ onSuccess, initialData }: ManualCalendarEntryFormProps) {
+export function ManualCalendarEntryForm({ onSuccess, onCancel, initialData, editingEntryId }: ManualCalendarEntryFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [selectedCheckInDate, setSelectedCheckInDate] = useState<Date | undefined>(initialData?.checkInDate);
@@ -42,13 +44,26 @@ export function ManualCalendarEntryForm({ onSuccess, initialData }: ManualCalend
     },
   });
 
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData);
+      setSelectedCheckInDate(initialData.checkInDate);
+    }
+  }, [initialData, form]);
+
   const onSubmit = (values: ManualCalendarEntryFormValues) => {
     startTransition(async () => {
       try {
-        const result = await addManualCalendarEntry(values);
+        let result;
+        if (editingEntryId) {
+          result = await updateManualCalendarEntry(editingEntryId, values);
+        } else {
+          result = await addManualCalendarEntry(values);
+        }
+
         if (result.success) {
           toast({
-            title: "Entry Added!",
+            title: editingEntryId ? "Entry Updated!" : "Entry Added!",
             description: result.message,
           });
           form.reset();
@@ -70,6 +85,8 @@ export function ManualCalendarEntryForm({ onSuccess, initialData }: ManualCalend
       }
     });
   };
+
+  const mode = editingEntryId ? "edit" : "add";
 
   return (
     <Form {...form}>
@@ -120,14 +137,13 @@ export function ManualCalendarEntryForm({ onSuccess, initialData }: ManualCalend
                   onChange={(date) => {
                     field.onChange(date);
                     setSelectedCheckInDate(date);
-                    // If checkout is before new checkin, clear checkout
                     const currentCheckout = form.getValues("checkOutDate");
                     if (date && currentCheckout && currentCheckout <= date) {
                         form.setValue("checkOutDate", undefined, {shouldValidate: true});
                     }
                   }}
                   placeholder="Select start date"
-                  fromDate={new Date()} 
+                  fromDate={mode === "add" ? new Date() : undefined} // Allow past dates for editing existing past events
                 />
                 <FormMessage />
               </FormItem>
@@ -143,7 +159,7 @@ export function ManualCalendarEntryForm({ onSuccess, initialData }: ManualCalend
                   value={field.value}
                   onChange={field.onChange}
                   placeholder="Select end date"
-                  fromDate={selectedCheckInDate ? new Date(selectedCheckInDate.getTime() + 86400000) : new Date(new Date().getTime() + 86400000)} 
+                  fromDate={selectedCheckInDate ? new Date(selectedCheckInDate.getTime() + 86400000) : (mode === "add" ? new Date(new Date().getTime() + 86400000) : undefined)} 
                 />
                 <FormMessage />
               </FormItem>
@@ -168,12 +184,19 @@ export function ManualCalendarEntryForm({ onSuccess, initialData }: ManualCalend
             </FormItem>
           )}
         />
-        <DialogFooter>
-          <Button type="submit" className="w-full md:w-auto" disabled={isPending}>
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Add Calendar Entry"}
+        <DialogFooter className="gap-2 sm:gap-0">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" className="w-full sm:w-auto" disabled={isPending}>
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (mode === "edit" ? "Save Changes" : "Add Calendar Entry")}
           </Button>
         </DialogFooter>
       </form>
     </Form>
   );
 }
+
+    

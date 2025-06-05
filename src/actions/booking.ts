@@ -67,24 +67,35 @@ export interface CalendarEvent {
   name: string; // Guest name or block description
   checkInDate: Date;
   checkOutDate: Date;
-  status: 'confirmed' | 'blocked' | 'manual_booking' | 'paid'; // Added more statuses
+  status: 'confirmed' | 'blocked' | 'manual_booking' | 'paid' | 'manual_confirmed';
+  notes?: string; // Added for editing
+  entryType?: 'blocked' | 'manual_booking'; // Added for editing manual entries
 }
 
-// Renamed and updated to fetch more types of events for the calendar
 export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
   try {
     const requestsCollection = collection(db, 'bookingRequests');
-    const q = query(requestsCollection, where('status', 'in', ['confirmed', 'blocked', 'manual_booking', 'paid']));
+    const q = query(requestsCollection, where('status', 'in', ['confirmed', 'blocked', 'manual_booking', 'paid', 'manual_confirmed']));
     const querySnapshot = await getDocs(q);
 
     const events = querySnapshot.docs.map(docSnapshot => {
       const data = docSnapshot.data();
+      // Determine entryType based on status for manual entries
+      let entryType: CalendarEvent['entryType'] | undefined = undefined;
+      if (data.status === 'blocked') {
+        entryType = 'blocked';
+      } else if (data.status === 'manual_booking' || data.status === 'manual_confirmed') {
+        entryType = 'manual_booking';
+      }
+
       return {
         id: docSnapshot.id,
-        name: data.name || data.entryName || 'Unnamed Event', // Use name or entryName
+        name: data.name || data.entryName || 'Unnamed Event',
         checkInDate: (data.checkInDate as Timestamp).toDate(),
         checkOutDate: (data.checkOutDate as Timestamp).toDate(),
         status: data.status as CalendarEvent['status'],
+        notes: data.notes,
+        entryType: entryType,
       };
     });
     return events;
@@ -143,7 +154,7 @@ export async function calculateInvoiceDetails(
     bestStrategy = "Weekly Priority";
   }
 
-  const approxDaysInMonth = 30; // More robust would be to use date-fns month diff
+  const approxDaysInMonth = 30; 
   const months = Math.floor(nights / approxDaysInMonth);
   const remainingNightsAfterMonths = nights % approxDaysInMonth;
   const remainingWeeksAfterMonths = Math.floor(remainingNightsAfterMonths / 7);
@@ -209,25 +220,16 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
   console.log("Manual calendar entry received:", data);
   try {
     const entryData: any = {
-      entryName: data.entryName, // Using entryName to distinguish from guest 'name'
-      name: data.entryName, // Also populate 'name' for consistent display on calendar
+      entryName: data.entryName, 
+      name: data.entryName, 
       checkInDate: Timestamp.fromDate(data.checkInDate),
       checkOutDate: Timestamp.fromDate(data.checkOutDate),
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
       notes: data.notes || "",
       createdAt: serverTimestamp(),
-      // Fields typically in a booking request but not relevant here can be omitted or set to null/default
-      email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com', // Placeholder email
-      guests: data.entryType === 'manual_booking' ? 1 : 0, // Placeholder guests
+      email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com',
+      guests: data.entryType === 'manual_booking' ? 1 : 0,
     };
-
-    if (data.entryType === 'manual_booking') {
-      // For manual_booking, you might want to calculate a price or set a default amount
-      // For simplicity now, we'll skip invoice details, or they can be added later.
-      // entryData.finalInvoiceAmount = 0; 
-      // entryData.finalInvoiceCurrency = "USD"; 
-    }
-
 
     const docRef = await addDoc(collection(db, "bookingRequests"), entryData);
     console.log("Manual calendar entry written with ID: ", docRef.id);
@@ -245,3 +247,37 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
     };
   }
 }
+
+export async function updateManualCalendarEntry(entryId: string, data: ManualCalendarEntryFormValues) {
+  console.log("Updating manual calendar entry:", entryId, data);
+  try {
+    const entryRef = doc(db, "bookingRequests", entryId);
+    const entryData: any = {
+      entryName: data.entryName,
+      name: data.entryName, 
+      checkInDate: Timestamp.fromDate(data.checkInDate),
+      checkOutDate: Timestamp.fromDate(data.checkOutDate),
+      status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
+      notes: data.notes || "",
+      updatedAt: serverTimestamp(),
+      // Preserve email and guests if appropriate for the type, or reset
+      email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com',
+      guests: data.entryType === 'manual_booking' ? 1 : 0,
+    };
+
+    await updateDoc(entryRef, entryData);
+    console.log(`Manual calendar entry ${entryId} updated.`);
+    return {
+      success: true,
+      message: `Calendar entry "${data.entryName}" updated successfully.`,
+    };
+  } catch (error) {
+    console.error("Error updating manual calendar entry: ", error);
+    return {
+      success: false,
+      message: "Failed to update calendar entry.",
+    };
+  }
+}
+
+    

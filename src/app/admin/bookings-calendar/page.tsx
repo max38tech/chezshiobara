@@ -9,13 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { getAllCalendarEvents, type CalendarEvent } from "@/actions/booking";
 import { eachDayOfInterval, startOfDay, isSameDay, subDays, format as formatDateFn } from 'date-fns';
-import { AlertCircle, CalendarDays, Info, PlusCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CalendarDays, Info, PlusCircle, Loader2, Edit } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ManualCalendarEntryForm } from './manual-calendar-entry-form';
 import { cn } from "@/lib/utils";
 import { buttonVariants } from '@/components/ui/button';
+import type { ManualCalendarEntryFormValues } from '@/schemas/booking';
+
 
 interface DayWithEventInfo {
   date: Date;
@@ -34,8 +36,6 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
     }
 
     const checkInStartOfDay = startOfDay(event.checkInDate);
-    // eventIntervalEnd is the last day of the stay.
-    // e.g., check-in July 1, check-out July 3 (2 nights) -> eventIntervalEnd is July 2.
     const eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1);
 
     if (checkInStartOfDay <= eventIntervalEnd) {
@@ -71,7 +71,9 @@ export default function BookingsCalendarPage() {
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [entryToEdit, setEntryToEdit] = useState<CalendarEvent | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isClient, setIsClient] = useState(false);
 
@@ -103,54 +105,31 @@ export default function BookingsCalendarPage() {
   }), [eventDatesWithInfo]);
 
   const modifiersStyles = useMemo(() => ({
-    confirmed: {
-      backgroundColor: 'hsl(145, 63%, 90%)', // Lighter sage green
-      color: 'hsl(147, 80%, 15%)', // Darker green text
-    },
-    blocked: {
-      backgroundColor: 'hsl(0, 72%, 90%)', // Lighter red
-      color: 'hsl(0, 70%, 35%)', // Darker red text
-    },
-    manual: {
-      backgroundColor: 'hsl(262, 75%, 90%)', // Lighter purple
-      color: 'hsl(262, 60%, 35%)', // Darker purple text
-    },
-    // No specific style for 'selected' here, as the ring is handled by classNames
+    confirmed: { backgroundColor: 'hsl(145, 63%, 90%)', color: 'hsl(147, 80%, 15%)' },
+    blocked: { backgroundColor: 'hsl(0, 72%, 90%)', color: 'hsl(0, 70%, 35%)' },
+    manual: { backgroundColor: 'hsl(262, 75%, 90%)', color: 'hsl(262, 60%, 35%)' },
   }), []);
-
 
   const calendarSpecificClassNames = {
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
-    caption_label: "text-sm font-headline", // Use theme font
+    caption_label: "text-sm font-headline", 
     nav: "space-x-1 flex items-center",
-    nav_button: cn(
-      buttonVariants({ variant: "outline" }),
-      "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-    ),
+    nav_button: cn(buttonVariants({ variant: "outline" }), "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"),
     nav_button_previous: "absolute left-1",
     nav_button_next: "absolute right-1",
     table: "w-full border-collapse space-y-1",
     head_row: "flex",
-    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]", // Use theme font
+    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]", 
     row: "flex w-full mt-2",
-    // Cell: Remove background setting on selection to let button's modifierStyle show
     cell: "h-9 w-9 text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-    day: cn(
-      buttonVariants({ variant: "ghost" }), // Ghost variant has no default background
-      "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-    ),
-    // Selected day: No explicit background. Ring and text color from theme.
-    // This allows modifierStyles background to show through for event days.
+    day: cn(buttonVariants({ variant: "ghost" }), "h-9 w-9 p-0 font-normal aria-selected:opacity-100"),
     day_selected: "text-ring ring-2 ring-ring focus:text-ring focus:ring-2 focus:ring-ring",
-    // Today: No explicit background by default. If selected, it also gets the ring.
-    // Text color from theme. Ring for non-event today, event color + ring for event today.
     day_today: "text-foreground ring-1 ring-border aria-selected:text-ring aria-selected:ring-2 aria-selected:ring-ring",
-    day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:text-muted-foreground aria-selected:ring-0", // Ensure no ring if selected outside
+    day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:text-muted-foreground aria-selected:ring-0",
     day_disabled: "text-muted-foreground opacity-50",
-    // Range middle also should not force a background if it's an event day
-    day_range_middle: "aria-selected:rounded-none", // Keep rounded-none, bg will come from modifier or be transparent
+    day_range_middle: "aria-selected:rounded-none", 
     day_hidden: "invisible",
   };
 
@@ -168,6 +147,11 @@ export default function BookingsCalendarPage() {
         {formatDateFn(date, "d")}
       </div>
     );
+  };
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    setEntryToEdit(event);
+    setIsEditFormOpen(true);
   };
 
   if (loading && !isClient) {
@@ -204,7 +188,7 @@ export default function BookingsCalendarPage() {
     <PageContentWrapper>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <PageTitle className="text-3xl sm:text-4xl mb-0 text-left">Bookings Calendar</PageTitle>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" /> Add Manual Entry
@@ -220,8 +204,9 @@ export default function BookingsCalendarPage() {
             <ManualCalendarEntryForm
               onSuccess={() => {
                 fetchCalendarEvents();
-                setIsFormOpen(false);
+                setIsAddFormOpen(false);
               }}
+              onCancel={() => setIsAddFormOpen(false)}
             />
           </DialogContent>
         </Dialog>
@@ -300,9 +285,18 @@ export default function BookingsCalendarPage() {
                 )}
                 {!loading && eventsOnSelectedDate.length > 0 && (
                     <ul className="space-y-3">
-                        {eventsOnSelectedDate.map(event => (
+                        {eventsOnSelectedDate.map(event => {
+                           const isEditable = event.status === 'blocked' || event.status === 'manual_booking' || event.status === 'manual_confirmed';
+                           return (
                             <li key={event.id} className="font-body text-sm border-b pb-2 last:border-b-0">
-                                <p className="font-semibold">{event.name}</p>
+                                <div className="flex justify-between items-start">
+                                  <p className="font-semibold">{event.name}</p>
+                                  {isEditable && (
+                                    <Button variant="outline" size="sm" onClick={() => handleEditEvent(event)}>
+                                      <Edit className="h-3 w-3 mr-1" /> Edit
+                                    </Button>
+                                  )}
+                                </div>
                                 <p className="text-xs text-muted-foreground">
                                     Type: <span className="font-medium text-foreground">
                                       {event.status.replace(/_/g, ' ').toUpperCase()}
@@ -314,13 +308,47 @@ export default function BookingsCalendarPage() {
                                 <p className="text-xs text-muted-foreground">
                                     Check-out: {formatDateFn(event.checkOutDate, 'PPP')}
                                 </p>
+                                {event.notes && <p className="text-xs text-muted-foreground">Notes: {event.notes}</p>}
                             </li>
-                        ))}
+                           );
+                        })}
                     </ul>
                 )}
             </CardContent>
         </Card>
       </div>
+
+      {entryToEdit && (
+        <Dialog open={isEditFormOpen} onOpenChange={setIsEditFormOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Calendar Entry</DialogTitle>
+              <DialogDescription>
+                Modify the details for &quot;{entryToEdit.name}&quot;.
+              </DialogDescription>
+            </DialogHeader>
+            <ManualCalendarEntryForm
+              editingEntryId={entryToEdit.id}
+              initialData={{ // Map CalendarEvent to ManualCalendarEntryFormValues
+                entryName: entryToEdit.name,
+                checkInDate: entryToEdit.checkInDate,
+                checkOutDate: entryToEdit.checkOutDate,
+                entryType: entryToEdit.entryType || (entryToEdit.status === 'blocked' ? 'blocked' : 'manual_booking'),
+                notes: entryToEdit.notes || "",
+              }}
+              onSuccess={() => {
+                fetchCalendarEvents();
+                setIsEditFormOpen(false);
+                setEntryToEdit(null);
+              }}
+              onCancel={() => {
+                setIsEditFormOpen(false);
+                setEntryToEdit(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </PageContentWrapper>
   );
 }
