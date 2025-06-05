@@ -1,12 +1,14 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { LayoutClientWrapper } from '@/components/layout/layout-client-wrapper';
+import { Footer } from '@/components/layout/footer'; // Import the new Footer
 
 export const metadata: Metadata = {
   title: 'Chez Shiobara B&B',
-  description: 'A charming bed and breakfast in Shiobara.',
+  description: 'A charming bed and breakfast in Yokohama, perfectly positioned for exploring the greater Tokyo area.',
 };
 
 export default function RootLayout({
@@ -27,8 +29,9 @@ export default function RootLayout({
           <div className="flex-grow flex flex-col">
             {children}
           </div>
-          <Toaster />
+          <Footer /> {/* Add the Footer component here */}
         </LayoutClientWrapper>
+        <Toaster />
       </body>
     </html>
   );

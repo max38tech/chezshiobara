@@ -65,7 +65,7 @@ export default async function WelcomePage() {
         </div>
       </section>
       
-      <section className="text-center">
+      <section className="text-center pb-8"> {/* Added pb-8 for spacing before footer */}
         <p className="font-body text-lg md:text-xl text-muted-foreground mb-6">
           Ready to experience the charm of Chez Shiobara?
         </p>
