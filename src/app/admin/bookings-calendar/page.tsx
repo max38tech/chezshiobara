@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
-import type { DayContentProps } from 'react-day-picker'; // Import correct type
+import type { DayContentProps } from 'react-day-picker';
 import { PageContentWrapper } from "@/components/layout/page-content-wrapper";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -27,18 +27,12 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
   const dateMap = new Map<string, DayWithEventInfo>();
 
   events.forEach(event => {
-    // Interval includes checkInDate and all days up to (but not including) checkOutDate
-    const intervalEnd = subDays(startOfDay(event.checkOutDate), 0); // Actually end of day before checkout.
-                                                                     // If checkout is 15th, they occupy 14th.
-                                                                     // Interval should be [checkIn, checkOut-1day]
-    
     let eventIntervalEnd = startOfDay(event.checkOutDate);
-    if (isSameDay(startOfDay(event.checkInDate), eventIntervalEnd)) { // Single day event (e.g. check in/out same day, effectively 0 nights but occupies 1 day slot)
-         eventIntervalEnd = startOfDay(event.checkInDate); // Interval will be just this one day
+    if (isSameDay(startOfDay(event.checkInDate), eventIntervalEnd)) {
+         eventIntervalEnd = startOfDay(event.checkInDate); 
     } else {
-        eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1); // Occupies up to day before checkout
+        eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1); 
     }
-
 
     if (startOfDay(event.checkInDate) <= eventIntervalEnd) {
         const datesInInterval = eachDayOfInterval({
@@ -49,8 +43,12 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
         datesInInterval.forEach(date => {
           const dateString = date.toISOString().split('T')[0];
           const existingEntry = dateMap.get(dateString);
-          if (!existingEntry || (existingEntry.eventType === 'blocked' && event.status !== 'blocked')) {
-            // Prioritize non-blocked events if there's an overlap, or take the first one
+          // Prioritize non-blocked events or more specific statuses if overlap
+          const priorityOrder: CalendarEvent['status'][] = ['paid', 'confirmed', 'manual_booking', 'manual_confirmed', 'blocked'];
+          const currentPriority = existingEntry ? priorityOrder.indexOf(existingEntry.eventType!) : -1;
+          const newPriority = priorityOrder.indexOf(event.status);
+
+          if (!existingEntry || newPriority < currentPriority) { // Lower index means higher priority
             dateMap.set(dateString, {
               date: date,
               eventType: event.status,
@@ -100,16 +98,15 @@ export default function BookingsCalendarPage() {
   }), [eventDatesWithInfo]);
 
   const modifierClassNames = {
-    confirmed: "bg-primary text-primary-foreground hover:bg-primary/90 aria-selected:!bg-primary aria-selected:!text-primary-foreground",
+    confirmed: "bg-green-300 text-green-800 hover:bg-green-400 aria-selected:!bg-green-400 aria-selected:!text-green-900", // Sage green for confirmed/paid
     blocked: "bg-destructive text-destructive-foreground hover:bg-destructive/90 opacity-70 aria-selected:!bg-destructive aria-selected:!text-destructive-foreground",
     manual: "bg-accent text-accent-foreground hover:bg-accent/90 aria-selected:!bg-accent aria-selected:!text-accent-foreground",
-    // selected class from react-day-picker will apply ring if `selected={selectedDate}` is used
   };
   
   const CustomDayContent = (props: DayContentProps) => {
     const { date } = props;
     const eventInfoForDay = eventDatesWithInfo.find(edi => isSameDay(edi.date, date));
-    const tooltipText = eventInfoForDay ? `${eventInfoForDay.eventName} (${eventInfoForDay.eventType})` : "";
+    const tooltipText = eventInfoForDay ? `${eventInfoForDay.eventName} (${eventInfoForDay.eventType?.replace('_', ' ')})` : "";
 
     return (
       <div title={tooltipText} className="relative w-full h-full flex items-center justify-center">
@@ -142,8 +139,10 @@ export default function BookingsCalendarPage() {
   const eventsOnSelectedDate = selectedDate 
     ? calendarEvents.filter(event => {
         const selDateStart = startOfDay(selectedDate);
+        const checkInStart = startOfDay(event.checkInDate);
+        const checkOutStart = startOfDay(event.checkOutDate);
         // Event occupies days from checkInDate up to, but not including, checkOutDate
-        return selDateStart >= startOfDay(event.checkInDate) && selDateStart < startOfDay(event.checkOutDate);
+        return selDateStart >= checkInStart && selDateStart < checkOutStart;
       })
     : [];
 
@@ -192,9 +191,9 @@ export default function BookingsCalendarPage() {
           <CardContent className="flex justify-center p-2 sm:p-4">
             {isClient ? (
                 <Calendar
-                    mode="single" // Changed from "multiple"
-                    selected={selectedDate} // Use selectedDate for single selection highlighting
-                    onSelect={setSelectedDate} // Update selectedDate on click
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
                     modifiers={modifiers}
                     modifierClassNames={modifierClassNames}
                     components={{ DayContent: CustomDayContent }}
@@ -202,7 +201,7 @@ export default function BookingsCalendarPage() {
                     className="rounded-md border w-full"
                     disabled={(date) => date < startOfDay(new Date())} 
                     defaultMonth={selectedDate || new Date()}
-                    onDayClick={(day, activeModifiers) => { // onDayClick is still useful
+                    onDayClick={(day, activeModifiers) => { 
                         if (!activeModifiers.disabled) {
                             setSelectedDate(day);
                         }
@@ -215,11 +214,22 @@ export default function BookingsCalendarPage() {
             )}
           </CardContent>
           <CardFooter className="flex flex-wrap gap-4 pt-4 justify-center sm:justify-start">
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded" style={{backgroundColor: modifierClassNames.confirmed.split(' ')[0].replace('bg-','')}}></div><span className="font-body text-xs">Guest Booking</span></div>
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded" style={{backgroundColor: modifierClassNames.manual.split(' ')[0].replace('bg-','')}}></div><span className="font-body text-xs">Manual Booking</span></div>
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded opacity-70" style={{backgroundColor: modifierClassNames.blocked.split(' ')[0].replace('bg-','')}}></div><span className="font-body text-xs">Blocked</span></div>
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded ring-2 ring-ring ring-offset-background"></div><span className="font-body text-xs">Selected Day</span></div>
-
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded bg-green-300"></div>
+              <span className="font-body text-xs">Confirmed/Paid Booking</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded bg-accent"></div>
+              <span className="font-body text-xs">Manual Booking</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded bg-destructive opacity-70"></div>
+              <span className="font-body text-xs">Blocked</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded ring-2 ring-ring ring-offset-background"></div>
+              <span className="font-body text-xs">Selected Day</span>
+            </div>
           </CardFooter>
         </Card>
 
@@ -241,10 +251,16 @@ export default function BookingsCalendarPage() {
                                 <p className="font-semibold">{event.name}</p>
                                 <p className="text-xs text-muted-foreground">
                                     Type: <span className={cn(
-                                        (event.status === 'confirmed' || event.status === 'paid') ? 'text-primary' :
-                                        (event.status === 'manual_booking' || event.status === 'manual_confirmed') ? 'text-accent-foreground' : // Using accent-foreground for visibility
-                                        event.status === 'blocked' ? 'text-destructive' : ''
+                                        (event.status === 'confirmed' || event.status === 'paid') ? 'text-green-700 font-medium' :
+                                        (event.status === 'manual_booking' || event.status === 'manual_confirmed') ? 'text-accent-foreground font-medium' : 
+                                        event.status === 'blocked' ? 'text-destructive font-medium' : ''
                                     )}>{event.status.replace(/_/g, ' ').toUpperCase()}</span>
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Check-in: {event.checkInDate.toLocaleDateString()}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Check-out: {event.checkOutDate.toLocaleDateString()}
                                 </p>
                             </li>
                         ))}
