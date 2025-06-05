@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ManualCalendarEntryForm } from './manual-calendar-entry-form';
 import { cn } from "@/lib/utils";
-import { buttonVariants } from '@/components/ui/button'; 
+import { buttonVariants } from '@/components/ui/button';
 
 interface DayWithEventInfo {
   date: Date;
@@ -27,8 +27,7 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
   const dateMap = new Map<string, DayWithEventInfo>();
 
   events.forEach(event => {
-    let eventIntervalEnd = startOfDay(event.checkOutDate);
-    eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1); 
+    let eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1);
 
     if (startOfDay(event.checkInDate) <= eventIntervalEnd) {
         const datesInInterval = eachDayOfInterval({
@@ -43,7 +42,7 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
           const currentPriority = existingEntry ? priorityOrder.indexOf(existingEntry.eventType!) : Infinity;
           const newPriority = priorityOrder.indexOf(event.status);
 
-          if (!existingEntry || newPriority < currentPriority) { 
+          if (!existingEntry || newPriority < currentPriority) {
             dateMap.set(dateString, {
               date: date,
               eventType: event.status,
@@ -51,7 +50,7 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
             });
           }
         });
-    } else if (isSameDay(startOfDay(event.checkInDate), subDays(startOfDay(event.checkOutDate), 1))) {
+    } else if (isSameDay(startOfDay(event.checkInDate), eventIntervalEnd)) { // Handles single-day events
         const dateString = startOfDay(event.checkInDate).toISOString().split('T')[0];
          dateMap.set(dateString, {
             date: startOfDay(event.checkInDate),
@@ -103,7 +102,7 @@ export default function BookingsCalendarPage() {
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
-    caption_label: "text-sm font-headline",
+    caption_label: "text-sm font-headline", // Use headline font
     nav: "space-x-1 flex items-center",
     nav_button: cn(
       buttonVariants({ variant: "outline" }),
@@ -113,29 +112,29 @@ export default function BookingsCalendarPage() {
     nav_button_next: "absolute right-1",
     table: "w-full border-collapse space-y-1",
     head_row: "flex",
-    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]",
+    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]", // Use body font
     row: "flex w-full mt-2",
-    cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+    cell: "h-9 w-9 text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20", // Removed [&:has([aria-selected])]:bg-accent
     day: cn(
       buttonVariants({ variant: "ghost" }),
       "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
     ),
-    day_selected: "bg-transparent text-ring ring-2 ring-ring hover:bg-transparent focus:bg-transparent focus:text-ring focus:ring-2 focus:ring-ring",
-    day_today: "bg-muted text-foreground ring-1 ring-border",
-    day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/30 aria-selected:text-muted-foreground",
+    day_selected: "bg-transparent text-ring ring-2 ring-ring hover:!bg-transparent focus:!bg-transparent focus:text-ring focus:ring-2 focus:ring-ring", // Important: transparent bg, ring for selection
+    day_today: "bg-transparent text-foreground ring-1 ring-border aria-selected:!bg-transparent aria-selected:ring-2 aria-selected:ring-ring", // Today also transparent when selected, relies on event color or base selection ring
+    day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/30 aria-selected:text-muted-foreground aria-selected:!bg-transparent", // Outside days transparent when selected
     day_disabled: "text-muted-foreground opacity-50",
-    day_range_middle: "aria-selected:bg-accent/40 aria-selected:text-accent-foreground",
+    day_range_middle: "aria-selected:!bg-transparent", // Ensure range middle is transparent if selected
     day_hidden: "invisible",
   };
-  
+
   const modifierClassNames = {
     confirmed: "!bg-green-300 text-green-900 hover:!bg-green-400/90 aria-selected:!bg-green-400 aria-selected:!text-green-900 aria-selected:ring-2 aria-selected:ring-green-500",
     blocked: "!bg-destructive/70 text-destructive-foreground hover:!bg-destructive/60 aria-selected:!bg-destructive aria-selected:!text-destructive-foreground aria-selected:ring-2 aria-selected:ring-destructive/80",
     manual: "!bg-accent text-accent-foreground hover:!bg-accent/90 aria-selected:!bg-accent/80 aria-selected:!text-accent-foreground aria-selected:ring-2 aria-selected:ring-accent",
   };
-  
+
   const CustomDayContent = (props: DayContentProps) => {
-    const { date } = props; 
+    const { date } = props;
     const eventInfoForDay = eventDatesWithInfo.find(edi => isSameDay(edi.date, date));
     let tooltipText = "";
     if (eventInfoForDay) {
@@ -169,13 +168,13 @@ export default function BookingsCalendarPage() {
       </PageContentWrapper>
     );
   }
-  
-  const eventsOnSelectedDate = selectedDate 
+
+  const eventsOnSelectedDate = selectedDate
     ? calendarEvents.filter(event => {
         const selDateStart = startOfDay(selectedDate);
         const checkInStart = startOfDay(event.checkInDate);
         const eventActualEnd = subDays(startOfDay(event.checkOutDate),1);
-        return selDateStart >= checkInStart && selDateStart <= eventActualEnd; 
+        return selDateStart >= checkInStart && selDateStart <= eventActualEnd;
       })
     : [];
 
@@ -197,16 +196,16 @@ export default function BookingsCalendarPage() {
                 Block out dates for personal use or add a direct booking.
               </DialogDescription>
             </DialogHeader>
-            <ManualCalendarEntryForm 
+            <ManualCalendarEntryForm
               onSuccess={() => {
                 fetchCalendarEvents();
                 setIsFormOpen(false);
-              }} 
+              }}
             />
           </DialogContent>
         </Dialog>
       </div>
-      
+
       <Card className="mb-8 bg-muted/30 border-border">
         <CardHeader>
           <CardTitle className="font-headline flex items-center gap-2">
@@ -218,7 +217,7 @@ export default function BookingsCalendarPage() {
           </CardDescription>
         </CardHeader>
       </Card>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="shadow-lg lg:col-span-2">
           <CardContent className="flex justify-center p-2 sm:p-4">
@@ -228,16 +227,19 @@ export default function BookingsCalendarPage() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={modifiers}
-                    classNames={calendarSpecificClassNames} 
-                    modifierClassNames={modifierClassNames} 
+                    classNames={calendarSpecificClassNames}
+                    modifierClassNames={modifierClassNames}
                     components={{ DayContent: CustomDayContent }}
                     numberOfMonths={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2}
                     className="rounded-md border w-full"
-                    disabled={(date) => date < startOfDay(new Date())} 
+                    disabled={(date) => date < startOfDay(new Date())} // Disable past dates, but allow selection
                     defaultMonth={selectedDate || new Date()}
-                    onDayClick={(day, activeModifiers) => { 
-                        if (!activeModifiers.disabled) {
-                            setSelectedDate(day);
+                    onDayClick={(day, activeModifiers) => { // Allow clicking disabled days to clear selection or re-select
+                        if (!activeModifiers.disabled || isSameDay(day, startOfDay(new Date()))) { // Allow selecting today even if it's the fromDate
+                             setSelectedDate(day);
+                        } else if (activeModifiers.disabled) {
+                            // If a disabled day is clicked, maybe do nothing or clear selection
+                            // setSelectedDate(undefined); // Or keep current selection
                         }
                     }}
                 />
@@ -249,15 +251,15 @@ export default function BookingsCalendarPage() {
           </CardContent>
           <CardFooter className="flex flex-wrap gap-x-4 gap-y-2 pt-4 justify-center sm:justify-start">
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded bg-green-300"></div>
+              <div className="h-4 w-4 rounded !bg-green-300"></div>
               <span className="font-body text-xs">Confirmed/Paid</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded bg-accent"></div>
+              <div className="h-4 w-4 rounded !bg-accent"></div>
               <span className="font-body text-xs">Manual Booking</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded bg-destructive/70"></div>
+              <div className="h-4 w-4 rounded !bg-destructive/70"></div>
               <span className="font-body text-xs">Blocked</span>
             </div>
             <div className="flex items-center gap-2">
@@ -304,8 +306,6 @@ export default function BookingsCalendarPage() {
     </PageContentWrapper>
   );
 }
-    
-
     
 
     
