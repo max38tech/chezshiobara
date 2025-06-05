@@ -75,7 +75,7 @@ export function AdminSidebarNav() {
       return (
         <SidebarMenuItem key={item.href}>
           <MenuButtonComponent
-            asChild={!isSubItem && !isSubItem} // Only use asChild for top-level buttons if Link is direct child
+            asChild={true} // Corrected: Always true when wrapping a Link
             className={cn(isActive && (isSubItem ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-primary text-primary-foreground"))}
             isActive={isActive}
             size={isSubItem ? "sm" : "default"}
