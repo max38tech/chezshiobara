@@ -16,13 +16,26 @@ interface StripeCheckoutButtonProps {
 export function StripeCheckoutButton({ bookingId, stripePublishableKey }: StripeCheckoutButtonProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [stripePromise, setStripePromise] = useState(() => loadStripe(stripePublishableKey));
+  
+  // Initialize Stripe promise once. Do not re-initialize on every render.
+  const [stripePromise] = useState(() => {
+    if (!stripePublishableKey) {
+      console.error("StripeCheckoutButton: Stripe publishable key is missing. Button will be disabled.");
+      return null;
+    }
+    return loadStripe(stripePublishableKey);
+  });
 
   const handlePayment = async () => {
+    if (!stripePromise) {
+      toast({ title: "Configuration Error", description: "Stripe is not configured. Cannot proceed to payment.", variant: "destructive" });
+      return;
+    }
+
     startTransition(async () => {
       const stripe = await stripePromise;
       if (!stripe) {
-        toast({ title: "Error", description: "Stripe.js failed to load.", variant: "destructive" });
+        toast({ title: "Error", description: "Stripe.js failed to load. Please try again.", variant: "destructive" });
         return;
       }
 
@@ -40,8 +53,10 @@ export function StripeCheckoutButton({ bookingId, stripePublishableKey }: Stripe
 
         if (stripeError) {
           console.error("Stripe redirect error:", stripeError);
-          toast({ title: "Redirect Error", description: stripeError.message || "Failed to redirect to Stripe.", variant: "destructive" });
+          toast({ title: "Redirect Error", description: stripeError.message || "Failed to redirect to Stripe. Please try again.", variant: "destructive" });
         }
+      } else {
+        toast({ title: "Error", description: "Could not retrieve a payment session ID.", variant: "destructive"});
       }
     });
   };
@@ -49,7 +64,7 @@ export function StripeCheckoutButton({ bookingId, stripePublishableKey }: Stripe
   return (
     <Button
       onClick={handlePayment}
-      disabled={isPending || !stripePublishableKey}
+      disabled={isPending || !stripePublishableKey || !stripePromise}
       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
       size="lg"
     >

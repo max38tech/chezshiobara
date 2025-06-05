@@ -238,7 +238,7 @@ export function BookingRequestsTable() {
       if (updatedBookingSnap.exists()) {
         setEditingBooking({ id: updatedBookingSnap.id, ...updatedBookingSnap.data() } as BookingRequest);
       } else {
-        setIsInvoiceModalOpen(false);
+        setIsInvoiceModalOpen(false); // Close if booking somehow deleted during process
       }
     } else {
       toast({ title: "Error", description: result.message, variant: "destructive" });
@@ -385,8 +385,8 @@ export function BookingRequestsTable() {
                       )}
                        {(request.status === 'confirmed' || request.status === 'manual_confirmed') && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
                         <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                          <Link href={`/checkout/${request.id}`}>
-                            <CreditCard className="mr-1 h-4 w-4" /> Pay via Stripe
+                          <Link href={`/checkout/${request.id}`} target="_blank"> {/* Open in new tab for guest */}
+                            <CreditCard className="mr-1 h-4 w-4" /> Share Payment Link
                           </Link>
                         </Button>
                       )}
@@ -468,7 +468,7 @@ export function BookingRequestsTable() {
                               }
                             }}
                             placeholder="Select check-in"
-                            fromDate={new Date()}
+                            // fromDate={new Date()} // Allow past dates when editing
                           />
                           <FormMessage />
                         </FormItem>
@@ -486,7 +486,7 @@ export function BookingRequestsTable() {
                               value={field.value}
                               onChange={field.onChange}
                               placeholder="Select check-out"
-                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : new Date(new Date().getTime() + 86400000)}
+                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : undefined } // Allow past dates for editing
                             />
                             <FormMessage />
                           </FormItem>
@@ -514,7 +514,7 @@ export function BookingRequestsTable() {
                     </Card>
                   )}
 
-                  <Button type="button" variant="outline" size="sm" onClick={handleRecalculateInvoice} disabled={isRecalculatingInvoice || !pricingConfig || !editingBooking?.guests || editingBooking.guests <=0} className="w-full">
+                  <Button type="button" variant="outline" size="sm" onClick={handleRecalculateInvoice} disabled={isRecalculatingInvoice || !pricingConfig || !editingBooking } className="w-full">
                     {isRecalculatingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calculator className="mr-2 h-4 w-4" />}
                     Recalculate Based on Above Dates/Guests
                   </Button>
@@ -534,8 +534,8 @@ export function BookingRequestsTable() {
                     <div>
                      {paymentSettings?.isCardPaymentEnabled && editingBooking.finalInvoiceAmount && editingBooking.finalInvoiceAmount > 0 && (editingBooking.status === 'confirmed' || editingBooking.status === 'manual_confirmed') && (
                         <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground mt-2 sm:mt-0">
-                          <Link href={`/checkout/${editingBooking.id}`} onClick={() => setIsInvoiceModalOpen(false)}>
-                            <CreditCard className="mr-2 h-4 w-4" /> Pay with Stripe
+                          <Link href={`/checkout/${editingBooking.id}`} target="_blank" onClick={() => setIsInvoiceModalOpen(false)}>
+                            <CreditCard className="mr-2 h-4 w-4" /> Share Payment Link
                           </Link>
                         </Button>
                       )}
@@ -558,4 +558,3 @@ export function BookingRequestsTable() {
     </>
   );
 }
-

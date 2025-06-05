@@ -2,7 +2,7 @@
 "use server";
 
 import Stripe from 'stripe';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { BookingRequest } from '@/components/specific/admin/booking-requests-table'; 
 
@@ -32,11 +32,11 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
       return { error: "Booking not found." };
     }
 
-    const bookingData = bookingSnap.data() as BookingRequest;
+    const bookingData = bookingSnap.data() as BookingRequest; // Assuming BookingRequest includes all needed fields
 
     const allowedStatusesForPayment: BookingRequest['status'][] = ['confirmed', 'manual_confirmed'];
     if (!allowedStatusesForPayment.includes(bookingData.status)) {
-        return { error: "Booking must be confirmed (or a manual confirmed booking) to proceed with payment." };
+        return { error: `Booking must be in a 'confirmed' or 'manual_confirmed' state to proceed with payment. Current status: ${bookingData.status}.` };
     }
 
     const amount = bookingData.finalInvoiceAmount;
@@ -45,10 +45,10 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
     const bookingName = bookingData.name || bookingData.entryName || "Chez Shiobara Booking";
 
     if (!amount || amount <= 0) {
-      return { error: "Invalid invoice amount for payment." };
+      return { error: "Invalid invoice amount for payment. Please ensure the invoice has been finalized." };
     }
     if (!customerEmail) {
-        return { error: "Customer email not found for this booking." };
+        return { error: "Customer email not found for this booking. Please update the booking details." };
     }
 
     const lineItems = [
@@ -56,11 +56,12 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
         price_data: {
           currency: currency,
           product_data: {
-            name: `Booking at Chez Shiobara for ${bookingName}`,
-            description: `Payment for booking ID: ${bookingId}`,
-            images: [], 
+            name: `Stay at Chez Shiobara for ${bookingName}`,
+            description: `Payment for booking ID: ${bookingId}. Dates: ${bookingData.checkInDate.toDate().toLocaleDateString()} - ${bookingData.checkOutDate.toDate().toLocaleDateString()}`,
+            // Consider adding a generic image for your B&B if desired:
+            // images: ['https://yourdomain.com/images/bnb_logo_for_stripe.png'], 
           },
-          unit_amount: Math.round(amount * 100), 
+          unit_amount: Math.round(amount * 100), // Amount in cents
         },
         quantity: 1,
       },
@@ -82,11 +83,23 @@ export async function createCheckoutSession(bookingId: string): Promise<CreateCh
       metadata: {
         bookingId: bookingId,
       },
+      // Optional: Automatically update booking status to 'paid' on successful payment
+      // payment_intent_data: {
+      //   metadata: {
+      //     bookingId: bookingId, // Redundant with session metadata but can be useful for webhooks
+      //   },
+      // },
     });
 
     if (!session.id) {
         return { error: "Could not create payment session." };
     }
+
+    // Optionally: Store the Stripe session ID on the booking for reconciliation
+    // await updateDoc(bookingDocRef, {
+    //   stripeSessionId: session.id,
+    //   stripeSessionCreatedAt: serverTimestamp(),
+    // });
 
     return { sessionId: session.id };
 

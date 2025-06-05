@@ -9,21 +9,23 @@ import { AlertCircle, Ticket } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import type { BookingRequest } from '@/components/specific/admin/booking-requests-table'; // Re-use if structure is similar
 
-interface BookingData {
+interface BookingDataForCheckout {
   id: string;
   name: string;
-  email: string;
-  invoiceRecipientEmail?: string;
+  email: string; // Original requestor email
+  invoiceRecipientEmail?: string; // Specific email for invoice
   checkInDate: Date;
   checkOutDate: Date;
   guests: number;
-  status: 'pending' | 'confirmed' | 'declined';
+  status: BookingRequest['status']; // Use the more comprehensive status type
   finalInvoiceAmount?: number;
   finalInvoiceCurrency?: string;
+  entryName?: string; // For manual entries
 }
 
-async function getBookingDetails(bookingId: string): Promise<BookingData | null> {
+async function getBookingDetails(bookingId: string): Promise<BookingDataForCheckout | null> {
   try {
     const bookingDocRef = doc(db, "bookingRequests", bookingId);
     const bookingSnap = await getDoc(bookingDocRef);
@@ -34,7 +36,7 @@ async function getBookingDetails(bookingId: string): Promise<BookingData | null>
     const data = bookingSnap.data();
     return {
       id: bookingSnap.id,
-      name: data.name,
+      name: data.name || data.entryName || "Guest", // Fallback for name
       email: data.email,
       invoiceRecipientEmail: data.invoiceRecipientEmail,
       checkInDate: (data.checkInDate as Timestamp).toDate(),
@@ -43,6 +45,7 @@ async function getBookingDetails(bookingId: string): Promise<BookingData | null>
       status: data.status,
       finalInvoiceAmount: data.finalInvoiceAmount,
       finalInvoiceCurrency: data.finalInvoiceCurrency,
+      entryName: data.entryName,
     };
   } catch (error) {
     console.error("Error fetching booking details for checkout:", error);
@@ -62,9 +65,31 @@ export default async function CheckoutPage({ params }: { params: { bookingId: st
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Booking Not Found</AlertTitle>
           <AlertDescription>
-            The booking you are trying to pay for could not be found. Please check the ID or contact support.
+            The booking (ID: {bookingId}) you are trying to pay for could not be found. Please check the ID or contact support.
           </AlertDescription>
         </Alert>
+        <Button asChild variant="outline" className="mt-4">
+            <Link href="/">Back to Homepage</Link>
+        </Button>
+      </PageContentWrapper>
+    );
+  }
+  
+  const allowedStatusesForPayment: BookingRequest['status'][] = ['confirmed', 'manual_confirmed'];
+  if (!allowedStatusesForPayment.includes(booking.status)) {
+    return (
+      <PageContentWrapper>
+        <PageTitle>Payment Not Allowed</PageTitle>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Booking Status Prevents Payment</AlertTitle>
+          <AlertDescription>
+            This booking (ID: {bookingId}) is not in a 'Confirmed' state. Payment can only be made for confirmed bookings. Please contact us if you believe this is an error. Current status: {booking.status}.
+          </AlertDescription>
+        </Alert>
+         <Button asChild variant="outline" className="mt-4">
+            <Link href="/">Back to Homepage</Link>
+        </Button>
       </PageContentWrapper>
     );
   }
@@ -77,11 +102,11 @@ export default async function CheckoutPage({ params }: { params: { bookingId: st
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Invoice Not Ready</AlertTitle>
           <AlertDescription>
-            The invoice for this booking has not been finalized yet. Please wait for the host to confirm the amount due.
+            The invoice for this booking (ID: {bookingId}) has not been finalized yet, or the amount is invalid. Please wait for the host to confirm the amount due or contact us.
           </AlertDescription>
         </Alert>
         <Button asChild variant="outline" className="mt-4">
-          <Link href="/admin">Back to Admin</Link>
+            <Link href="/">Back to Homepage</Link>
         </Button>
       </PageContentWrapper>
     );
@@ -89,6 +114,7 @@ export default async function CheckoutPage({ params }: { params: { bookingId: st
 
   const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!publishableKey) {
+    console.warn("Stripe Publishable Key is missing. Ensure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is set in .env and available to the client.");
     return (
        <PageContentWrapper>
         <PageTitle>Configuration Error</PageTitle>
@@ -96,9 +122,12 @@ export default async function CheckoutPage({ params }: { params: { bookingId: st
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Payment Gateway Not Configured</AlertTitle>
           <AlertDescription>
-            Stripe payments are not configured correctly (missing publishable key). Please contact the administrator.
+            Online payments are currently unavailable due to a configuration issue. Please contact us to arrange payment. (Admin: STRIPE_PUBLISHABLE_KEY missing).
           </AlertDescription>
         </Alert>
+         <Button asChild variant="outline" className="mt-4">
+            <Link href="/">Back to Homepage</Link>
+        </Button>
       </PageContentWrapper>
     );
   }
@@ -121,16 +150,19 @@ export default async function CheckoutPage({ params }: { params: { bookingId: st
           <CardContent className="space-y-4">
             <div className="font-body">
               <p><strong>Guest:</strong> {booking.name}</p>
-              <p><strong>Email:</strong> {booking.invoiceRecipientEmail || booking.email}</p>
+              <p><strong>Email for Confirmation:</strong> {booking.invoiceRecipientEmail || booking.email}</p>
               <p><strong>Check-in:</strong> {booking.checkInDate.toLocaleDateString()}</p>
               <p><strong>Check-out:</strong> {booking.checkOutDate.toLocaleDateString()}</p>
               <p className="text-lg font-headline mt-2">
-                <strong>Amount Due:</strong> {booking.finalInvoiceAmount.toFixed(2)} {booking.finalInvoiceCurrency?.toUpperCase()}
+                <strong>Amount Due:</strong> {booking.finalInvoiceAmount.toFixed(2)} {booking.finalInvoiceCurrency?.toUpperCase() || 'USD'}
               </p>
             </div>
             <StripeCheckoutButton bookingId={booking.id} stripePublishableKey={publishableKey} />
           </CardContent>
         </Card>
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          Secure payments processed by Stripe.
+        </p>
       </div>
     </PageContentWrapper>
   );
