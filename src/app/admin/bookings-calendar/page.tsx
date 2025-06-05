@@ -8,11 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Calendar } from "@/components/ui/calendar";
 import { getAllCalendarEvents, type CalendarEvent } from "@/actions/booking";
 import { eachDayOfInterval, startOfDay, isSameDay } from 'date-fns';
-import { AlertCircle, CalendarDays, Info, PlusCircle, Edit3, Trash2 } from "lucide-react";
+import { AlertCircle, CalendarDays, Info, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ManualCalendarEntryForm } from './manual-calendar-entry-form'; // New component
+import { cn } from "@/lib/utils"; // Added for cn utility
 
 interface DayWithEvent extends Date {
   eventType?: CalendarEvent['status'];
@@ -42,7 +43,7 @@ function getAllEventDates(events: CalendarEvent[]): DayWithEvent[] {
             allDates.push(Object.assign(new Date(date), { eventType: event.status, eventName: event.name }));
           }
         });
-    } else if (isSameDay(interval.start, event.checkInDate)) {
+    } else if (isSameDay(interval.start, event.checkInDate)) { // Handle single-day events correctly
         const existingDateIndex = allDates.findIndex(d => isSameDay(d, event.checkInDate));
         if (existingDateIndex !== -1) {
              if (allDates[existingDateIndex].eventType === 'blocked' && event.status !== 'blocked') {
@@ -103,7 +104,8 @@ export default function BookingsCalendarPage() {
         case 'blocked':
           dayClassName = "bg-destructive text-destructive-foreground hover:bg-destructive/90 opacity-70";
           break;
-        case 'manual_booking':
+        case 'manual_booking': // This was the status used in the form
+        case 'manual_confirmed': // This was the status set in addManualCalendarEntry
           dayClassName = "bg-accent text-accent-foreground hover:bg-accent/90";
           break;
         default:
@@ -111,7 +113,6 @@ export default function BookingsCalendarPage() {
       }
     }
     
-    // Check if date is selected by the user by clicking, not related to booking status
     const isSelectedByUser = selectedDate && isSameDay(day, selectedDate);
 
     return (
@@ -121,10 +122,10 @@ export default function BookingsCalendarPage() {
             className={cn(
               dayButtonProps.className,
               eventInfo && dayClassName,
-              "disabled:opacity-100" // Keep booked days fully opaque
+              "disabled:opacity-100" 
             )}
             onClick={() => setSelectedDate(day)} 
-            disabled={modifiers.disabled} // Keep original disabled logic for past dates etc.
+            disabled={modifiers.disabled} 
           >
             {day.getDate()}
           </button>
@@ -209,7 +210,7 @@ export default function BookingsCalendarPage() {
                     selected={bookedDates}
                     numberOfMonths={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2}
                     className="rounded-md border w-full"
-                    disabled={(date) => date < startOfDay(new Date())} // Example: disable past dates
+                    disabled={(date) => date < startOfDay(new Date())} 
                     defaultMonth={bookedDates.length > 0 ? bookedDates[0] : new Date()}
                     components={{ DayContent: dayRender }}
                     onDayClick={(day, modifiers) => {
@@ -250,11 +251,10 @@ export default function BookingsCalendarPage() {
                                 <p className="text-xs text-muted-foreground">
                                     Type: <span className={cn(
                                         event.status === 'confirmed' || event.status === 'paid' ? 'text-primary' :
-                                        event.status === 'manual_booking' ? 'text-accent-foreground' :
+                                        event.status === 'manual_booking' || event.status === 'manual_confirmed' ? 'text-accent-foreground' :
                                         event.status === 'blocked' ? 'text-destructive' : ''
                                     )}>{event.status.replace('_', ' ').toUpperCase()}</span>
                                 </p>
-                                {/* Add Edit/Delete buttons here in future */}
                             </li>
                         ))}
                     </ul>
@@ -265,3 +265,5 @@ export default function BookingsCalendarPage() {
     </PageContentWrapper>
   );
 }
+
+    
