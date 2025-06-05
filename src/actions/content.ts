@@ -350,3 +350,80 @@ export async function updateLocalTipsPageContent(newTips: LocalTipItem[]): Promi
     return { success: false, message: "Failed to update local tips." };
   }
 }
+
+// --- Commerce Disclosure Page Content ---
+export interface CommerceDisclosureContent {
+  businessName: string;
+  businessAddress: string; // multiline
+  contactEmail: string;
+  contactPhone: string;
+  businessRegistrationInfo: string; // multiline
+  descriptionOfGoods: string; // multiline
+  transactionCurrencyInfo: string; // multiline
+  paymentMethodsInfo: string; // multiline
+  refundCancellationPolicy: string; // multiline
+  deliveryShippingPolicy: string; // multiline
+  privacyPolicySummary: string; // multiline
+  termsOfServiceSummary: string; // multiline
+  exportRestrictionsInfo: string; // multiline
+  customerServiceContactInfo: string; // multiline
+  updatedAt?: any; // Firestore ServerTimestamp
+}
+
+const initialCommerceDisclosureData: CommerceDisclosureContent = {
+  businessName: "Chez Shiobara B&B",
+  businessAddress: "16-7 Karasawa, Minami-ku\nYokohama, Kanagawa 232-0034\nJapan",
+  contactEmail: "us@shiobara.love",
+  contactPhone: "+81 070 9058 2258",
+  businessRegistrationInfo: "Chez Shiobara B&B is operated by [Your Legal Entity Name, if applicable].\nBusiness Registration Number (Japan): [Your Business Registration Number, if applicable. E.g., XXXXXXXXXXXXX]\n\n<em class=\"text-sm text-muted-foreground\">Please update this section with your specific legal entity name and registration number if you have one. If you are operating as an individual without a separate business registration, you may need to adjust this or consult local regulations.</em>",
+  descriptionOfGoods: "Chez Shiobara B&B offers short-term accommodation services. This includes lodging in our guest room(s), and may include breakfast and access to common household amenities as described on our website and during the booking process.",
+  transactionCurrencyInfo: "All prices and transactions are processed in USD (United States Dollars), unless explicitly stated otherwise during the booking or payment process. Your card issuer may apply their own exchange rates and fees if your card is not denominated in USD.",
+  paymentMethodsInfo: "We primarily accept payments via major credit and debit cards (Visa, MasterCard, American Express, etc.) processed securely through Stripe.\nOther payment methods, such as PayPal or Wise, may be available and will be indicated during the booking confirmation process or can be viewed on our admin-managed payment settings (information provided upon request for guests).",
+  refundCancellationPolicy: "IMPORTANT: The following is a general template. Please replace this with your actual, specific cancellation policy.\n\n- Cancellations made more than [Specify Number, e.g., 14] days prior to the scheduled check-in date will receive a full refund of the amount paid, minus any non-refundable transaction fees charged by payment processors.\n- Cancellations made between [Specify Number, e.g., 7] and [Specify Number, e.g., 14] days prior to the scheduled check-in date will be eligible for a [Specify Percentage, e.g., 50]% refund of the total booking cost.\n- Cancellations made less than [Specify Number, e.g., 7] days prior to the scheduled check-in date, or in the case of a no-show, are non-refundable, and the full booking amount will be forfeited.\n- Early departures are typically treated as last-minute cancellations for the remaining nights and are non-refundable unless otherwise agreed upon in writing by Chez Shiobara B&B management.\n- Modifications to booking dates are subject to availability and may be subject to rate changes. Significant changes may be treated as a cancellation and re-booking.\n- We strongly recommend guests consider travel insurance to cover unforeseen circumstances that may lead to cancellation.\n- To request a cancellation or modification, please contact us directly via email at us@shiobara.love as soon as possible.\n\n<em class=\"text-sm text-muted-foreground\">This policy is subject to change. The policy in effect at the time of your booking will apply. Please refer to your booking confirmation for specific terms.</em>",
+  deliveryShippingPolicy: "As Chez Shiobara B&B provides accommodation and related services, no physical goods are shipped. All booking confirmations and communications will be delivered electronically via email to the address provided during the booking process.",
+  privacyPolicySummary: "We are committed to protecting your privacy. Personal information (such as name, email address, payment details) collected during the booking and payment process is used solely for the purposes of:\n\n- Securing and managing your booking.\n- Processing payments securely via our payment gateway (Stripe).\n- Communicating with you regarding your stay (confirmations, pre-arrival information, post-stay follow-up).\n- Complying with legal or regulatory requirements in Japan.\n\nWe do not sell, trade, or otherwise transfer your personally identifiable information to outside parties for their marketing purposes without your explicit consent, except as necessary to provide our services (e.g., sharing necessary details with Stripe for payment processing). We implement a variety of security measures to maintain the safety of your personal information.\n\n<em class=\"text-sm text-muted-foreground\">We recommend creating a more detailed, standalone Privacy Policy page and linking to it from here for comprehensive coverage.</em>",
+  termsOfServiceSummary: "By making a booking with Chez Shiobara B&B, you acknowledge and agree to comply with our House Rules, our payment terms, and the cancellation policy stated herein. All guests are expected to behave in a respectful manner towards hosts, other guests (if any), and the property. Failure to comply may result in termination of your stay without refund.\n\n<em class=\"text-sm text-muted-foreground\">We recommend creating a more detailed, standalone Terms of Service page and linking to it from here.</em>",
+  exportRestrictionsInfo: "Not applicable to the services offered by Chez Shiobara B&B.",
+  customerServiceContactInfo: "For any questions, concerns, or assistance regarding your booking, payment, our services, or this disclosure, please contact us:\n\n- Email: us@shiobara.love\n- Phone: +81 070 9058 2258\n- You can also reach us via the contact form on our Contact Us page.",
+};
+
+export async function getCommerceDisclosureContent(): Promise<CommerceDisclosureContent> {
+  try {
+    const docRef = doc(db, "siteContent", "commerceDisclosurePage");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      // Ensure all fields from initialData are present, falling back to defaults if a field is missing
+      const storedData = docSnap.data();
+      const mergedData = { ...initialCommerceDisclosureData, ...storedData } as CommerceDisclosureContent;
+      if(storedData.updatedAt) {
+        mergedData.updatedAt = (storedData.updatedAt as any).toDate(); // Convert Timestamp to Date if it exists
+      }
+      return mergedData;
+    } else {
+      console.log("'commerceDisclosurePage' document does not exist. Creating and seeding.");
+      const dataToSeed = { ...initialCommerceDisclosureData, updatedAt: serverTimestamp() };
+      await setDoc(docRef, dataToSeed);
+      return { ...initialCommerceDisclosureData, updatedAt: new Date() }; // Return with current date for updatedAt
+    }
+  } catch (error) {
+    console.error("Error fetching commerce disclosure content from Firestore: ", error);
+    return { ...initialCommerceDisclosureData, updatedAt: new Date() }; // Fallback with current date
+  }
+}
+
+export async function updateCommerceDisclosureContent(newContent: Omit<CommerceDisclosureContent, 'updatedAt'>): Promise<{ success: boolean; message: string }> {
+  try {
+    const docRef = doc(db, "siteContent", "commerceDisclosurePage");
+    const dataToSet = {
+      ...newContent,
+      updatedAt: serverTimestamp(),
+    };
+    await setDoc(docRef, dataToSet, { merge: true });
+    return { success: true, message: "Commerce Disclosure content updated successfully." };
+  } catch (error) {
+    console.error("Error updating commerce disclosure content in Firestore: ", error);
+    return { success: false, message: "Failed to update Commerce Disclosure content." };
+  }
+}
+

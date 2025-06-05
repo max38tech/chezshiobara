@@ -23,6 +23,7 @@ import {
   DollarSign,
   CreditCard,
   PencilLine,
+  ShieldCheck, // Added for Commerce Disclosure
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -48,6 +49,7 @@ const adminNavItems: NavItem[] = [
       { href: "/admin/content/rules", label: "House Rules", icon: ListChecks },
       { href: "/admin/content/house-guide", label: "House Guide", icon: BookOpenText },
       { href: "/admin/content/local-tips", label: "Local Tips", icon: Lightbulb },
+      { href: "/admin/content/commerce-disclosure", label: "Commerce Disclosure", icon: ShieldCheck },
     ],
   },
   {
@@ -75,7 +77,7 @@ export function AdminSidebarNav() {
       return (
         <SidebarMenuItem key={item.href}>
           <MenuButtonComponent
-            asChild={true} // Corrected: Always true when wrapping a Link
+            asChild={true} 
             className={cn(isActive && (isSubItem ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-primary text-primary-foreground"))}
             isActive={isActive}
             size={isSubItem ? "sm" : "default"}
@@ -95,8 +97,8 @@ export function AdminSidebarNav() {
       return (
         <SidebarMenuItem key={item.label} className="mt-2">
            <SidebarGroupLabel className="px-2 pt-2 text-xs uppercase text-muted-foreground group-data-[collapsible=icon]:hidden">
-            <Icon className="mr-2 h-4 w-4" />
-            {item.label}
+            <Icon className="mr-2 h-4 w-4 inline" /> 
+            <span className="ml-1">{item.label}</span> 
           </SidebarGroupLabel>
           <SidebarMenuSub>
             {item.subItems.map(subItem => renderNavItem(subItem, true))}
@@ -113,3 +115,4 @@ export function AdminSidebarNav() {
     </SidebarMenu>
   );
 }
+

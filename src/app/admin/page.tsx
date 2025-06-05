@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, FileText, ShieldCheck } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, ShieldCheck } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -54,6 +54,11 @@ export default function AdminDashboardPage() {
                 <Lightbulb className="mr-2 h-4 w-4" /> Edit Local Tips
               </Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/content/commerce-disclosure">
+                <ShieldCheck className="mr-2 h-4 w-4" /> Edit Commerce Disclosure
+              </Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -80,9 +85,9 @@ export default function AdminDashboardPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Site Information Pages</CardTitle>
+            <CardTitle className="font-headline">View Live Site Pages</CardTitle>
             <CardDescription className="font-body">
-              Review important static pages on your site.
+              Review important static and dynamic pages as guests see them.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
@@ -119,3 +124,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+

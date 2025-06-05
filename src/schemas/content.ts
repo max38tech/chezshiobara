@@ -68,3 +68,25 @@ export const localTipsPageContentFormSchema = z.object({
 });
 
 export type LocalTipsPageContentFormValues = z.infer<typeof localTipsPageContentFormSchema>;
+
+
+// --- Commerce Disclosure Page Schemas ---
+export const commerceDisclosureContentSchema = z.object({
+  businessName: z.string().min(1, "Business name is required.").max(150),
+  businessAddress: z.string().min(1, "Business address is required.").max(500),
+  contactEmail: z.string().email("Invalid email address.").max(100),
+  contactPhone: z.string().min(1, "Contact phone is required.").max(50),
+  businessRegistrationInfo: z.string().min(1, "Business registration info is required.").max(1000),
+  descriptionOfGoods: z.string().min(1, "Description of goods/services is required.").max(2000),
+  transactionCurrencyInfo: z.string().min(1, "Transaction currency info is required.").max(500),
+  paymentMethodsInfo: z.string().min(1, "Payment methods info is required.").max(1000),
+  refundCancellationPolicy: z.string().min(1, "Refund/Cancellation policy is required.").max(5000),
+  deliveryShippingPolicy: z.string().min(1, "Delivery/Shipping policy is required.").max(1000),
+  privacyPolicySummary: z.string().min(1, "Privacy policy summary is required.").max(3000),
+  termsOfServiceSummary: z.string().min(1, "Terms of service summary is required.").max(3000),
+  exportRestrictionsInfo: z.string().min(1, "Export restrictions info is required.").max(500),
+  customerServiceContactInfo: z.string().min(1, "Customer service contact info is required.").max(1000),
+});
+
+export type CommerceDisclosureContentFormValues = z.infer<typeof commerceDisclosureContentSchema>;
+
