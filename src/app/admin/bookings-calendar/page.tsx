@@ -53,15 +53,13 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
 
           if (!existingEntry || newPriority < currentPriority) {
             dateMap.set(dateString, {
-              date: new Date(date), // Store a new Date object to avoid mutation issues if any
+              date: new Date(date), 
               eventType: event.status,
               eventName: event.name,
             });
           }
         });
     } else {
-       // This handles cases like 0-night events or if checkInDate === checkOutDate, which might be valid for some 'blocked' scenarios
-       // but not for typical bookings. For a 1-night stay, this branch shouldn't be hit.
        console.warn("Event interval issue or 0-duration event for highlighting:", event.id, event.name, { checkIn: event.checkInDate, checkOut: event.checkOutDate });
     }
   });
@@ -104,20 +102,20 @@ export default function BookingsCalendarPage() {
     manual: eventDatesWithInfo.filter(d => d.eventType === 'manual_booking' || d.eventType === 'manual_confirmed').map(d => d.date),
   }), [eventDatesWithInfo]);
 
-  // Define inline styles for modifiers for more reliable background application
   const modifiersStyles = useMemo(() => ({
     confirmed: {
-      backgroundColor: 'hsl(145, 63%, 90%)', // Lighter sage green (closer to Tailwind green-200/300)
-      color: 'hsl(147, 80%, 15%)',           // Darker green text (closer to Tailwind green-800/900)
+      backgroundColor: 'hsl(145, 63%, 90%)', // Lighter sage green
+      color: 'hsl(147, 80%, 15%)', // Darker green text
     },
     blocked: {
-      backgroundColor: 'hsl(0, 72%, 90%)', // Lighter red (closer to Tailwind red-200/300)
-      color: 'hsl(0, 70%, 35%)',           // Darker red text
+      backgroundColor: 'hsl(0, 72%, 90%)', // Lighter red
+      color: 'hsl(0, 70%, 35%)', // Darker red text
     },
     manual: {
-      backgroundColor: 'hsl(262, 75%, 90%)', // Lighter purple (closer to Tailwind purple-200/300)
-      color: 'hsl(262, 60%, 35%)',           // Darker purple text
+      backgroundColor: 'hsl(262, 75%, 90%)', // Lighter purple
+      color: 'hsl(262, 60%, 35%)', // Darker purple text
     },
+    // No specific style for 'selected' here, as the ring is handled by classNames
   }), []);
 
 
@@ -125,7 +123,7 @@ export default function BookingsCalendarPage() {
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
-    caption_label: "text-sm font-headline",
+    caption_label: "text-sm font-headline", // Use theme font
     nav: "space-x-1 flex items-center",
     nav_button: cn(
       buttonVariants({ variant: "outline" }),
@@ -135,19 +133,24 @@ export default function BookingsCalendarPage() {
     nav_button_next: "absolute right-1",
     table: "w-full border-collapse space-y-1",
     head_row: "flex",
-    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]",
+    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]", // Use theme font
     row: "flex w-full mt-2",
+    // Cell: Remove background setting on selection to let button's modifierStyle show
     cell: "h-9 w-9 text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
     day: cn(
-      buttonVariants({ variant: "ghost" }),
+      buttonVariants({ variant: "ghost" }), // Ghost variant has no default background
       "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
     ),
-    // Selected day should be primarily a ring, background transparent to let modifierStyle show through
-    day_selected: "bg-transparent text-ring ring-2 ring-ring hover:!bg-transparent focus:!bg-transparent focus:text-ring focus:ring-2 focus:ring-ring",
-    day_today: "bg-transparent text-foreground ring-1 ring-border aria-selected:!bg-transparent aria-selected:ring-2 aria-selected:ring-ring",
-    day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/30 aria-selected:text-muted-foreground aria-selected:!bg-transparent",
+    // Selected day: No explicit background. Ring and text color from theme.
+    // This allows modifierStyles background to show through for event days.
+    day_selected: "text-ring ring-2 ring-ring focus:text-ring focus:ring-2 focus:ring-ring",
+    // Today: No explicit background by default. If selected, it also gets the ring.
+    // Text color from theme. Ring for non-event today, event color + ring for event today.
+    day_today: "text-foreground ring-1 ring-border aria-selected:text-ring aria-selected:ring-2 aria-selected:ring-ring",
+    day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:text-muted-foreground aria-selected:ring-0", // Ensure no ring if selected outside
     day_disabled: "text-muted-foreground opacity-50",
-    day_range_middle: "aria-selected:!bg-transparent",
+    // Range middle also should not force a background if it's an event day
+    day_range_middle: "aria-selected:rounded-none", // Keep rounded-none, bg will come from modifier or be transparent
     day_hidden: "invisible",
   };
 
@@ -191,7 +194,6 @@ export default function BookingsCalendarPage() {
     ? calendarEvents.filter(event => {
         const selDateStart = startOfDay(selectedDate);
         const checkInStart = startOfDay(event.checkInDate);
-        // Event actual end is the day *before* checkOutDate
         const eventActualEnd = subDays(startOfDay(event.checkOutDate),1);
         return selDateStart >= checkInStart && selDateStart <= eventActualEnd;
       })
@@ -246,8 +248,8 @@ export default function BookingsCalendarPage() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={modifiers}
-                    modifiersStyles={modifiersStyles} // Using inline styles for event day backgrounds
-                    classNames={calendarSpecificClassNames} // For base structure and selected ring
+                    modifiersStyles={modifiersStyles}
+                    classNames={calendarSpecificClassNames}
                     components={{ DayContent: CustomDayContent }}
                     numberOfMonths={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2}
                     className="rounded-md border w-full"
@@ -322,3 +324,5 @@ export default function BookingsCalendarPage() {
     </PageContentWrapper>
   );
 }
+
+    
