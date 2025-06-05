@@ -1,61 +1,66 @@
 
 "use client";
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import type { DayContentProps } from 'react-day-picker'; // Import correct type
 import { PageContentWrapper } from "@/components/layout/page-content-wrapper";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { getAllCalendarEvents, type CalendarEvent } from "@/actions/booking";
-import { eachDayOfInterval, startOfDay, isSameDay } from 'date-fns';
-import { AlertCircle, CalendarDays, Info, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
+import { eachDayOfInterval, startOfDay, isSameDay, subDays } from 'date-fns';
+import { AlertCircle, CalendarDays, Info, PlusCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ManualCalendarEntryForm } from './manual-calendar-entry-form'; // New component
-import { cn } from "@/lib/utils"; // Added for cn utility
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ManualCalendarEntryForm } from './manual-calendar-entry-form';
+import { cn } from "@/lib/utils";
 
-interface DayWithEvent extends Date {
+interface DayWithEventInfo {
+  date: Date;
   eventType?: CalendarEvent['status'];
   eventName?: string;
 }
 
-function getAllEventDates(events: CalendarEvent[]): DayWithEvent[] {
-  const allDates: DayWithEvent[] = [];
+// Helper to get all unique dates covered by events with their info
+function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
+  const dateMap = new Map<string, DayWithEventInfo>();
 
   events.forEach(event => {
-    const interval = {
-      start: startOfDay(event.checkInDate),
-      end: startOfDay(new Date(event.checkOutDate.getTime() - 24 * 60 * 60 * 1000)) // Day before checkout
-    };
+    // Interval includes checkInDate and all days up to (but not including) checkOutDate
+    const intervalEnd = subDays(startOfDay(event.checkOutDate), 0); // Actually end of day before checkout.
+                                                                     // If checkout is 15th, they occupy 14th.
+                                                                     // Interval should be [checkIn, checkOut-1day]
     
-    if (interval.start <= interval.end) {
-        const datesInInterval = eachDayOfInterval(interval);
+    let eventIntervalEnd = startOfDay(event.checkOutDate);
+    if (isSameDay(startOfDay(event.checkInDate), eventIntervalEnd)) { // Single day event (e.g. check in/out same day, effectively 0 nights but occupies 1 day slot)
+         eventIntervalEnd = startOfDay(event.checkInDate); // Interval will be just this one day
+    } else {
+        eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1); // Occupies up to day before checkout
+    }
+
+
+    if (startOfDay(event.checkInDate) <= eventIntervalEnd) {
+        const datesInInterval = eachDayOfInterval({
+          start: startOfDay(event.checkInDate),
+          end: eventIntervalEnd,
+        });
+
         datesInInterval.forEach(date => {
-          const existingDateIndex = allDates.findIndex(d => isSameDay(d, date));
-          if (existingDateIndex !== -1) {
-            // Prioritize guest bookings over blocks if on same day (less likely but possible)
-            if (allDates[existingDateIndex].eventType === 'blocked' && event.status !== 'blocked') {
-              allDates[existingDateIndex].eventType = event.status;
-              allDates[existingDateIndex].eventName = event.name;
-            }
-          } else {
-            allDates.push(Object.assign(new Date(date), { eventType: event.status, eventName: event.name }));
+          const dateString = date.toISOString().split('T')[0];
+          const existingEntry = dateMap.get(dateString);
+          if (!existingEntry || (existingEntry.eventType === 'blocked' && event.status !== 'blocked')) {
+            // Prioritize non-blocked events if there's an overlap, or take the first one
+            dateMap.set(dateString, {
+              date: date,
+              eventType: event.status,
+              eventName: event.name,
+            });
           }
         });
-    } else if (isSameDay(interval.start, event.checkInDate)) { // Handle single-day events correctly
-        const existingDateIndex = allDates.findIndex(d => isSameDay(d, event.checkInDate));
-        if (existingDateIndex !== -1) {
-             if (allDates[existingDateIndex].eventType === 'blocked' && event.status !== 'blocked') {
-              allDates[existingDateIndex].eventType = event.status;
-              allDates[existingDateIndex].eventName = event.name;
-            }
-        } else {
-          allDates.push(Object.assign(new Date(event.checkInDate), { eventType: event.status, eventName: event.name }));
-        }
     }
   });
-  return allDates;
+  return Array.from(dateMap.values());
 }
 
 
@@ -64,7 +69,7 @@ export default function BookingsCalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date()); // For day click
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isClient, setIsClient] = useState(false);
 
   const fetchCalendarEvents = async () => {
@@ -86,50 +91,30 @@ export default function BookingsCalendarPage() {
     setIsClient(true);
   }, []);
 
-  const bookedDatesWithInfo = getAllEventDates(calendarEvents);
-  const bookedDates = bookedDatesWithInfo.map(d => new Date(d.getFullYear(), d.getMonth(), d.getDate())); // Just the dates for 'selected'
+  const eventDatesWithInfo = useMemo(() => getEventDatesWithInfo(calendarEvents), [calendarEvents]);
 
-  const dayRender = (day: Date, selectedDates: Date[], modifiers: any, dayButtonProps: any) => {
-    const eventInfo = bookedDatesWithInfo.find(bd => isSameDay(bd, day));
-    let dayClassName = "";
-    let tooltipText = "";
+  const modifiers = useMemo(() => ({
+    confirmed: eventDatesWithInfo.filter(d => d.eventType === 'confirmed' || d.eventType === 'paid').map(d => d.date),
+    blocked: eventDatesWithInfo.filter(d => d.eventType === 'blocked').map(d => d.date),
+    manual: eventDatesWithInfo.filter(d => d.eventType === 'manual_booking' || d.eventType === 'manual_confirmed').map(d => d.date),
+  }), [eventDatesWithInfo]);
 
-    if (eventInfo) {
-      tooltipText = `${eventInfo.eventName} (${eventInfo.eventType})`;
-      switch (eventInfo.eventType) {
-        case 'confirmed':
-        case 'paid':
-          dayClassName = "bg-primary text-primary-foreground hover:bg-primary/90";
-          break;
-        case 'blocked':
-          dayClassName = "bg-destructive text-destructive-foreground hover:bg-destructive/90 opacity-70";
-          break;
-        case 'manual_booking': // This was the status used in the form
-        case 'manual_confirmed': // This was the status set in addManualCalendarEntry
-          dayClassName = "bg-accent text-accent-foreground hover:bg-accent/90";
-          break;
-        default:
-          dayClassName = "bg-muted text-muted-foreground";
-      }
-    }
-    
-    const isSelectedByUser = selectedDate && isSameDay(day, selectedDate);
+  const modifierClassNames = {
+    confirmed: "bg-primary text-primary-foreground hover:bg-primary/90 aria-selected:!bg-primary aria-selected:!text-primary-foreground",
+    blocked: "bg-destructive text-destructive-foreground hover:bg-destructive/90 opacity-70 aria-selected:!bg-destructive aria-selected:!text-destructive-foreground",
+    manual: "bg-accent text-accent-foreground hover:bg-accent/90 aria-selected:!bg-accent aria-selected:!text-accent-foreground",
+    // selected class from react-day-picker will apply ring if `selected={selectedDate}` is used
+  };
+  
+  const CustomDayContent = (props: DayContentProps) => {
+    const { date } = props;
+    const eventInfoForDay = eventDatesWithInfo.find(edi => isSameDay(edi.date, date));
+    const tooltipText = eventInfoForDay ? `${eventInfoForDay.eventName} (${eventInfoForDay.eventType})` : "";
 
     return (
-        <div title={tooltipText} className={cn(isSelectedByUser && "ring-2 ring-ring ring-offset-2", "relative h-full w-full")}>
-          <button
-            {...dayButtonProps}
-            className={cn(
-              dayButtonProps.className,
-              eventInfo && dayClassName,
-              "disabled:opacity-100" 
-            )}
-            onClick={() => setSelectedDate(day)} 
-            disabled={modifiers.disabled} 
-          >
-            {day.getDate()}
-          </button>
-        </div>
+      <div title={tooltipText} className="relative w-full h-full flex items-center justify-center">
+        {date.getDate()}
+      </div>
     );
   };
 
@@ -155,10 +140,11 @@ export default function BookingsCalendarPage() {
   }
   
   const eventsOnSelectedDate = selectedDate 
-    ? calendarEvents.filter(event => 
-        startOfDay(selectedDate) >= startOfDay(event.checkInDate) && 
-        startOfDay(selectedDate) < startOfDay(event.checkOutDate)
-      )
+    ? calendarEvents.filter(event => {
+        const selDateStart = startOfDay(selectedDate);
+        // Event occupies days from checkInDate up to, but not including, checkOutDate
+        return selDateStart >= startOfDay(event.checkInDate) && selDateStart < startOfDay(event.checkOutDate);
+      })
     : [];
 
 
@@ -206,15 +192,18 @@ export default function BookingsCalendarPage() {
           <CardContent className="flex justify-center p-2 sm:p-4">
             {isClient ? (
                 <Calendar
-                    mode="multiple"
-                    selected={bookedDates}
+                    mode="single" // Changed from "multiple"
+                    selected={selectedDate} // Use selectedDate for single selection highlighting
+                    onSelect={setSelectedDate} // Update selectedDate on click
+                    modifiers={modifiers}
+                    modifierClassNames={modifierClassNames}
+                    components={{ DayContent: CustomDayContent }}
                     numberOfMonths={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2}
                     className="rounded-md border w-full"
                     disabled={(date) => date < startOfDay(new Date())} 
-                    defaultMonth={bookedDates.length > 0 ? bookedDates[0] : new Date()}
-                    components={{ DayContent: dayRender }}
-                    onDayClick={(day, modifiers) => {
-                        if (!modifiers.disabled) {
+                    defaultMonth={selectedDate || new Date()}
+                    onDayClick={(day, activeModifiers) => { // onDayClick is still useful
+                        if (!activeModifiers.disabled) {
                             setSelectedDate(day);
                         }
                     }}
@@ -226,9 +215,11 @@ export default function BookingsCalendarPage() {
             )}
           </CardContent>
           <CardFooter className="flex flex-wrap gap-4 pt-4 justify-center sm:justify-start">
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded bg-primary"></div><span className="font-body text-xs">Guest Booking</span></div>
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded bg-accent"></div><span className="font-body text-xs">Manual Booking</span></div>
-            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded bg-destructive opacity-70"></div><span className="font-body text-xs">Blocked</span></div>
+            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded" style={{backgroundColor: modifierClassNames.confirmed.split(' ')[0].replace('bg-','')}}></div><span className="font-body text-xs">Guest Booking</span></div>
+            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded" style={{backgroundColor: modifierClassNames.manual.split(' ')[0].replace('bg-','')}}></div><span className="font-body text-xs">Manual Booking</span></div>
+            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded opacity-70" style={{backgroundColor: modifierClassNames.blocked.split(' ')[0].replace('bg-','')}}></div><span className="font-body text-xs">Blocked</span></div>
+            <div className="flex items-center gap-2"><div className="h-4 w-4 rounded ring-2 ring-ring ring-offset-background"></div><span className="font-body text-xs">Selected Day</span></div>
+
           </CardFooter>
         </Card>
 
@@ -250,10 +241,10 @@ export default function BookingsCalendarPage() {
                                 <p className="font-semibold">{event.name}</p>
                                 <p className="text-xs text-muted-foreground">
                                     Type: <span className={cn(
-                                        event.status === 'confirmed' || event.status === 'paid' ? 'text-primary' :
-                                        event.status === 'manual_booking' || event.status === 'manual_confirmed' ? 'text-accent-foreground' :
+                                        (event.status === 'confirmed' || event.status === 'paid') ? 'text-primary' :
+                                        (event.status === 'manual_booking' || event.status === 'manual_confirmed') ? 'text-accent-foreground' : // Using accent-foreground for visibility
                                         event.status === 'blocked' ? 'text-destructive' : ''
-                                    )}>{event.status.replace('_', ' ').toUpperCase()}</span>
+                                    )}>{event.status.replace(/_/g, ' ').toUpperCase()}</span>
                                 </p>
                             </li>
                         ))}
