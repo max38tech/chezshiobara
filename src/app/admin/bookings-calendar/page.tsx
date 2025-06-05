@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ManualCalendarEntryForm } from './manual-calendar-entry-form';
 import { cn } from "@/lib/utils";
-import { buttonVariants } from '@/components/ui/button'; // For base day styling
+import { buttonVariants } from '@/components/ui/button'; 
 
 interface DayWithEventInfo {
   date: Date;
@@ -27,11 +27,7 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
   const dateMap = new Map<string, DayWithEventInfo>();
 
   events.forEach(event => {
-    // Ensure checkOutDate is at least one day after checkInDate for the interval
     let eventIntervalEnd = startOfDay(event.checkOutDate);
-    // occupied days are from checkIn up to (but not including) checkOut.
-    // So, if checkIn is 1st and checkOut is 3rd, occupied are 1st, 2nd.
-    // The last day of the event for highlighting is subDays(checkOutDate, 1)
     eventIntervalEnd = subDays(startOfDay(event.checkOutDate), 1); 
 
     if (startOfDay(event.checkInDate) <= eventIntervalEnd) {
@@ -56,10 +52,7 @@ function getEventDatesWithInfo(events: CalendarEvent[]): DayWithEventInfo[] {
           }
         });
     } else if (isSameDay(startOfDay(event.checkInDate), subDays(startOfDay(event.checkOutDate), 1))) {
-        // Handle single-day "events" if checkout is the very next day.
-        // An event from July 1 to July 2 occupies July 1.
         const dateString = startOfDay(event.checkInDate).toISOString().split('T')[0];
-        // (Apply same priority logic as above if needed for single day event overlaps)
          dateMap.set(dateString, {
             date: startOfDay(event.checkInDate),
             eventType: event.status,
@@ -107,11 +100,10 @@ export default function BookingsCalendarPage() {
   }), [eventDatesWithInfo]);
 
   const calendarSpecificClassNames = {
-    // Base styles from shadcn, but `cell` is modified
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
-    caption_label: "text-sm font-headline", // Use headline font
+    caption_label: "text-sm font-headline",
     nav: "space-x-1 flex items-center",
     nav_button: cn(
       buttonVariants({ variant: "outline" }),
@@ -121,15 +113,13 @@ export default function BookingsCalendarPage() {
     nav_button_next: "absolute right-1",
     table: "w-full border-collapse space-y-1",
     head_row: "flex",
-    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]", // Use body font
+    head_cell: "text-muted-foreground rounded-md w-9 font-body text-[0.8rem]",
     row: "flex w-full mt-2",
-    // CRITICAL: Removed [&:has([aria-selected])]:bg-accent from default cell
     cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
     day: cn(
       buttonVariants({ variant: "ghost" }),
       "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
     ),
-    // This is for a day selected that IS NOT an event day.
     day_selected: "bg-transparent text-ring ring-2 ring-ring hover:bg-transparent focus:bg-transparent focus:text-ring focus:ring-2 focus:ring-ring",
     day_today: "bg-muted text-foreground ring-1 ring-border",
     day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/30 aria-selected:text-muted-foreground",
@@ -139,16 +129,13 @@ export default function BookingsCalendarPage() {
   };
   
   const modifierClassNames = {
-    // Sage green for confirmed/paid. Important for selected state.
-    confirmed: "bg-green-300 text-green-900 hover:bg-green-400/90 aria-selected:!bg-green-400 aria-selected:!text-green-900 aria-selected:ring-2 aria-selected:ring-green-500",
-    // Red for blocked. Important for selected state.
-    blocked: "bg-destructive/70 text-destructive-foreground hover:bg-destructive/60 aria-selected:!bg-destructive aria-selected:!text-destructive-foreground aria-selected:ring-2 aria-selected:ring-destructive/80",
-    // Accent (soft brown) for manual. Important for selected state.
-    manual: "bg-accent text-accent-foreground hover:bg-accent/90 aria-selected:!bg-accent/80 aria-selected:!text-accent-foreground aria-selected:ring-2 aria-selected:ring-accent",
+    confirmed: "!bg-green-300 text-green-900 hover:!bg-green-400/90 aria-selected:!bg-green-400 aria-selected:!text-green-900 aria-selected:ring-2 aria-selected:ring-green-500",
+    blocked: "!bg-destructive/70 text-destructive-foreground hover:!bg-destructive/60 aria-selected:!bg-destructive aria-selected:!text-destructive-foreground aria-selected:ring-2 aria-selected:ring-destructive/80",
+    manual: "!bg-accent text-accent-foreground hover:!bg-accent/90 aria-selected:!bg-accent/80 aria-selected:!text-accent-foreground aria-selected:ring-2 aria-selected:ring-accent",
   };
   
   const CustomDayContent = (props: DayContentProps) => {
-    const { date, activeModifiers } = props; // activeModifiers tells if it's selected, today, etc.
+    const { date } = props; 
     const eventInfoForDay = eventDatesWithInfo.find(edi => isSameDay(edi.date, date));
     let tooltipText = "";
     if (eventInfoForDay) {
@@ -158,7 +145,7 @@ export default function BookingsCalendarPage() {
 
     return (
       <div title={tooltipText} className="relative w-full h-full flex items-center justify-center">
-        {formatDateFn(date, "d")} {/* Use date-fns format for day number */}
+        {formatDateFn(date, "d")}
       </div>
     );
   };
@@ -187,9 +174,8 @@ export default function BookingsCalendarPage() {
     ? calendarEvents.filter(event => {
         const selDateStart = startOfDay(selectedDate);
         const checkInStart = startOfDay(event.checkInDate);
-        // Event occupies days from checkInDate up to, but not including, checkOutDate
         const eventActualEnd = subDays(startOfDay(event.checkOutDate),1);
-        return selDateStart >= checkInStart && selDateStart <= eventActualEnd; // Inclusive for selected date check
+        return selDateStart >= checkInStart && selDateStart <= eventActualEnd; 
       })
     : [];
 
@@ -242,8 +228,8 @@ export default function BookingsCalendarPage() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={modifiers}
-                    classNames={calendarSpecificClassNames} // Apply our specific overrides
-                    modifierClassNames={modifierClassNames} // Apply event-specific styles
+                    classNames={calendarSpecificClassNames} 
+                    modifierClassNames={modifierClassNames} 
                     components={{ DayContent: CustomDayContent }}
                     numberOfMonths={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 2}
                     className="rounded-md border w-full"
@@ -298,11 +284,9 @@ export default function BookingsCalendarPage() {
                             <li key={event.id} className="font-body text-sm border-b pb-2 last:border-b-0">
                                 <p className="font-semibold">{event.name}</p>
                                 <p className="text-xs text-muted-foreground">
-                                    Type: <span className={cn(
-                                        (event.status === 'confirmed' || event.status === 'paid') ? 'text-green-700 font-medium' :
-                                        (event.status === 'manual_booking' || event.status === 'manual_confirmed') ? 'text-accent-foreground font-medium' : 
-                                        event.status === 'blocked' ? 'text-destructive font-medium' : ''
-                                    )}>{event.status.replace(/_/g, ' ').toUpperCase()}</span>
+                                    Type: <span className="font-medium text-foreground">
+                                      {event.status.replace(/_/g, ' ').toUpperCase()}
+                                    </span>
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     Check-in: {formatDateFn(event.checkInDate, 'PPP')}
@@ -320,6 +304,8 @@ export default function BookingsCalendarPage() {
     </PageContentWrapper>
   );
 }
+    
+
     
 
     
