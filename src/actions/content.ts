@@ -354,7 +354,7 @@ export async function updateLocalTipsPageContent(newTips: LocalTipItem[]): Promi
 // --- Commerce Disclosure Page Content ---
 export interface CommerceDisclosureContent {
   businessName: string;
-  legalName?: string; // Added field
+  legalName: string;
   businessAddress: string; // multiline
   contactEmail: string;
   contactPhone: string;
@@ -373,7 +373,7 @@ export interface CommerceDisclosureContent {
 
 const initialCommerceDisclosureData: CommerceDisclosureContent = {
   businessName: "Chez Shiobara B&B",
-  legalName: "Shawn Shiobara", // Added initial value
+  legalName: "Shawn Shiobara",
   businessAddress: "16-7 Karasawa, Minami-ku\nYokohama, Kanagawa 232-0034\nJapan",
   contactEmail: "us@shiobara.love",
   contactPhone: "+81 070 9058 2258",
@@ -406,11 +406,11 @@ export async function getCommerceDisclosureContent(): Promise<CommerceDisclosure
       console.log("'commerceDisclosurePage' document does not exist. Creating and seeding.");
       const dataToSeed = { ...initialCommerceDisclosureData, updatedAt: serverTimestamp() };
       await setDoc(docRef, dataToSeed);
-      return { ...initialCommerceDisclosureData, updatedAt: new Date() }; // Return with current date for updatedAt
+      return { ...initialCommerceDisclosureData, legalName: initialCommerceDisclosureData.legalName || "", updatedAt: new Date() }; // Return with current date for updatedAt
     }
   } catch (error) {
     console.error("Error fetching commerce disclosure content from Firestore: ", error);
-    return { ...initialCommerceDisclosureData, updatedAt: new Date() }; // Fallback with current date
+    return { ...initialCommerceDisclosureData, legalName: initialCommerceDisclosureData.legalName || "", updatedAt: new Date() }; // Fallback with current date
   }
 }
 

@@ -33,7 +33,7 @@ type FormFieldConfig = {
 
 const formFieldsConfig: FormFieldConfig[] = [
   { name: "businessName", label: "Business Name", placeholder: "e.g., Chez Shiobara B&B", component: Input },
-  { name: "legalName", label: "Legal Name (Optional)", placeholder: "e.g., Your Full Name", component: Input },
+  { name: "legalName", label: "Legal Name", placeholder: "e.g., Your Full Name", component: Input },
   { name: "businessAddress", label: "Business Address", placeholder: "Street, City, Country", component: Textarea, rows: 3 },
   { name: "contactEmail", label: "Contact Email", placeholder: "e.g., us@shiobara.love", component: Input },
   { name: "contactPhone", label: "Contact Phone", placeholder: "e.g., +81 070 9058 2258", component: Input },
@@ -82,7 +82,9 @@ export function EditableCommerceDisclosureContent() {
         });
         setLastUpdated(null);
         // Return empty strings or placeholders for defaultValues on error
-        return formFieldsConfig.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {} as CommerceDisclosureContentFormValues);
+        // Ensure legalName has a default string for the form
+        return formFieldsConfig.reduce((acc, field) => ({ ...acc, [field.name]: field.name === 'legalName' ? '' : '' }), {} as CommerceDisclosureContentFormValues);
+
       } finally {
         setIsLoading(false);
       }
@@ -104,11 +106,7 @@ export function EditableCommerceDisclosureContent() {
   const onSubmit = async (data: CommerceDisclosureContentFormValues) => {
     setIsSaving(true);
     try {
-      const dataToSave = {
-        ...data,
-        legalName: data.legalName === "" ? undefined : data.legalName, // Save as undefined if empty string
-      };
-      const result = await updateCommerceDisclosureContent(dataToSave);
+      const result = await updateCommerceDisclosureContent(data); // legalName is now required, so no need to convert empty to undefined
       if (result.success) {
         toast({
           title: "Success!",

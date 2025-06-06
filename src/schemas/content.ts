@@ -73,7 +73,7 @@ export type LocalTipsPageContentFormValues = z.infer<typeof localTipsPageContent
 // --- Commerce Disclosure Page Schemas ---
 export const commerceDisclosureContentSchema = z.object({
   businessName: z.string().min(1, "Business name is required.").max(150),
-  legalName: z.string().max(150, "Legal name cannot exceed 150 characters.").optional().or(z.literal('')),
+  legalName: z.string().min(1, "Legal name is required.").max(150),
   businessAddress: z.string().min(1, "Business address is required.").max(500),
   contactEmail: z.string().email("Invalid email address.").max(100),
   contactPhone: z.string().min(1, "Contact phone is required.").max(50),
