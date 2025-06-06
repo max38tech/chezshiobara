@@ -354,6 +354,7 @@ export async function updateLocalTipsPageContent(newTips: LocalTipItem[]): Promi
 // --- Commerce Disclosure Page Content ---
 export interface CommerceDisclosureContent {
   businessName: string;
+  legalName?: string; // Added field
   businessAddress: string; // multiline
   contactEmail: string;
   contactPhone: string;
@@ -372,6 +373,7 @@ export interface CommerceDisclosureContent {
 
 const initialCommerceDisclosureData: CommerceDisclosureContent = {
   businessName: "Chez Shiobara B&B",
+  legalName: "Shawn Shiobara", // Added initial value
   businessAddress: "16-7 Karasawa, Minami-ku\nYokohama, Kanagawa 232-0034\nJapan",
   contactEmail: "us@shiobara.love",
   contactPhone: "+81 070 9058 2258",

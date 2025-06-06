@@ -14,14 +14,18 @@ const MultilineHtmlContent = ({ htmlString }: { htmlString?: string }) => {
   return <p dangerouslySetInnerHTML={{ __html: processedHtml }} />;
 };
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div>
-    <h3 className="font-headline text-xl mb-2">{title}</h3>
-    <div className="font-body text-foreground leading-relaxed space-y-2">
-      {children}
+const Section = ({ title, children, showIfEmpty = false }: { title: string; children: React.ReactNode, showIfEmpty?: boolean }) => {
+  if (!children && !showIfEmpty) return null;
+  return (
+    <div>
+      <h3 className="font-headline text-xl mb-2">{title}</h3>
+      <div className="font-body text-foreground leading-relaxed space-y-2">
+        {children || <p className="text-muted-foreground">N/A</p>}
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
 
 export default async function CommerceDisclosurePage() {
   const content: CommerceDisclosureContent | null = await getCommerceDisclosureContent();
@@ -63,6 +67,12 @@ export default async function CommerceDisclosurePage() {
           <Section title="Business Name">
             <p>{content.businessName}</p>
           </Section>
+
+          {content.legalName && (
+            <Section title="Legal Name">
+              <p>{content.legalName}</p>
+            </Section>
+          )}
 
           <Section title="Business Address">
             <MultilineHtmlContent htmlString={content.businessAddress} />

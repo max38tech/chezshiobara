@@ -33,6 +33,7 @@ type FormFieldConfig = {
 
 const formFieldsConfig: FormFieldConfig[] = [
   { name: "businessName", label: "Business Name", placeholder: "e.g., Chez Shiobara B&B", component: Input },
+  { name: "legalName", label: "Legal Name (Optional)", placeholder: "e.g., Your Full Name", component: Input },
   { name: "businessAddress", label: "Business Address", placeholder: "Street, City, Country", component: Textarea, rows: 3 },
   { name: "contactEmail", label: "Contact Email", placeholder: "e.g., us@shiobara.love", component: Input },
   { name: "contactPhone", label: "Contact Phone", placeholder: "e.g., +81 070 9058 2258", component: Input },
@@ -68,7 +69,10 @@ export function EditableCommerceDisclosureContent() {
         }
         // Remove updatedAt before setting form defaults
         const { updatedAt, ...formData } = content;
-        return formData;
+        return {
+            ...formData,
+            legalName: formData.legalName || "", // Ensure optional field has a default string value for form
+        };
       } catch (error) {
         console.error("Failed to load commerce disclosure content for form:", error);
         toast({
@@ -100,7 +104,11 @@ export function EditableCommerceDisclosureContent() {
   const onSubmit = async (data: CommerceDisclosureContentFormValues) => {
     setIsSaving(true);
     try {
-      const result = await updateCommerceDisclosureContent(data);
+      const dataToSave = {
+        ...data,
+        legalName: data.legalName === "" ? undefined : data.legalName, // Save as undefined if empty string
+      };
+      const result = await updateCommerceDisclosureContent(dataToSave);
       if (result.success) {
         toast({
           title: "Success!",
@@ -111,6 +119,10 @@ export function EditableCommerceDisclosureContent() {
         if (updatedContent.updatedAt && updatedContent.updatedAt instanceof Date) {
           setLastUpdated(updatedContent.updatedAt);
         }
+         form.reset({
+            ...updatedContent,
+            legalName: updatedContent.legalName || "", // Ensure form value is string
+        });
       } else {
         toast({
           title: "Save Failed",
