@@ -16,7 +16,7 @@ export async function handleBookingRequest(data: BookingRequestFormValues) {
       ...data,
       guests: Number(data.guests),
       createdAt: serverTimestamp(),
-      status: "pending", // Default status for new requests
+      status: "pending", 
     };
 
     const docRef = await addDoc(collection(db, "bookingRequests"), bookingData);
@@ -65,7 +65,7 @@ export async function declineBookingRequest(requestId: string) {
 
 export interface CalendarEvent {
   id: string;
-  name: string; // Guest name or block description
+  name: string; 
   checkInDate: Date;
   checkOutDate: Date;
   status: 'confirmed' | 'blocked' | 'manual_booking' | 'paid' | 'manual_confirmed';
@@ -201,7 +201,7 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl} for booking ${bookingId}`);
+  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl} for constructing payment link for booking ${bookingId}`);
   const paymentLink = `${baseUrl}/checkout/${bookingId}`;
 
   const transporter = nodemailer.createTransport({
@@ -297,8 +297,8 @@ export async function updateBookingAndInvoiceDetails(
         message: `Booking details and invoice updated successfully. ${emailStatusMessage}` 
     };
   } catch (error) {
-      console.error("Error updating booking and invoice details: ", error);
-      return { success: false, message: `Failed to update booking and invoice details. ${error instanceof Error ? error.message : "Unknown error"}` };
+    console.error("[updateBookingAndInvoiceDetails] Error updating booking and invoice details: ", error);
+    return { success: false, message: `Failed to update booking and invoice details. ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
 
@@ -364,3 +364,4 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
     };
   }
 }
+

@@ -40,17 +40,17 @@ import Link from 'next/link';
 export interface BookingRequest {
   id: string;
   name: string;
-  email?: string; // Can be undefined for 'blocked' type
+  email?: string; 
   checkInDate: Timestamp;
   checkOutDate: Timestamp;
-  guests?: number; // Can be undefined for 'blocked' type
+  guests?: number; 
   message?: string;
   createdAt: Timestamp;
   status: 'pending' | 'confirmed' | 'declined' | 'paid' | 'blocked' | 'manual_booking' | 'manual_confirmed';
   finalInvoiceAmount?: number;
   finalInvoiceCurrency?: string;
   invoiceRecipientEmail?: string;
-  entryName?: string; // For 'blocked' or 'manual_booking' types
+  entryName?: string; 
 }
 
 interface InvoiceCalculationResult {
@@ -75,6 +75,8 @@ export function BookingRequestsTable() {
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [pricingConfig, setPricingConfig] = useState<ClientSafePricingConfiguration | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
+  const [isPending, startTransition] = useTransition();
+
 
   const form = useForm<EditableBookingInvoiceFormValues>({
     resolver: zodResolver(editableBookingInvoiceSchema),
@@ -133,7 +135,7 @@ export function BookingRequestsTable() {
       result = await approveBookingRequest(requestId);
     } else if (newStatus === 'declined') {
       result = await declineBookingRequest(requestId);
-    } else { // For other statuses like 'paid', 'blocked', 'manual_confirmed'
+    } else { 
       const requestRef = doc(db, "bookingRequests", requestId);
       try {
         await updateDoc(requestRef, { status: newStatus });
@@ -151,7 +153,7 @@ export function BookingRequestsTable() {
     });
 
     if (result.success) {
-      fetchBookingRequests(); // Re-fetch all requests to ensure UI consistency
+      fetchBookingRequests(); 
     }
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: false }));
   };
@@ -179,7 +181,7 @@ export function BookingRequestsTable() {
     const initialCalcRequest: BookingCalculationRequest = {
       checkInDate: booking.checkInDate.toDate(),
       checkOutDate: booking.checkOutDate.toDate(),
-      guests: booking.guests || 1, // Default to 1 if guests undefined
+      guests: booking.guests || 1, 
     };
     const details = await performInvoiceCalculation(initialCalcRequest);
     
@@ -217,39 +219,51 @@ export function BookingRequestsTable() {
   };
 
   const onInvoiceFormSubmit = async (values: EditableBookingInvoiceFormValues) => {
-    if (!editingBooking || !currentInvoiceCalculation) {
-      toast({ title: "Error", description: "Missing booking or calculation details for saving.", variant: "destructive" });
-      return;
-    }
-    setIsSavingInvoice(true);
+     setIsSavingInvoice(true);
+     startTransition(async () => {
+        if (!editingBooking || !currentInvoiceCalculation) {
+        toast({ title: "Error", description: "Missing booking or calculation details for saving.", variant: "destructive" });
+        setIsSavingInvoice(false);
+        return;
+        }
 
-    const dataToUpdate = {
-      ...values, 
-      finalInvoiceBreakdown: currentInvoiceCalculation.breakdown,
-      finalInvoiceStrategy: currentInvoiceCalculation.appliedStrategy,
-      finalInvoiceCurrency: currentInvoiceCalculation.currency,
-    };
+        const dataToUpdate = {
+        ...values, 
+        finalInvoiceBreakdown: currentInvoiceCalculation.breakdown,
+        finalInvoiceStrategy: currentInvoiceCalculation.appliedStrategy,
+        finalInvoiceCurrency: currentInvoiceCalculation.currency,
+        };
+        
+        console.log("Client: Submitting to updateBookingAndInvoiceDetails:", dataToUpdate);
+        const result = await updateBookingAndInvoiceDetails(editingBooking.id, dataToUpdate);
+        console.log("Client: Result from updateBookingAndInvoiceDetails:", result);
 
-    const result = await updateBookingAndInvoiceDetails(editingBooking.id, dataToUpdate);
-    let toastDescription = result.message;
+        let toastTitle = result.success ? "Success!" : "Error";
+        let toastDescription = result.message;
 
-    if (result.success) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-      const paymentLink = `${baseUrl}/checkout/${editingBooking.id}`;
-      toastDescription += `\nPayment Link: ${paymentLink}`;
-      
-      await fetchBookingRequests(); 
-      setIsInvoiceModalOpen(false); // Close the dialog on successful save
-    }
-    
-    toast({ 
-        title: result.success ? "Success!" : "Error", 
-        description: toastDescription,
-        variant: result.success ? "default" : "destructive",
-        duration: result.success ? 9000 : 5000, // Longer duration for success toast with link
+        if (result.success && editingBooking) { 
+            setIsInvoiceModalOpen(false); 
+            
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+            const paymentLink = `${baseUrl}/checkout/${editingBooking.id}`;
+            toastDescription = `${result.message}\n\n📋 Payment Link (copy to share):\n${paymentLink}`;
+            
+            try {
+            await fetchBookingRequests(); 
+            } catch (fetchError) {
+            console.error("Error refetching booking requests:", fetchError);
+            toastDescription += "\n(Could not refresh booking list, please refresh manually)";
+            }
+        }
+        
+        toast({ 
+            title: toastTitle, 
+            description: toastDescription,
+            variant: result.success ? "default" : "destructive",
+            duration: result.success ? 10000 : 5000, 
+        });
+        setIsSavingInvoice(false);
     });
-
-    setIsSavingInvoice(false);
   };
 
   const formatDate = (timestamp: Timestamp | Date | undefined) => {
@@ -343,7 +357,7 @@ export function BookingRequestsTable() {
                         : request.status === 'declined' ? 'destructive'
                         : request.status === 'blocked' ? 'destructive'
                         : request.status === 'manual_booking' || request.status === 'manual_confirmed' ? 'secondary'
-                        : 'secondary' // pending
+                        : 'secondary' 
                       }
                       className={
                           request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
@@ -351,7 +365,7 @@ export function BookingRequestsTable() {
                         : request.status === 'declined' ? '' 
                         : request.status === 'blocked' ? 'bg-gray-500 text-white hover:bg-gray-600 opacity-80'
                         : request.status === 'manual_booking' || request.status === 'manual_confirmed' ? 'bg-purple-600 text-white hover:bg-purple-700'
-                        : 'bg-yellow-500 text-black hover:bg-yellow-600' // pending
+                        : 'bg-yellow-500 text-black hover:bg-yellow-600' 
                       }
                     >
                       {getDisplayStatus(request.status)}
@@ -391,7 +405,7 @@ export function BookingRequestsTable() {
                       )}
                        {(request.status === 'confirmed' || request.status === 'manual_confirmed') && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
                         <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                          <Link href={`/checkout/${request.id}`} target="_blank"> {/* Open in new tab for guest */}
+                          <Link href={`/checkout/${request.id}`} target="_blank"> 
                             <CreditCard className="mr-1 h-4 w-4" /> Share Payment Link
                           </Link>
                         </Button>
@@ -474,7 +488,6 @@ export function BookingRequestsTable() {
                               }
                             }}
                             placeholder="Select check-in"
-                            // fromDate={new Date()} // Allow past dates when editing
                           />
                           <FormMessage />
                         </FormItem>
@@ -492,7 +505,7 @@ export function BookingRequestsTable() {
                               value={field.value}
                               onChange={field.onChange}
                               placeholder="Select check-out"
-                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : undefined } // Allow past dates for editing
+                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : undefined } 
                             />
                             <FormMessage />
                           </FormItem>
@@ -550,8 +563,8 @@ export function BookingRequestsTable() {
                         <Button type="button" variant="ghost" onClick={() => setIsInvoiceModalOpen(false)} disabled={isSavingInvoice}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSavingInvoice || isRecalculatingInvoice} className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                        {isSavingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Invoice"}
+                        <Button type="submit" disabled={isSavingInvoice || isRecalculatingInvoice || isPending} className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                        {isSavingInvoice || isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Invoice"}
                         </Button>
                     </div>
                   </DialogFooter>
