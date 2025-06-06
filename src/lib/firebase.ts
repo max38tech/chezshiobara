@@ -40,6 +40,8 @@ console.log(
 let app;
 if (!getApps().length) {
   try {
+    // Log the exact config being used
+    console.log("Firebase config being used for initializeApp:", JSON.stringify(firebaseConfig, null, 2));
     app = initializeApp(firebaseConfig);
     console.log("Firebase initialized successfully. Project ID from app options:", app.options.projectId);
   } catch (error) {
