@@ -16,7 +16,7 @@ export async function handleBookingRequest(data: BookingRequestFormValues) {
       ...data,
       guests: Number(data.guests),
       createdAt: serverTimestamp(),
-      status: "pending", 
+      status: "pending",
     };
 
     const docRef = await addDoc(collection(db, "bookingRequests"), bookingData);
@@ -65,12 +65,12 @@ export async function declineBookingRequest(requestId: string) {
 
 export interface CalendarEvent {
   id: string;
-  name: string; 
+  name: string;
   checkInDate: Date;
   checkOutDate: Date;
   status: 'confirmed' | 'blocked' | 'manual_booking' | 'paid' | 'manual_confirmed';
-  notes?: string; 
-  entryType?: 'blocked' | 'manual_booking'; 
+  notes?: string;
+  entryType?: 'blocked' | 'manual_booking';
 }
 
 export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
@@ -154,7 +154,7 @@ export async function calculateInvoiceDetails(
     bestStrategy = "Weekly Priority";
   }
 
-  const approxDaysInMonth = 30; 
+  const approxDaysInMonth = 30;
   const months = Math.floor(nights / approxDaysInMonth);
   const remainingNightsAfterMonths = nights % approxDaysInMonth;
   const remainingWeeksAfterMonths = Math.floor(remainingNightsAfterMonths / 7);
@@ -188,9 +188,9 @@ export async function calculateInvoiceDetails(
   };
 }
 
-async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues) {
+async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues): Promise<{ success: boolean; message: string }> {
   console.log(`[sendPaymentLinkEmail] Attempting to send email for booking ID: ${bookingId}`);
-  
+
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn("[sendPaymentLinkEmail] Email credentials (EMAIL_USER, EMAIL_PASS) not set. Skipping payment link email.");
     return { success: false, message: "Email not sent: Server email configuration missing." };
@@ -222,7 +222,7 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
       <h1>Booking Confirmed & Payment Due</h1>
       <p>Dear ${details.name},</p>
       <p>Thank you for your booking with Chez Shiobara B&B! Your stay has been confirmed, and the invoice details are finalized.</p>
-      
+
       <h2>Booking Summary:</h2>
       <ul>
         <li><strong>Guest Name:</strong> ${details.name}</li>
@@ -230,15 +230,15 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
         <li><strong>Check-out Date:</strong> ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li>
         <li><strong>Number of Guests:</strong> ${details.guests}</li>
       </ul>
-      
+
       <h2>Payment Information:</h2>
       <p><strong>Amount Due:</strong> ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p>
       <p><strong>Payment Breakdown:</strong> ${details.finalInvoiceBreakdown || 'As per agreed rate'}</p>
-      
+
       <p>To complete your payment and secure your booking, please follow this link:</p>
       <p><a href="${paymentLink}" target="_blank" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Pay Now</a></p>
       <p>Or copy and paste this URL into your browser: ${paymentLink}</p>
-      
+
       <p>If you have any questions, please don't hesitate to contact us.</p>
       <p>We look forward to welcoming you!</p>
       <br>
@@ -248,9 +248,9 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
   };
 
   try {
-    console.log(`[sendPaymentLinkEmail] Sending email to: ${details.invoiceRecipientEmail} for booking ${bookingId}`);
-    await transporter.sendMail(mailOptions);
-    console.log(`[sendPaymentLinkEmail] Payment link email sent successfully to ${details.invoiceRecipientEmail} for booking ${bookingId}.`);
+    console.log(`[sendPaymentLinkEmail] Sending email to: ${details.invoiceRecipientEmail} for booking ${bookingId} with subject: ${mailOptions.subject}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[sendPaymentLinkEmail] Payment link email sent successfully to ${details.invoiceRecipientEmail} for booking ${bookingId}. Message ID: ${info.messageId}`);
     return { success: true, message: "Payment link email sent successfully." };
   } catch (error) {
     console.error(`[sendPaymentLinkEmail] Error sending payment link email for booking ${bookingId}:`, error);
@@ -262,13 +262,13 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
 export async function updateBookingAndInvoiceDetails(
   bookingId: string,
   details: EditableBookingInvoiceFormValues
-) {
-  console.log(`[updateBookingAndInvoiceDetails] Attempting to update booking ID: ${bookingId} with details:`, details);
+): Promise<{ success: boolean; message: string }> {
+  console.log(`[updateBookingAndInvoiceDetails] Attempting to update booking ID: ${bookingId} with details:`, JSON.stringify(details, null, 2));
   try {
     const bookingRef = doc(db, "bookingRequests", bookingId);
     const dataToUpdate = {
       name: details.name,
-      email: details.invoiceRecipientEmail, 
+      email: details.invoiceRecipientEmail,
       checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
       checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
       guests: Number(details.guests),
@@ -278,23 +278,25 @@ export async function updateBookingAndInvoiceDetails(
       finalInvoiceStrategy: details.finalInvoiceStrategy,
       invoiceRecipientEmail: details.invoiceRecipientEmail,
       invoiceUpdatedAt: serverTimestamp(),
+      status: 'confirmed', // Ensure status remains or becomes 'confirmed' if it was e.g. 'pending'
     };
 
     await updateDoc(bookingRef, dataToUpdate);
     console.log(`[updateBookingAndInvoiceDetails] Booking ${bookingId} details and invoice finalized in Firestore.`);
-    
-    let emailStatusMessage = "";
-    const emailResult = await sendPaymentLinkEmail(bookingId, details);
-    if (emailResult.success) {
-        emailStatusMessage = "Payment link email also sent to the guest.";
+
+    let emailStatusMessage = "Email status: Unknown.";
+    if (details.invoiceRecipientEmail) {
+        const emailResult = await sendPaymentLinkEmail(bookingId, details);
+        emailStatusMessage = emailResult.message;
     } else {
-        emailStatusMessage = `Note: ${emailResult.message}`;
+        emailStatusMessage = "Email not sent: No recipient email provided in form.";
+        console.warn(`[updateBookingAndInvoiceDetails] Email not sent for booking ${bookingId} because invoiceRecipientEmail was empty.`);
     }
     console.log(`[updateBookingAndInvoiceDetails] Email status for booking ${bookingId}: ${emailStatusMessage}`);
 
-    return { 
-        success: true, 
-        message: `Booking details and invoice updated successfully. ${emailStatusMessage}` 
+    return {
+        success: true,
+        message: `Booking & Invoice updated. ${emailStatusMessage}`
     };
   } catch (error) {
     console.error("[updateBookingAndInvoiceDetails] Error updating booking and invoice details: ", error);
@@ -306,8 +308,8 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
   console.log("Manual calendar entry received:", data);
   try {
     const entryData: any = {
-      entryName: data.entryName, 
-      name: data.entryName, 
+      entryName: data.entryName,
+      name: data.entryName,
       checkInDate: Timestamp.fromDate(data.checkInDate),
       checkOutDate: Timestamp.fromDate(data.checkOutDate),
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
@@ -340,7 +342,7 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
     const entryRef = doc(db, "bookingRequests", entryId);
     const entryData: any = {
       entryName: data.entryName,
-      name: data.entryName, 
+      name: data.entryName,
       checkInDate: Timestamp.fromDate(data.checkInDate),
       checkOutDate: Timestamp.fromDate(data.checkOutDate),
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',

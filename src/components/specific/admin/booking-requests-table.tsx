@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw, FileText, Calculator, CreditCard, Trash2 } from 'lucide-react';
+import { Loader2, Inbox, CheckCircle, XCircle, Info, RefreshCcw, FileText, Calculator, CreditCard, Trash2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   approveBookingRequest,
@@ -40,17 +40,17 @@ import Link from 'next/link';
 export interface BookingRequest {
   id: string;
   name: string;
-  email?: string; 
+  email?: string;
   checkInDate: Timestamp;
   checkOutDate: Timestamp;
-  guests?: number; 
+  guests?: number;
   message?: string;
   createdAt: Timestamp;
   status: 'pending' | 'confirmed' | 'declined' | 'paid' | 'blocked' | 'manual_booking' | 'manual_confirmed';
   finalInvoiceAmount?: number;
   finalInvoiceCurrency?: string;
   invoiceRecipientEmail?: string;
-  entryName?: string; 
+  entryName?: string;
 }
 
 interface InvoiceCalculationResult {
@@ -66,7 +66,7 @@ export function BookingRequestsTable() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<Record<string, boolean>>({});
-  
+
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<BookingRequest | null>(null);
   const [currentInvoiceCalculation, setCurrentInvoiceCalculation] = useState<InvoiceCalculationResult | null>(null);
@@ -75,7 +75,7 @@ export function BookingRequestsTable() {
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [pricingConfig, setPricingConfig] = useState<ClientSafePricingConfiguration | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isSubmittingInvoice, startInvoiceTransition] = useTransition();
 
 
   const form = useForm<EditableBookingInvoiceFormValues>({
@@ -129,13 +129,13 @@ export function BookingRequestsTable() {
 
   const handleStatusUpdate = async (requestId: string, newStatus: BookingRequest['status']) => {
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: true }));
-    
+
     let result;
     if (newStatus === 'confirmed') {
       result = await approveBookingRequest(requestId);
     } else if (newStatus === 'declined') {
       result = await declineBookingRequest(requestId);
-    } else { 
+    } else {
       const requestRef = doc(db, "bookingRequests", requestId);
       try {
         await updateDoc(requestRef, { status: newStatus });
@@ -153,7 +153,7 @@ export function BookingRequestsTable() {
     });
 
     if (result.success) {
-      fetchBookingRequests(); 
+      fetchBookingRequests();
     }
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: false }));
   };
@@ -177,14 +177,14 @@ export function BookingRequestsTable() {
     setEditingBooking(booking);
     setIsCalculatingInvoice(true);
     setCurrentInvoiceCalculation(null);
-    
+
     const initialCalcRequest: BookingCalculationRequest = {
       checkInDate: booking.checkInDate.toDate(),
       checkOutDate: booking.checkOutDate.toDate(),
-      guests: booking.guests || 1, 
+      guests: booking.guests || 1,
     };
     const details = await performInvoiceCalculation(initialCalcRequest);
-    
+
     form.reset({
       name: booking.name || booking.entryName || "",
       invoiceRecipientEmail: booking.invoiceRecipientEmail || booking.email || "",
@@ -219,21 +219,19 @@ export function BookingRequestsTable() {
   };
 
   const onInvoiceFormSubmit = async (values: EditableBookingInvoiceFormValues) => {
-     setIsSavingInvoice(true);
-     startTransition(async () => {
+     startInvoiceTransition(async () => {
         if (!editingBooking || !currentInvoiceCalculation) {
         toast({ title: "Error", description: "Missing booking or calculation details for saving.", variant: "destructive" });
-        setIsSavingInvoice(false);
         return;
         }
 
         const dataToUpdate = {
-        ...values, 
+        ...values,
         finalInvoiceBreakdown: currentInvoiceCalculation.breakdown,
         finalInvoiceStrategy: currentInvoiceCalculation.appliedStrategy,
         finalInvoiceCurrency: currentInvoiceCalculation.currency,
         };
-        
+
         console.log("Client: Submitting to updateBookingAndInvoiceDetails:", dataToUpdate);
         const result = await updateBookingAndInvoiceDetails(editingBooking.id, dataToUpdate);
         console.log("Client: Result from updateBookingAndInvoiceDetails:", result);
@@ -241,28 +239,33 @@ export function BookingRequestsTable() {
         let toastTitle = result.success ? "Success!" : "Error";
         let toastDescription = result.message;
 
-        if (result.success && editingBooking) { 
-            setIsInvoiceModalOpen(false); 
-            
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-            const paymentLink = `${baseUrl}/checkout/${editingBooking.id}`;
-            toastDescription = `${result.message}\n\n📋 Payment Link (copy to share):\n${paymentLink}`;
-            
+        if (result.success && editingBooking) {
+            setIsInvoiceModalOpen(false);
             try {
-            await fetchBookingRequests(); 
+                await fetchBookingRequests();
             } catch (fetchError) {
-            console.error("Error refetching booking requests:", fetchError);
-            toastDescription += "\n(Could not refresh booking list, please refresh manually)";
+                console.error("Error refetching booking requests:", fetchError);
+                toastDescription += "\n(Could not refresh booking list, please refresh manually)";
             }
         }
-        
-        toast({ 
-            title: toastTitle, 
+
+        toast({
+            title: toastTitle,
             description: toastDescription,
             variant: result.success ? "default" : "destructive",
-            duration: result.success ? 10000 : 5000, 
+            duration: result.success ? 10000 : 5000,
         });
-        setIsSavingInvoice(false);
+    });
+  };
+
+  const handleCopyPaymentLink = (bookingId: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const paymentLink = `${baseUrl}/checkout/${bookingId}`;
+    navigator.clipboard.writeText(paymentLink).then(() => {
+      toast({ title: "Link Copied!", description: "Payment link copied to clipboard." });
+    }).catch(err => {
+      toast({ title: "Copy Failed", description: "Could not copy link to clipboard.", variant: "destructive" });
+      console.error('Failed to copy payment link: ', err);
     });
   };
 
@@ -277,9 +280,9 @@ export function BookingRequestsTable() {
     const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
     return format(date, 'PPP');
   };
-  
+
   const getDisplayStatus = (statusValue: BookingRequest['status']) => {
-    return statusValue.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return statusValue.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   if (loading && bookingRequests.length === 0 && !pricingConfig && !paymentSettings) {
@@ -353,19 +356,19 @@ export function BookingRequestsTable() {
                     <Badge
                       variant={
                         request.status === 'confirmed' ? 'default'
-                        : request.status === 'paid' ? 'default' 
+                        : request.status === 'paid' ? 'default'
                         : request.status === 'declined' ? 'destructive'
                         : request.status === 'blocked' ? 'destructive'
                         : request.status === 'manual_booking' || request.status === 'manual_confirmed' ? 'secondary'
-                        : 'secondary' 
+                        : 'secondary'
                       }
                       className={
                           request.status === 'confirmed' ? 'bg-green-600 text-white hover:bg-green-700'
                         : request.status === 'paid' ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : request.status === 'declined' ? '' 
+                        : request.status === 'declined' ? ''
                         : request.status === 'blocked' ? 'bg-gray-500 text-white hover:bg-gray-600 opacity-80'
                         : request.status === 'manual_booking' || request.status === 'manual_confirmed' ? 'bg-purple-600 text-white hover:bg-purple-700'
-                        : 'bg-yellow-500 text-black hover:bg-yellow-600' 
+                        : 'bg-yellow-500 text-black hover:bg-yellow-600'
                       }
                     >
                       {getDisplayStatus(request.status)}
@@ -404,11 +407,16 @@ export function BookingRequestsTable() {
                         </Button>
                       )}
                        {(request.status === 'confirmed' || request.status === 'manual_confirmed') && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
-                        <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                          <Link href={`/checkout/${request.id}`} target="_blank"> 
-                            <CreditCard className="mr-1 h-4 w-4" /> Share Payment Link
-                          </Link>
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                            <Link href={`/checkout/${request.id}`} target="_blank">
+                              <CreditCard className="mr-1 h-4 w-4" /> Share Payment Link
+                            </Link>
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={() => handleCopyPaymentLink(request.id)} title="Copy payment link">
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
                        {(request.status === 'blocked' || request.status === 'manual_confirmed' || request.status === 'manual_booking') && (
                          <Button variant="destructive" size="sm" onClick={() => {/* Implement delete action */ alert('Delete functionality not yet implemented.')}} title="Delete this entry">
@@ -427,7 +435,7 @@ export function BookingRequestsTable() {
       {editingBooking && (
         <Dialog open={isInvoiceModalOpen} onOpenChange={(isOpen) => {
           if (!isOpen) {
-            form.reset({}); 
+            form.reset({});
             setCurrentInvoiceCalculation(null);
             setEditingBooking(null);
           }
@@ -505,7 +513,7 @@ export function BookingRequestsTable() {
                               value={field.value}
                               onChange={field.onChange}
                               placeholder="Select check-out"
-                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : undefined } 
+                              fromDate={watchedCheckInDate ? new Date(watchedCheckInDate.getTime() + 86400000) : undefined }
                             />
                             <FormMessage />
                           </FormItem>
@@ -537,7 +545,7 @@ export function BookingRequestsTable() {
                     {isRecalculatingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calculator className="mr-2 h-4 w-4" />}
                     Recalculate Based on Above Dates/Guests
                   </Button>
-                  
+
                   <FormField
                     control={form.control}
                     name="finalInvoiceAmount"
@@ -549,24 +557,13 @@ export function BookingRequestsTable() {
                       </FormItem>
                     )}
                   />
-                  <DialogFooter className="pt-4 flex flex-col sm:flex-row sm:justify-between items-center">
-                    <div>
-                     {paymentSettings?.isCardPaymentEnabled && editingBooking.finalInvoiceAmount && editingBooking.finalInvoiceAmount > 0 && (editingBooking.status === 'confirmed' || editingBooking.status === 'manual_confirmed') && (
-                        <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground mt-2 sm:mt-0">
-                          <Link href={`/checkout/${editingBooking.id}`} target="_blank" onClick={() => setIsInvoiceModalOpen(false)}>
-                            <CreditCard className="mr-2 h-4 w-4" /> Share Payment Link
-                          </Link>
-                        </Button>
-                      )}
-                    </div>
-                    <div className="flex gap-2 mt-2 sm:mt-0">
-                        <Button type="button" variant="ghost" onClick={() => setIsInvoiceModalOpen(false)} disabled={isSavingInvoice}>
+                  <DialogFooter className="pt-4 flex flex-col sm:flex-row sm:justify-end items-center gap-2">
+                        <Button type="button" variant="ghost" onClick={() => setIsInvoiceModalOpen(false)} disabled={isSubmittingInvoice}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSavingInvoice || isRecalculatingInvoice || isPending} className="bg-primary hover:bg-primary/80 text-primary-foreground">
-                        {isSavingInvoice || isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Invoice"}
+                        <Button type="submit" disabled={isSubmittingInvoice || isRecalculatingInvoice} className="bg-primary hover:bg-primary/80 text-primary-foreground">
+                        {isSubmittingInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Invoice"}
                         </Button>
-                    </div>
                   </DialogFooter>
                 </form>
               </Form>
