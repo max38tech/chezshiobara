@@ -122,6 +122,7 @@ export function BookingRequestsTable() {
       setPricingConfig(pConfig);
       const paySettings = await getPaymentSettings();
       setPaymentSettings(paySettings);
+      console.log("Loaded Payment Settings:", paySettings); // DEBUG
     };
     fetchInitialConfigs();
   }, []);
@@ -240,10 +241,9 @@ export function BookingRequestsTable() {
 
         if (result.success && editingBooking) {
           setIsInvoiceModalOpen(false);
-          // Modify toast message to guide user to copy button
           toastDescription = `Invoice finalized. ${result.message}. You can now share the payment link using the 'Share' or 'Copy' buttons in the table for this booking.`;
           try {
-              await fetchBookingRequests(); // Refresh the list to show updated status and link buttons
+              await fetchBookingRequests(); 
           } catch (fetchError) {
               console.error("Error refetching booking requests:", fetchError);
               toastDescription += "\n(Could not refresh booking list, please refresh manually)";
@@ -337,7 +337,20 @@ export function BookingRequestsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bookingRequests.map((request) => (
+              {bookingRequests.map((request) => {
+                const isPayableStatus = request.status === 'confirmed' || request.status === 'manual_confirmed';
+                const hasValidAmount = request.finalInvoiceAmount && request.finalInvoiceAmount > 0;
+                const cardPaymentsEnabled = paymentSettings?.isCardPaymentEnabled === true;
+                
+                const showPaymentButtons = isPayableStatus && hasValidAmount && cardPaymentsEnabled;
+                
+                // DEBUG log for each request
+                // console.log(`Booking ID ${request.id}: showPaymentButtons = ${showPaymentButtons}`, 
+                //   `Status: ${request.status} (isPayable: ${isPayableStatus})`, 
+                //   `Amount: ${request.finalInvoiceAmount} (hasValid: ${hasValidAmount})`, 
+                //   `CardEnabled: ${cardPaymentsEnabled} (PaymentSettings: ${JSON.stringify(paymentSettings)})`);
+
+                return (
                 <TableRow key={request.id} className="font-body">
                   <TableCell>{formatDate(request.createdAt)}</TableCell>
                   <TableCell className="font-medium">{request.name || request.entryName}</TableCell>
@@ -407,11 +420,11 @@ export function BookingRequestsTable() {
                           Finalize Invoice
                         </Button>
                       )}
-                       {(request.status === 'confirmed' || request.status === 'manual_confirmed') && request.finalInvoiceAmount && request.finalInvoiceAmount > 0 && paymentSettings?.isCardPaymentEnabled && (
+                       {showPaymentButtons && (
                         <div className="flex items-center gap-1">
                           <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/80 text-primary-foreground">
                             <Link href={`/checkout/${request.id}`} target="_blank">
-                              <CreditCard className="mr-1 h-4 w-4" /> Share Payment Link
+                              <CreditCard className="mr-1 h-4 w-4" /> Share Link
                             </Link>
                           </Button>
                           <Button variant="outline" size="icon" onClick={() => handleCopyPaymentLink(request.id)} title="Copy payment link">
@@ -427,7 +440,8 @@ export function BookingRequestsTable() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -575,5 +589,3 @@ export function BookingRequestsTable() {
     </>
   );
 }
-
-    
