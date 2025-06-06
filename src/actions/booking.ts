@@ -201,7 +201,7 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl}`);
+  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl} for booking ${bookingId}`);
   const paymentLink = `${baseUrl}/checkout/${bookingId}`;
 
   const transporter = nodemailer.createTransport({
@@ -263,6 +263,7 @@ export async function updateBookingAndInvoiceDetails(
   bookingId: string,
   details: EditableBookingInvoiceFormValues
 ) {
+  console.log(`[updateBookingAndInvoiceDetails] Attempting to update booking ID: ${bookingId} with details:`, details);
   try {
     const bookingRef = doc(db, "bookingRequests", bookingId);
     const dataToUpdate = {
@@ -280,7 +281,7 @@ export async function updateBookingAndInvoiceDetails(
     };
 
     await updateDoc(bookingRef, dataToUpdate);
-    console.log(`[updateBookingAndInvoiceDetails] Booking ${bookingId} details and invoice finalized.`);
+    console.log(`[updateBookingAndInvoiceDetails] Booking ${bookingId} details and invoice finalized in Firestore.`);
     
     let emailStatusMessage = "";
     const emailResult = await sendPaymentLinkEmail(bookingId, details);
@@ -295,7 +296,7 @@ export async function updateBookingAndInvoiceDetails(
         success: true, 
         message: `Booking details and invoice updated successfully. ${emailStatusMessage}` 
     };
-  } catch (error)
+  } catch (error) {
       console.error("Error updating booking and invoice details: ", error);
       return { success: false, message: `Failed to update booking and invoice details. ${error instanceof Error ? error.message : "Unknown error"}` };
   }
