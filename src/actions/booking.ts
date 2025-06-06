@@ -189,17 +189,19 @@ export async function calculateInvoiceDetails(
 }
 
 async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues) {
+  console.log(`[sendPaymentLinkEmail] Attempting to send email for booking ID: ${bookingId}`);
+  
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("Email credentials (EMAIL_USER, EMAIL_PASS) not set. Skipping payment link email.");
+    console.warn("[sendPaymentLinkEmail] Email credentials (EMAIL_USER, EMAIL_PASS) not set. Skipping payment link email.");
     return { success: false, message: "Email not sent: Server email configuration missing." };
   }
   if (!details.invoiceRecipientEmail) {
-    console.warn("No invoice recipient email provided. Skipping payment link email for booking:", bookingId);
+    console.warn(`[sendPaymentLinkEmail] No invoice recipient email provided for booking: ${bookingId}. Skipping email.`);
     return { success: false, message: "Email not sent: Recipient email missing." };
   }
 
-  // Ensure NEXT_PUBLIC_BASE_URL is used correctly for server-side context
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl}`);
   const paymentLink = `${baseUrl}/checkout/${bookingId}`;
 
   const transporter = nodemailer.createTransport({
@@ -246,11 +248,12 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
   };
 
   try {
+    console.log(`[sendPaymentLinkEmail] Sending email to: ${details.invoiceRecipientEmail} for booking ${bookingId}`);
     await transporter.sendMail(mailOptions);
-    console.log(`Payment link email sent to ${details.invoiceRecipientEmail} for booking ${bookingId}.`);
+    console.log(`[sendPaymentLinkEmail] Payment link email sent successfully to ${details.invoiceRecipientEmail} for booking ${bookingId}.`);
     return { success: true, message: "Payment link email sent successfully." };
   } catch (error) {
-    console.error(`Error sending payment link email for booking ${bookingId}:`, error);
+    console.error(`[sendPaymentLinkEmail] Error sending payment link email for booking ${bookingId}:`, error);
     return { success: false, message: `Failed to send payment link email: ${error instanceof Error ? error.message : "Unknown email error"}` };
   }
 }
@@ -272,31 +275,29 @@ export async function updateBookingAndInvoiceDetails(
       finalInvoiceCurrency: details.finalInvoiceCurrency,
       finalInvoiceBreakdown: details.finalInvoiceBreakdown,
       finalInvoiceStrategy: details.finalInvoiceStrategy,
-      invoiceRecipientEmail: details.invoiceRecipientEmail, // Ensure this is also saved
+      invoiceRecipientEmail: details.invoiceRecipientEmail,
       invoiceUpdatedAt: serverTimestamp(),
     };
 
     await updateDoc(bookingRef, dataToUpdate);
-    console.log(`Booking ${bookingId} details and invoice finalized.`);
+    console.log(`[updateBookingAndInvoiceDetails] Booking ${bookingId} details and invoice finalized.`);
     
     let emailStatusMessage = "";
-    // Attempt to send email only if status is confirmed or manual_confirmed
-    // This check might need to be more sophisticated if status changes before/after invoice finalization
-    // For now, assume if we're finalizing an invoice, it's for a confirmed state.
     const emailResult = await sendPaymentLinkEmail(bookingId, details);
     if (emailResult.success) {
-        emailStatusMessage = " Payment link email also sent to the guest.";
+        emailStatusMessage = "Payment link email also sent to the guest.";
     } else {
-        emailStatusMessage = ` Note: ${emailResult.message}`;
+        emailStatusMessage = `Note: ${emailResult.message}`;
     }
+    console.log(`[updateBookingAndInvoiceDetails] Email status for booking ${bookingId}: ${emailStatusMessage}`);
 
     return { 
         success: true, 
-        message: `Booking details and invoice updated successfully.${emailStatusMessage}` 
+        message: `Booking details and invoice updated successfully. ${emailStatusMessage}` 
     };
-  } catch (error) {
-    console.error("Error updating booking and invoice details: ", error);
-    return { success: false, message: `Failed to update booking and invoice details. ${error instanceof Error ? error.message : "Unknown error"}` };
+  } catch (error)
+      console.error("Error updating booking and invoice details: ", error);
+      return { success: false, message: `Failed to update booking and invoice details. ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
 
@@ -362,5 +363,3 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
     };
   }
 }
-
-    

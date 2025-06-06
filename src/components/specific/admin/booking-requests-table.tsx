@@ -231,18 +231,24 @@ export function BookingRequestsTable() {
     };
 
     const result = await updateBookingAndInvoiceDetails(editingBooking.id, dataToUpdate);
+    let toastDescription = result.message;
+
     if (result.success) {
-      toast({ title: "Success", description: result.message });
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+      const paymentLink = `${baseUrl}/checkout/${editingBooking.id}`;
+      toastDescription += `\nPayment Link: ${paymentLink}`;
+      
       await fetchBookingRequests(); 
-      const updatedBookingSnap = await getDoc(doc(db, "bookingRequests", editingBooking.id));
-      if (updatedBookingSnap.exists()) {
-        setEditingBooking({ id: updatedBookingSnap.id, ...updatedBookingSnap.data() } as BookingRequest);
-      } else {
-        setIsInvoiceModalOpen(false); // Close if booking somehow deleted during process
-      }
-    } else {
-      toast({ title: "Error", description: result.message, variant: "destructive" });
+      setIsInvoiceModalOpen(false); // Close the dialog on successful save
     }
+    
+    toast({ 
+        title: result.success ? "Success!" : "Error", 
+        description: toastDescription,
+        variant: result.success ? "default" : "destructive",
+        duration: result.success ? 9000 : 5000, // Longer duration for success toast with link
+    });
+
     setIsSavingInvoice(false);
   };
 
@@ -558,3 +564,4 @@ export function BookingRequestsTable() {
     </>
   );
 }
+
