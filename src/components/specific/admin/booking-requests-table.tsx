@@ -72,10 +72,9 @@ export function BookingRequestsTable() {
   const [currentInvoiceCalculation, setCurrentInvoiceCalculation] = useState<InvoiceCalculationResult | null>(null);
   const [isCalculatingInvoice, setIsCalculatingInvoice] = useState(false);
   const [isRecalculatingInvoice, setIsRecalculatingInvoice] = useState(false);
-  const [isSavingInvoice, setIsSavingInvoice] = useState(false);
+  const [isSubmittingInvoice, startInvoiceTransition] = useTransition();
   const [pricingConfig, setPricingConfig] = useState<ClientSafePricingConfiguration | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
-  const [isSubmittingInvoice, startInvoiceTransition] = useTransition();
 
 
   const form = useForm<EditableBookingInvoiceFormValues>({
@@ -226,12 +225,12 @@ export function BookingRequestsTable() {
         }
 
         const dataToUpdate = {
-        ...values,
-        finalInvoiceBreakdown: currentInvoiceCalculation.breakdown,
-        finalInvoiceStrategy: currentInvoiceCalculation.appliedStrategy,
-        finalInvoiceCurrency: currentInvoiceCalculation.currency,
+          ...values,
+          finalInvoiceBreakdown: currentInvoiceCalculation.breakdown,
+          finalInvoiceStrategy: currentInvoiceCalculation.appliedStrategy,
+          finalInvoiceCurrency: currentInvoiceCalculation.currency,
         };
-
+        
         console.log("Client: Submitting to updateBookingAndInvoiceDetails:", dataToUpdate);
         const result = await updateBookingAndInvoiceDetails(editingBooking.id, dataToUpdate);
         console.log("Client: Result from updateBookingAndInvoiceDetails:", result);
@@ -240,13 +239,15 @@ export function BookingRequestsTable() {
         let toastDescription = result.message;
 
         if (result.success && editingBooking) {
-            setIsInvoiceModalOpen(false);
-            try {
-                await fetchBookingRequests();
-            } catch (fetchError) {
-                console.error("Error refetching booking requests:", fetchError);
-                toastDescription += "\n(Could not refresh booking list, please refresh manually)";
-            }
+          setIsInvoiceModalOpen(false);
+          // Modify toast message to guide user to copy button
+          toastDescription = `Invoice finalized. ${result.message}. You can now share the payment link using the 'Share' or 'Copy' buttons in the table for this booking.`;
+          try {
+              await fetchBookingRequests(); // Refresh the list to show updated status and link buttons
+          } catch (fetchError) {
+              console.error("Error refetching booking requests:", fetchError);
+              toastDescription += "\n(Could not refresh booking list, please refresh manually)";
+          }
         }
 
         toast({
@@ -575,3 +576,4 @@ export function BookingRequestsTable() {
   );
 }
 
+    
