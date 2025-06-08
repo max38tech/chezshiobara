@@ -200,8 +200,11 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
     return { success: false, message: "Email not sent: Recipient email missing." };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl} for constructing payment link for booking ${bookingId}`);
+  const productionUrl = 'https://chezshiobara.com';
+  const devBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+  const baseUrl = process.env.NODE_ENV === 'production' ? productionUrl : devBaseUrl;
+
+  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl} for constructing payment link for booking ${bookingId}. NODE_ENV: ${process.env.NODE_ENV}, NEXT_PUBLIC_BASE_URL_EFFECTIVE: ${process.env.NEXT_PUBLIC_BASE_URL}`);
   const paymentLink = `${baseUrl}/checkout/${bookingId}`;
 
   const transporter = nodemailer.createTransport({
@@ -215,35 +218,37 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
   });
 
   const mailOptions = {
-    from: `"Chez Shiobara B&B <${process.env.EMAIL_USER}>"`,
+    from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`, // Simplified From
     to: details.invoiceRecipientEmail,
     subject: `Your Booking Confirmation & Payment Link - Chez Shiobara B&B (Booking ID: ${bookingId})`,
     html: `
-      <h1>Booking Confirmed & Payment Due</h1>
-      <p>Dear ${details.name},</p>
-      <p>Thank you for your booking with Chez Shiobara B&B! Your stay has been confirmed, and the invoice details are finalized.</p>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Booking Confirmed & Payment Due</h2>
+        <p>Dear ${details.name},</p>
+        <p>Thank you for your booking with Chez Shiobara B&B! Your stay has been confirmed, and the invoice details are finalized.</p>
 
-      <h2>Booking Summary:</h2>
-      <ul>
-        <li><strong>Guest Name:</strong> ${details.name}</li>
-        <li><strong>Check-in Date:</strong> ${formatDateFn(new Date(details.checkInDate), 'PPP')}</li>
-        <li><strong>Check-out Date:</strong> ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li>
-        <li><strong>Number of Guests:</strong> ${details.guests}</li>
-      </ul>
+        <h3>Booking Summary:</h3>
+        <ul>
+          <li><strong>Guest Name:</strong> ${details.name}</li>
+          <li><strong>Check-in Date:</strong> ${formatDateFn(new Date(details.checkInDate), 'PPP')}</li>
+          <li><strong>Check-out Date:</strong> ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li>
+          <li><strong>Number of Guests:</strong> ${details.guests}</li>
+        </ul>
 
-      <h2>Payment Information:</h2>
-      <p><strong>Amount Due:</strong> ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p>
-      <p><strong>Payment Breakdown:</strong> ${details.finalInvoiceBreakdown || 'As per agreed rate'}</p>
+        <h3>Payment Information:</h3>
+        <p><strong>Amount Due:</strong> ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p>
+        <p><strong>Payment Breakdown:</strong> ${details.finalInvoiceBreakdown || 'As per agreed rate'}</p>
 
-      <p>To complete your payment and secure your booking, please follow this link:</p>
-      <p><a href="${paymentLink}" target="_blank" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Pay Now</a></p>
-      <p>Or copy and paste this URL into your browser: ${paymentLink}</p>
+        <p>To complete your payment and secure your booking, please follow this link:</p>
+        <p><a href="${paymentLink}" target="_blank" style="background-color: #7FFFD4; color: #333; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Pay Now</a></p>
+        <p>Or copy and paste this URL into your browser: ${paymentLink}</p>
 
-      <p>If you have any questions, please don't hesitate to contact us.</p>
-      <p>We look forward to welcoming you!</p>
-      <br>
-      <p>Best regards,</p>
-      <p>The Chez Shiobara Team</p>
+        <p>If you have any questions, please don't hesitate to contact us.</p>
+        <p>We look forward to welcoming you!</p>
+        <br>
+        <p>Best regards,</p>
+        <p>The Chez Shiobara Team</p>
+      </div>
     `,
   };
 
@@ -268,7 +273,7 @@ export async function updateBookingAndInvoiceDetails(
     const bookingRef = doc(db, "bookingRequests", bookingId);
     const dataToUpdate = {
       name: details.name,
-      email: details.invoiceRecipientEmail,
+      email: details.invoiceRecipientEmail, // Ensure this primary email field is also updated if invoiceRecipientEmail is the main contact
       checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
       checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
       guests: Number(details.guests),
@@ -278,7 +283,7 @@ export async function updateBookingAndInvoiceDetails(
       finalInvoiceStrategy: details.finalInvoiceStrategy,
       invoiceRecipientEmail: details.invoiceRecipientEmail,
       invoiceUpdatedAt: serverTimestamp(),
-      status: 'confirmed', // Ensure status remains or becomes 'confirmed' if it was e.g. 'pending'
+      status: 'confirmed', 
     };
 
     await updateDoc(bookingRef, dataToUpdate);
@@ -286,7 +291,7 @@ export async function updateBookingAndInvoiceDetails(
 
     let emailStatusMessage = "Email status: Unknown.";
     if (details.invoiceRecipientEmail) {
-        const emailResult = await sendPaymentLinkEmail(bookingId, details);
+        const emailResult = await sendPaymentLinkEmail(bookingId, details); // Pass all necessary details
         emailStatusMessage = emailResult.message;
     } else {
         emailStatusMessage = "Email not sent: No recipient email provided in form.";
@@ -367,3 +372,4 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
   }
 }
 
+    
