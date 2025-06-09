@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
 import { differenceInDays, format as formatDateFn } from 'date-fns';
 import type { ClientSafePricingConfiguration } from '@/actions/pricing';
+import { getPaymentSettings, type PaymentSettings } from '@/actions/payment'; // Import getPaymentSettings
 import nodemailer from "nodemailer";
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
@@ -188,7 +189,7 @@ export async function calculateInvoiceDetails(
   };
 }
 
-async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues): Promise<{ success: boolean; message: string }> {
+async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues, paymentSettings: PaymentSettings): Promise<{ success: boolean; message: string }> {
   console.log(`[sendPaymentLinkEmail] Attempting to send email for booking ID: ${bookingId}`);
 
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -202,7 +203,7 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
 
   let baseUrl: string;
   const runtimeNodeEnv = process.env.NODE_ENV;
-  const nextPublicBaseUrl = process.env.NEXT_PUBLIC_BASE_URL; // Value from build time via next.config.ts
+  const nextPublicBaseUrl = process.env.NEXT_PUBLIC_BASE_URL; 
 
   console.log(`[sendPaymentLinkEmail] Initial environment check: Runtime NODE_ENV='${runtimeNodeEnv}', Build-time NEXT_PUBLIC_BASE_URL (available at runtime)='${nextPublicBaseUrl}'`);
 
@@ -214,13 +215,13 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
       baseUrl = nextPublicBaseUrl;
       console.log(`[sendPaymentLinkEmail] Condition: runtimeNodeEnv !== 'production'. Using NEXT_PUBLIC_BASE_URL (from build): ${baseUrl}`);
     } else {
-      baseUrl = 'http://localhost:9002'; // Ultimate fallback for dev environments
+      baseUrl = 'http://localhost:9002'; 
       console.log(`[sendPaymentLinkEmail] Condition: runtimeNodeEnv !== 'production' AND NEXT_PUBLIC_BASE_URL (from build) invalid or missing. Using default dev URL: ${baseUrl}`);
     }
   }
   
   console.log(`[sendPaymentLinkEmail] Final base URL for payment link: ${baseUrl}. Booking ID: ${bookingId}.`);
-  const paymentLink = `${baseUrl}/checkout/${bookingId}`;
+  const stripePaymentLink = `${baseUrl}/checkout/${bookingId}`;
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -232,37 +233,86 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
     },
   });
 
+  let paymentOptionsHtml = "";
+
+  if (paymentSettings.isCardPaymentEnabled) {
+    paymentOptionsHtml += `
+      <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+        <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: #333;">Pay by Credit/Debit Card (Securely via Stripe)</h4>
+        <p style="margin-bottom: 10px;">For quick and secure payment, please use the button below:</p>
+        <p style="margin-bottom: 10px;">
+          <a href="${stripePaymentLink}" target="_blank" style="background-color: #7FFFD4; color: #2F4F4F; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Pay with Card Now</a>
+        </p>
+        <p style="font-size: 0.9em;">Or copy and paste this URL into your browser: <a href="${stripePaymentLink}" target="_blank">${stripePaymentLink}</a></p>
+        ${paymentSettings.cardPaymentInstructions ? `<p style="font-size: 0.85em; color: #555; margin-top: 10px; white-space: pre-wrap;"><em>${paymentSettings.cardPaymentInstructions}</em></p>` : ''}
+      </div>
+    `;
+  }
+
+  if (paymentSettings.isPaypalEnabled && paymentSettings.paypalEmailOrLink) {
+    paymentOptionsHtml += `
+      <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+        <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: #333;">Pay with PayPal</h4>
+        <p style="margin-bottom: 5px;">You can send your payment to the following PayPal account/link:</p>
+        <p style="margin-bottom: 10px; font-weight: bold;">${paymentSettings.paypalEmailOrLink}</p>
+        <p style="font-size: 0.9em;">Please include your Booking ID <strong>(${bookingId})</strong> in the payment notes or reference.</p>
+      </div>
+    `;
+  }
+
+  if (paymentSettings.isWiseEnabled && paymentSettings.wiseInstructions) {
+    paymentOptionsHtml += `
+      <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+        <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: #333;">Pay with Wise (formerly TransferWise)</h4>
+        <p style="margin-bottom: 10px;">For Wise payments, please use the following details:</p>
+        <div style="background-color: #fff; border: 1px solid #eee; padding: 10px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; font-size: 0.95em;">${paymentSettings.wiseInstructions.replace(/\n/g, '<br>')}</div>
+        <p style="font-size: 0.9em; margin-top: 10px;">Please include your Booking ID <strong>(${bookingId})</strong> in the payment reference.</p>
+      </div>
+    `;
+  }
+  
+  if (paymentOptionsHtml === "") {
+    paymentOptionsHtml = "<p>Please contact us directly to arrange payment, as no online payment methods are currently configured.</p>";
+  }
+
+
   const mailOptions = {
     from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`,
     to: details.invoiceRecipientEmail,
-    subject: `Your Booking Confirmation & Payment Link - Chez Shiobara B&B (Booking ID: ${bookingId})`,
+    subject: `Your Booking Confirmation & Payment Options - Chez Shiobara B&B (Booking ID: ${bookingId})`,
     html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2>Booking Confirmed & Payment Due</h2>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+        <h2 style="color: #257431; text-align: center;">Booking Confirmed & Payment Due</h2>
         <p>Dear ${details.name},</p>
         <p>Thank you for your booking with Chez Shiobara B&B! Your stay has been confirmed, and the invoice details are finalized.</p>
 
-        <h3>Booking Summary:</h3>
-        <ul>
-          <li><strong>Guest Name:</strong> ${details.name}</li>
-          <li><strong>Check-in Date:</strong> ${formatDateFn(new Date(details.checkInDate), 'PPP')}</li>
-          <li><strong>Check-out Date:</strong> ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li>
-          <li><strong>Number of Guests:</strong> ${details.guests}</li>
-        </ul>
+        <div style="padding: 10px; background-color: #f0f8ff; border-left: 4px solid #7FFFD4; margin-bottom: 20px;">
+          <h3 style="margin-top: 0; color: #2F4F4F;">Booking Summary:</h3>
+          <ul style="list-style-type: none; padding-left: 0;">
+            <li><strong>Guest Name:</strong> ${details.name}</li>
+            <li><strong>Check-in Date:</strong> ${formatDateFn(new Date(details.checkInDate), 'PPP')}</li>
+            <li><strong>Check-out Date:</strong> ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li>
+            <li><strong>Number of Guests:</strong> ${details.guests}</li>
+          </ul>
+        </div>
 
-        <h3>Payment Information:</h3>
-        <p><strong>Amount Due:</strong> ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p>
-        <p><strong>Payment Breakdown:</strong> ${details.finalInvoiceBreakdown || 'As per agreed rate'}</p>
+        <div style="padding: 10px; background-color: #fffaf0; border-left: 4px solid #ffdab9; margin-bottom: 20px;">
+          <h3 style="margin-top: 0; color: #8B4513;">Payment Information:</h3>
+          <p><strong>Amount Due:</strong> ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p>
+          <p><strong>Payment Breakdown:</strong> ${details.finalInvoiceBreakdown || 'As per agreed rate'}</p>
+        </div>
+        
+        <h3 style="color: #257431;">Payment Options:</h3>
+        ${paymentOptionsHtml}
 
-        <p>To complete your payment and secure your booking, please follow this link:</p>
-        <p><a href="${paymentLink}" target="_blank" style="background-color: #7FFFD4; color: #333; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Pay Now</a></p>
-        <p>Or copy and paste this URL into your browser: ${paymentLink}</p>
-
-        <p>If you have any questions, please don't hesitate to contact us.</p>
+        <p style="margin-top: 25px;">If you have any questions or have made a payment via PayPal or Wise, please reply to this email to let us know.</p>
         <p>We look forward to welcoming you!</p>
         <br>
         <p>Best regards,</p>
         <p>The Chez Shiobara Team</p>
+        <p style="font-size: 0.8em; text-align: center; margin-top: 20px; color: #777;">
+          Chez Shiobara B&B | 16-7 Karasawa, Minami-ku, Yokohama, Kanagawa 232-0034, Japan
+        </p>
       </div>
     `,
   };
@@ -271,10 +321,10 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
     console.log(`[sendPaymentLinkEmail] Sending email to: ${details.invoiceRecipientEmail} for booking ${bookingId} with subject: ${mailOptions.subject}`);
     const info = await transporter.sendMail(mailOptions);
     console.log(`[sendPaymentLinkEmail] Payment link email sent successfully to ${details.invoiceRecipientEmail} for booking ${bookingId}. Message ID: ${info.messageId}`);
-    return { success: true, message: "Payment link email sent successfully." };
+    return { success: true, message: "Payment options email sent successfully." };
   } catch (error) {
     console.error(`[sendPaymentLinkEmail] Error sending payment link email for booking ${bookingId}:`, error);
-    return { success: false, message: `Failed to send payment link email: ${error instanceof Error ? error.message : "Unknown email error"}` };
+    return { success: false, message: `Failed to send payment options email: ${error instanceof Error ? error.message : "Unknown email error"}` };
   }
 }
 
@@ -286,9 +336,9 @@ export async function updateBookingAndInvoiceDetails(
   console.log(`[updateBookingAndInvoiceDetails] Attempting to update booking ID: ${bookingId} with details:`, JSON.stringify(details, null, 2));
   try {
     const bookingRef = doc(db, "bookingRequests", bookingId);
-    const dataToUpdate = {
+    const dataToUpdate: any = {
       name: details.name,
-      email: details.invoiceRecipientEmail, 
+      email: details.invoiceRecipientEmail, // Keep original requestor email if needed, or update main email
       checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
       checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
       guests: Number(details.guests),
@@ -298,15 +348,30 @@ export async function updateBookingAndInvoiceDetails(
       finalInvoiceStrategy: details.finalInvoiceStrategy,
       invoiceRecipientEmail: details.invoiceRecipientEmail,
       invoiceUpdatedAt: serverTimestamp(),
-      status: 'confirmed', 
     };
 
+    const currentBookingSnap = await getDoc(bookingRef);
+    if (!currentBookingSnap.exists()) {
+      throw new Error("Booking document not found for update.");
+    }
+    const currentBookingData = currentBookingSnap.data();
+    // Only update status to 'confirmed' if it's currently 'pending' or not already 'paid'
+    if (currentBookingData.status === 'pending' || (currentBookingData.status !== 'paid' && currentBookingData.status !== 'manual_confirmed')) {
+      dataToUpdate.status = 'confirmed';
+    } else if (currentBookingData.status === 'manual_booking') { // If it was a manual booking, set to manual_confirmed
+        dataToUpdate.status = 'manual_confirmed';
+    }
+
+
     await updateDoc(bookingRef, dataToUpdate);
-    console.log(`[updateBookingAndInvoiceDetails] Booking ${bookingId} details and invoice finalized in Firestore.`);
+    console.log(`[updateBookingAndInvoiceDetails] Booking ${bookingId} details and invoice finalized in Firestore. Status set/updated to: ${dataToUpdate.status || currentBookingData.status}`);
+    
+    const paymentSettings = await getPaymentSettings(); // Fetch current payment settings
 
     let emailStatusMessage = "Email status: Unknown.";
     if (details.invoiceRecipientEmail) {
-        const emailResult = await sendPaymentLinkEmail(bookingId, details); 
+        // Pass paymentSettings to sendPaymentLinkEmail
+        const emailResult = await sendPaymentLinkEmail(bookingId, details, paymentSettings); 
         emailStatusMessage = emailResult.message;
     } else {
         emailStatusMessage = "Email not sent: No recipient email provided in form.";
@@ -332,7 +397,7 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
       name: data.entryName,
       checkInDate: Timestamp.fromDate(data.checkInDate),
       checkOutDate: Timestamp.fromDate(data.checkOutDate),
-      status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
+      status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked', // Set manual_booking to manual_confirmed initially
       notes: data.notes || "",
       createdAt: serverTimestamp(),
       email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com',
@@ -389,3 +454,5 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
     
 
       
+
+    
