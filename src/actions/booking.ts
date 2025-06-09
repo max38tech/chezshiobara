@@ -200,11 +200,26 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
     return { success: false, message: "Email not sent: Recipient email missing." };
   }
 
-  const productionUrl = 'https://chezshiobara.com';
-  const devBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-  const baseUrl = process.env.NODE_ENV === 'production' ? productionUrl : devBaseUrl;
+  let baseUrl: string;
+  const runtimeNodeEnv = process.env.NODE_ENV;
+  const nextPublicBaseUrl = process.env.NEXT_PUBLIC_BASE_URL; // Value from build time via next.config.ts
 
-  console.log(`[sendPaymentLinkEmail] Using base URL: ${baseUrl} for constructing payment link for booking ${bookingId}. NODE_ENV: ${process.env.NODE_ENV}, NEXT_PUBLIC_BASE_URL_EFFECTIVE: ${process.env.NEXT_PUBLIC_BASE_URL}`);
+  console.log(`[sendPaymentLinkEmail] Initial environment check: Runtime NODE_ENV='${runtimeNodeEnv}', Build-time NEXT_PUBLIC_BASE_URL (available at runtime)='${nextPublicBaseUrl}'`);
+
+  if (runtimeNodeEnv === 'production') {
+    baseUrl = 'https://chezshiobara.com';
+    console.log(`[sendPaymentLinkEmail] Condition: runtimeNodeEnv === 'production'. Using hardcoded production URL: ${baseUrl}`);
+  } else {
+    if (nextPublicBaseUrl && (nextPublicBaseUrl.startsWith('http://') || nextPublicBaseUrl.startsWith('https://'))) {
+      baseUrl = nextPublicBaseUrl;
+      console.log(`[sendPaymentLinkEmail] Condition: runtimeNodeEnv !== 'production'. Using NEXT_PUBLIC_BASE_URL (from build): ${baseUrl}`);
+    } else {
+      baseUrl = 'http://localhost:9002'; // Ultimate fallback for dev environments
+      console.log(`[sendPaymentLinkEmail] Condition: runtimeNodeEnv !== 'production' AND NEXT_PUBLIC_BASE_URL (from build) invalid or missing. Using default dev URL: ${baseUrl}`);
+    }
+  }
+  
+  console.log(`[sendPaymentLinkEmail] Final base URL for payment link: ${baseUrl}. Booking ID: ${bookingId}.`);
   const paymentLink = `${baseUrl}/checkout/${bookingId}`;
 
   const transporter = nodemailer.createTransport({
@@ -218,7 +233,7 @@ async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingI
   });
 
   const mailOptions = {
-    from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`, // Simplified From
+    from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`,
     to: details.invoiceRecipientEmail,
     subject: `Your Booking Confirmation & Payment Link - Chez Shiobara B&B (Booking ID: ${bookingId})`,
     html: `
@@ -273,7 +288,7 @@ export async function updateBookingAndInvoiceDetails(
     const bookingRef = doc(db, "bookingRequests", bookingId);
     const dataToUpdate = {
       name: details.name,
-      email: details.invoiceRecipientEmail, // Ensure this primary email field is also updated if invoiceRecipientEmail is the main contact
+      email: details.invoiceRecipientEmail, 
       checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
       checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
       guests: Number(details.guests),
@@ -291,7 +306,7 @@ export async function updateBookingAndInvoiceDetails(
 
     let emailStatusMessage = "Email status: Unknown.";
     if (details.invoiceRecipientEmail) {
-        const emailResult = await sendPaymentLinkEmail(bookingId, details); // Pass all necessary details
+        const emailResult = await sendPaymentLinkEmail(bookingId, details); 
         emailStatusMessage = emailResult.message;
     } else {
         emailStatusMessage = "Email not sent: No recipient email provided in form.";
@@ -371,5 +386,6 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
     };
   }
 }
-
     
+
+      
