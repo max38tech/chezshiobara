@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'photos.app.goo.gl', // Added this hostname
+        port: '',
+        pathname: '/**',
+      },
       // Add Stripe's image hostname if you plan to use product images from Stripe
       // Example:
       // {
