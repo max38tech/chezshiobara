@@ -10,18 +10,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { getWelcomePageGalleryContent, updateWelcomePageGalleryContent, type GalleryImageItem } from "@/actions/content";
+import { getWelcomePageGalleryContent, updateWelcomePageGalleryContent } from "@/actions/content";
 import { welcomePageGalleryContentFormSchema, type WelcomePageGalleryContentFormValues } from "@/schemas/content";
-import { Loader2, PlusCircle, Trash2, Save, Image as ImageIcon, UploadCloud } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, Save, UploadCloud } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import NextImage from "next/image";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { app } from "@/lib/firebase"; // Your initialized Firebase app
+import { app } from "@/lib/firebase"; 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const storage = getStorage(app);
 
 interface UploadProgress {
-  [itemId: string]: number | null; // Store upload progress per item ID
+  [itemId: string]: number | null;
 }
 
 export function EditableGalleryImageList() {
@@ -29,6 +30,7 @@ export function EditableGalleryImageList() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
+  const [itemToDelete, setItemToDelete] = useState<{ index: number; src?: string } | null>(null);
 
   const form = useForm<WelcomePageGalleryContentFormValues>({
     resolver: zodResolver(welcomePageGalleryContentFormSchema),
@@ -116,6 +118,34 @@ export function EditableGalleryImageList() {
     );
   };
 
+  const confirmDeleteImage = async () => {
+    if (!itemToDelete) return;
+    const { index, src } = itemToDelete;
+
+    if (src && src.includes("firebasestorage.googleapis.com")) {
+      try {
+        const imageRef = storageRef(storage, src);
+        await deleteObject(imageRef);
+        toast({
+          title: "Image Deleted",
+          description: "Image successfully deleted from Firebase Storage.",
+        });
+      } catch (error: any) {
+        // If deletion fails (e.g., file not found, permissions), still allow removal from list
+        console.error("Failed to delete image from Firebase Storage:", error);
+        if (error.code !== 'storage/object-not-found') {
+          toast({
+            title: "Storage Deletion Failed",
+            description: `Could not delete image from storage: ${error.message}. It will still be removed from the gallery list.`,
+            variant: "destructive",
+          });
+        }
+      }
+    }
+    remove(index);
+    setItemToDelete(null); // Close dialog
+  };
+
 
   const onSubmit = async (data: WelcomePageGalleryContentFormValues) => {
     setIsSaving(true);
@@ -154,7 +184,7 @@ export function EditableGalleryImageList() {
   const addNewGalleryItem = () => {
     append({
       id: uuidv4(),
-      src: "", // Start with empty src, user will upload
+      src: "", 
       alt: "New gallery image",
       dataAiHint: "image",
     });
@@ -172,6 +202,7 @@ export function EditableGalleryImageList() {
   }
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -186,20 +217,18 @@ export function EditableGalleryImageList() {
                 <CardHeader className="flex-shrink-0">
                   <CardTitle className="font-headline text-lg flex items-center justify-between">
                     <span>Image #{index + 1}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive/80"
-                      onClick={() => {
-                        // Note: Deleting from form array doesn't delete from Firebase Storage.
-                        // For a full solution, one might add a specific deleteFromStorage function here.
-                        remove(index);
-                      }}
-                      aria-label="Remove gallery image"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive/80"
+                        onClick={() => setItemToDelete({ index, src: currentItem?.src })}
+                        aria-label="Remove gallery image"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    </AlertDialogTrigger>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 flex-grow flex flex-col">
@@ -229,6 +258,8 @@ export function EditableGalleryImageList() {
                         accept="image/*"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
+                            // If there's an existing Firebase image, ideally delete it first
+                            // For simplicity here, we're replacing. Consider adding pre-delete if src is Firebase.
                             handleFileUpload(e.target.files[0], index, fieldItem.id);
                           }
                         }}
@@ -239,14 +270,14 @@ export function EditableGalleryImageList() {
                      {itemUploadProgress !== null && itemUploadProgress !== undefined && (
                         <Progress value={itemUploadProgress} className="w-full h-2 mt-1" />
                       )}
-                    <FormMessage /> {/* For file input related messages if any */}
+                    <FormMessage />
                   </FormItem>
 
                   <FormField
                     control={form.control}
                     name={`galleryImages.${index}.src`}
                     render={({ field: controllerField }) => (
-                      <FormItem className="hidden"> {/* Hidden, as it's managed by upload */}
+                      <FormItem className="hidden">
                         <FormControl>
                           <Input {...controllerField} readOnly />
                         </FormControl>
@@ -299,5 +330,25 @@ export function EditableGalleryImageList() {
         )}
       </form>
     </Form>
+
+    {itemToDelete !== null && (
+        <AlertDialog open={itemToDelete !== null} onOpenChange={(open) => !open && setItemToDelete(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will remove the image from the gallery list. If it's an uploaded image, it will also be deleted from Firebase Storage. This action cannot be undone.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDeleteImage} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                    Delete Image
+                </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )}
+    </>
   );
 }
