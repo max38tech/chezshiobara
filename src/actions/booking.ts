@@ -3,7 +3,7 @@
 
 import type { BookingRequestFormValues, EditableBookingInvoiceFormValues, ManualCalendarEntryFormValues } from "@/schemas/booking";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where, Timestamp, deleteDoc } from "firebase/firestore";
 import { differenceInDays, format as formatDateFn } from 'date-fns';
 import type { ClientSafePricingConfiguration } from '@/actions/pricing';
 import { getPaymentSettings, type PaymentSettings } from '@/actions/payment'; // Import getPaymentSettings
@@ -394,14 +394,14 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
   try {
     const entryData: any = {
       entryName: data.entryName,
-      name: data.entryName,
+      name: data.entryName, // For consistency if 'name' is used elsewhere
       checkInDate: Timestamp.fromDate(data.checkInDate),
       checkOutDate: Timestamp.fromDate(data.checkOutDate),
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked', // Set manual_booking to manual_confirmed initially
       notes: data.notes || "",
       createdAt: serverTimestamp(),
-      email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com',
-      guests: data.entryType === 'manual_booking' ? 1 : 0,
+      email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com', // Placeholder emails
+      guests: data.entryType === 'manual_booking' ? 1 : 0, // Default guests for manual booking
     };
 
     const docRef = await addDoc(collection(db, "bookingRequests"), entryData);
@@ -449,6 +449,19 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
       success: false,
       message: "Failed to update calendar entry.",
     };
+  }
+}
+
+export async function deleteCalendarEntry(entryId: string): Promise<{ success: boolean; message: string }> {
+  console.log(`[deleteCalendarEntry] Attempting to delete calendar entry ID: ${entryId}`);
+  try {
+    const entryRef = doc(db, "bookingRequests", entryId);
+    await deleteDoc(entryRef);
+    console.log(`[deleteCalendarEntry] Calendar entry ${entryId} deleted successfully from Firestore.`);
+    return { success: true, message: "Calendar entry deleted successfully." };
+  } catch (error) {
+    console.error(`[deleteCalendarEntry] Error deleting calendar entry ${entryId}: `, error);
+    return { success: false, message: `Failed to delete calendar entry. ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
     

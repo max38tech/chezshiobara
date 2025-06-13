@@ -17,6 +17,17 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -28,6 +39,7 @@ import {
   declineBookingRequest,
   calculateInvoiceDetails,
   updateBookingAndInvoiceDetails,
+  deleteCalendarEntry,
   type BookingCalculationRequest
 } from '@/actions/booking';
 import { getPricingConfiguration, type ClientSafePricingConfiguration } from '@/actions/pricing';
@@ -66,6 +78,7 @@ export function BookingRequestsTable() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<Record<string, boolean>>({});
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
 
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<BookingRequest | null>(null);
@@ -122,10 +135,10 @@ export function BookingRequestsTable() {
       setPricingConfig(pConfig);
       const paySettings = await getPaymentSettings();
       setPaymentSettings(paySettings);
-      console.log("Loaded Payment Settings:", paySettings); // DEBUG
+      console.log("Loaded Payment Settings:", paySettings);
     };
     fetchInitialConfigs();
-  }, []);
+  }, [toast]);
 
   const handleStatusUpdate = async (requestId: string, newStatus: BookingRequest['status']) => {
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: true }));
@@ -157,6 +170,30 @@ export function BookingRequestsTable() {
     }
     setIsUpdatingStatus(prev => ({ ...prev, [requestId]: false }));
   };
+
+  const handleDeleteEntry = async (entryId: string) => {
+    setDeletingEntryId(entryId);
+    try {
+      const result = await deleteCalendarEntry(entryId);
+      toast({
+        title: result.success ? "Entry Deleted" : "Deletion Failed",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+      });
+      if (result.success) {
+        fetchBookingRequests();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while deleting.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingEntryId(null);
+    }
+  };
+
 
   const performInvoiceCalculation = async (calcRequest: BookingCalculationRequest): Promise<InvoiceCalculationResult | null> => {
     if (!pricingConfig) {
@@ -341,15 +378,9 @@ export function BookingRequestsTable() {
                 const isPayableStatus = request.status === 'confirmed' || request.status === 'manual_confirmed';
                 const hasValidAmount = request.finalInvoiceAmount && request.finalInvoiceAmount > 0;
                 const cardPaymentsEnabled = paymentSettings?.isCardPaymentEnabled === true;
-                
                 const showPaymentButtons = isPayableStatus && hasValidAmount && cardPaymentsEnabled;
+                const isDeletableEntry = request.status === 'blocked' || request.status === 'manual_booking' || request.status === 'manual_confirmed';
                 
-                // DEBUG log for each request
-                // console.log(`Booking ID ${request.id}: showPaymentButtons = ${showPaymentButtons}`, 
-                //   `Status: ${request.status} (isPayable: ${isPayableStatus})`, 
-                //   `Amount: ${request.finalInvoiceAmount} (hasValid: ${hasValidAmount})`, 
-                //   `CardEnabled: ${cardPaymentsEnabled} (PaymentSettings: ${JSON.stringify(paymentSettings)})`);
-
                 return (
                 <TableRow key={request.id} className="font-body">
                   <TableCell>{formatDate(request.createdAt)}</TableCell>
@@ -388,8 +419,8 @@ export function BookingRequestsTable() {
                       {getDisplayStatus(request.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={request.message || request.notes}>
-                    {request.message || request.notes || <span className="text-muted-foreground italic">No message/notes</span>}
+                  <TableCell className="max-w-[200px] truncate" title={request.message || (request as any).notes}>
+                    {request.message || (request as any).notes || <span className="text-muted-foreground italic">No message/notes</span>}
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex gap-2 justify-center items-center flex-wrap">
@@ -432,10 +463,29 @@ export function BookingRequestsTable() {
                           </Button>
                         </div>
                       )}
-                       {(request.status === 'blocked' || request.status === 'manual_confirmed' || request.status === 'manual_booking') && (
-                         <Button variant="destructive" size="sm" onClick={() => {/* Implement delete action */ alert('Delete functionality not yet implemented.')}} title="Delete this entry">
-                            <Trash2 className="mr-1 h-4 w-4" /> Delete
-                         </Button>
+                       {isDeletableEntry && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" disabled={deletingEntryId === request.id} title="Delete this entry">
+                              {deletingEntryId === request.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1 h-4 w-4" />}
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action will permanently delete the calendar entry for &quot;{request.name || request.entryName}&quot;. This cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEntry(request.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                                Delete Entry
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                        )}
                     </div>
                   </TableCell>
@@ -589,3 +639,4 @@ export function BookingRequestsTable() {
     </>
   );
 }
+
