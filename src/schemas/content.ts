@@ -130,7 +130,7 @@ export const welcomePageTextContentSchema = z.object({
   introParagraph: z.string().min(20, "Intro paragraph is too short.").max(1000, "Intro paragraph is too long."),
   exploreSectionTitle: z.string().min(5, "Explore section title is too short.").max(100, "Explore section title is too long."),
   exploreCard1Title: z.string().min(5, "Card 1 title is too short.").max(100, "Card 1 title is too long."),
-  exploreCard1Description: z.string().min(10, "Card 1 description is too short.").max(500, "Card 1 description is too long."),
+  exploreCard1Description: z.string().min(10, "Card 1 description is too short.").max(1000, "Card 1 description is too long."), // Increased limit
   exploreCard2Title: z.string().min(5, "Card 2 title is too short.").max(100, "Card 2 title is too long."),
   exploreCard2Description: z.string().min(10, "Card 2 description is too short.").max(500, "Card 2 description is too long."),
   exploreCard3Title: z.string().min(5, "Card 3 title is too short.").max(100, "Card 3 title is too long."),
