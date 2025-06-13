@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'photos.app.goo.gl', // Added this hostname
+        hostname: 'firebasestorage.googleapis.com', // Added for Firebase Storage
         port: '',
         pathname: '/**',
       },

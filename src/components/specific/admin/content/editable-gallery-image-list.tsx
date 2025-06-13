@@ -8,17 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { getWelcomePageGalleryContent, updateWelcomePageGalleryContent, type GalleryImageItem } from "@/actions/content";
 import { welcomePageGalleryContentFormSchema, type WelcomePageGalleryContentFormValues } from "@/schemas/content";
-import { Loader2, PlusCircle, Trash2, Save, Image as ImageIcon } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, Save, Image as ImageIcon, UploadCloud } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
-import NextImage from "next/image"; // Use NextImage for preview
+import NextImage from "next/image";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
+import { app } from "@/lib/firebase"; // Your initialized Firebase app
+
+const storage = getStorage(app);
+
+interface UploadProgress {
+  [itemId: string]: number | null; // Store upload progress per item ID
+}
 
 export function EditableGalleryImageList() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
 
   const form = useForm<WelcomePageGalleryContentFormValues>({
     resolver: zodResolver(welcomePageGalleryContentFormSchema),
@@ -27,7 +37,7 @@ export function EditableGalleryImageList() {
     },
   });
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "galleryImages",
     keyName: "fieldId",
@@ -59,12 +69,60 @@ export function EditableGalleryImageList() {
     loadGalleryImages();
   }, [form, toast]);
 
+  const handleFileUpload = async (file: File, index: number, itemId: string) => {
+    if (!file) return;
+
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${uuidv4()}.${fileExtension}`;
+    const imageRef = storageRef(storage, `gallery_images/${fileName}`);
+
+    setUploadProgress(prev => ({ ...prev, [itemId]: 0 }));
+
+    const uploadTask = uploadBytesResumable(imageRef, file);
+
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(prev => ({ ...prev, [itemId]: progress }));
+      },
+      (error) => {
+        console.error("Upload failed:", error);
+        toast({
+          title: "Upload Failed",
+          description: `Could not upload ${file.name}. Error: ${error.message}`,
+          variant: "destructive",
+        });
+        setUploadProgress(prev => ({ ...prev, [itemId]: null }));
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          form.setValue(`galleryImages.${index}.src`, downloadURL, { shouldDirty: true });
+          toast({
+            title: "Upload Successful",
+            description: `${file.name} uploaded and link updated.`,
+          });
+        } catch (error) {
+            console.error("Failed to get download URL:", error);
+             toast({
+                title: "Error",
+                description: "Image uploaded, but failed to get its URL.",
+                variant: "destructive",
+            });
+        } finally {
+            setUploadProgress(prev => ({ ...prev, [itemId]: null }));
+        }
+      }
+    );
+  };
+
+
   const onSubmit = async (data: WelcomePageGalleryContentFormValues) => {
     setIsSaving(true);
     try {
       const itemsToSave = data.galleryImages.map(item => ({
         ...item,
-        id: item.id || uuidv4(), // Ensure ID exists
+        id: item.id || uuidv4(),
       }));
 
       const result = await updateWelcomePageGalleryContent(itemsToSave);
@@ -73,7 +131,7 @@ export function EditableGalleryImageList() {
           title: "Success!",
           description: result.message,
         });
-        form.reset({ galleryImages: itemsToSave }); // Reflect saved state including any new IDs
+        form.reset({ galleryImages: itemsToSave }, { keepValues: false, keepDirty: false, keepDefaultValues: false });
       } else {
         toast({
           title: "Save Failed",
@@ -96,7 +154,7 @@ export function EditableGalleryImageList() {
   const addNewGalleryItem = () => {
     append({
       id: uuidv4(),
-      src: "https://placehold.co/600x400.png", // Default placeholder
+      src: "", // Start with empty src, user will upload
       alt: "New gallery image",
       dataAiHint: "image",
     });
@@ -117,12 +175,14 @@ export function EditableGalleryImageList() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {fields.map((field, index) => {
-            const imageUrl = currentImages?.[index]?.src;
+          {fields.map((fieldItem, index) => {
+            const currentItem = currentImages?.[index];
+            const imageUrl = currentItem?.src;
             const isValidHttpUrl = typeof imageUrl === 'string' && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'));
+            const itemUploadProgress = uploadProgress[fieldItem.id];
 
             return (
-              <Card key={field.fieldId} className="shadow-md relative flex flex-col">
+              <Card key={fieldItem.fieldId} className="shadow-md relative flex flex-col">
                 <CardHeader className="flex-shrink-0">
                   <CardTitle className="font-headline text-lg flex items-center justify-between">
                     <span>Image #{index + 1}</span>
@@ -131,7 +191,11 @@ export function EditableGalleryImageList() {
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:text-destructive/80"
-                      onClick={() => remove(index)}
+                      onClick={() => {
+                        // Note: Deleting from form array doesn't delete from Firebase Storage.
+                        // For a full solution, one might add a specific deleteFromStorage function here.
+                        remove(index);
+                      }}
                       aria-label="Remove gallery image"
                     >
                       <Trash2 className="h-5 w-5" />
@@ -139,48 +203,57 @@ export function EditableGalleryImageList() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 flex-grow flex flex-col">
-                  <div className="aspect-video w-full bg-muted rounded-md overflow-hidden mb-4 flex items-center justify-center">
+                  <div className="aspect-video w-full bg-muted rounded-md overflow-hidden mb-2 flex items-center justify-center">
                     {isValidHttpUrl ? (
                         <NextImage
                           src={imageUrl}
-                          alt={currentImages?.[index]?.alt || `Preview for image ${index + 1}`}
+                          alt={currentItem?.alt || `Preview for image ${index + 1}`}
                           width={300}
                           height={200}
                           className="object-cover w-full h-full"
-                          onError={(e) => {
-                            // e.currentTarget.src = "https://placehold.co/300x200.png?text=Invalid+URL"; 
-                            // Potentially update form value or show error
-                            // For now, let CSS handle background if image fails
-                          }}
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <ImageIcon className="h-12 w-12 mb-2" />
-                          <p className="text-sm">Preview N/A</p>
-                          <p className="text-xs">(Enter a valid URL)</p>
+                        <div className="flex flex-col items-center justify-center text-muted-foreground p-4">
+                          <UploadCloud className="h-12 w-12 mb-2" />
+                          <p className="text-sm text-center">Upload an image</p>
                         </div>
                       )}
                   </div>
+                  
+                  <FormItem>
+                    <FormLabel htmlFor={`galleryImages.${index}.file`}>Upload/Replace Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        id={`galleryImages.${index}.file`}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(e.target.files[0], index, fieldItem.id);
+                          }
+                        }}
+                        className="text-sm"
+                        disabled={itemUploadProgress !== null && itemUploadProgress !== undefined}
+                      />
+                    </FormControl>
+                     {itemUploadProgress !== null && itemUploadProgress !== undefined && (
+                        <Progress value={itemUploadProgress} className="w-full h-2 mt-1" />
+                      )}
+                    <FormMessage /> {/* For file input related messages if any */}
+                  </FormItem>
+
                   <FormField
                     control={form.control}
                     name={`galleryImages.${index}.src`}
                     render={({ field: controllerField }) => (
-                      <FormItem>
-                        <FormLabel>Image URL</FormLabel>
+                      <FormItem className="hidden"> {/* Hidden, as it's managed by upload */}
                         <FormControl>
-                          <Input 
-                            placeholder="https://example.com/image.png" {...controllerField} 
-                            onChange={(e) => {
-                              controllerField.onChange(e);
-                              // Optionally force re-render or update a preview state if needed
-                              // For simple URL changes, form.watch should trigger preview update
-                            }}
-                          />
+                          <Input {...controllerField} readOnly />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name={`galleryImages.${index}.alt`}
@@ -214,13 +287,16 @@ export function EditableGalleryImageList() {
         </div>
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <Button type="button" variant="outline" onClick={addNewGalleryItem} className="w-full sm:w-auto">
-            <PlusCircle className="mr-2 h-5 w-5" /> Add New Image
+            <PlusCircle className="mr-2 h-5 w-5" /> Add New Image Item
           </Button>
-          <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSaving || isLoading}>
+          <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSaving || isLoading || Object.values(uploadProgress).some(p => p !== null)}>
             {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
             Save Gallery Changes
           </Button>
         </div>
+         {Object.values(uploadProgress).some(p => p !== null) && (
+            <p className="text-sm text-muted-foreground text-center">Please wait for all uploads to complete before saving.</p>
+        )}
       </form>
     </Form>
   );
