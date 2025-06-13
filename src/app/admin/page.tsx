@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, ShieldCheck } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, ShieldCheck, Users } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -35,6 +35,16 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
             <Button asChild variant="outline">
+              <Link href="/admin/content/gallery">
+                <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
+              </Link>
+            </Button>
+             <Button asChild variant="outline">
+              <Link href="/admin/content/who-we-are">
+                <Users className="mr-2 h-4 w-4" /> Edit Who We Are
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
               <Link href="/admin/content/rules">
                 <Edit className="mr-2 h-4 w-4" /> Edit House Rules
               </Link>
@@ -42,11 +52,6 @@ export default function AdminDashboardPage() {
             <Button asChild variant="outline">
               <Link href="/admin/content/house-guide">
                 <BookOpenText className="mr-2 h-4 w-4" /> Edit House Guide
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/gallery">
-                <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
               </Link>
             </Button>
             <Button asChild variant="outline">
@@ -124,4 +129,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-

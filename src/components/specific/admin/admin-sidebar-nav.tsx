@@ -23,7 +23,8 @@ import {
   DollarSign,
   CreditCard,
   PencilLine,
-  ShieldCheck, // Added for Commerce Disclosure
+  ShieldCheck,
+  Users, // Added for Who We Are
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -46,6 +47,7 @@ const adminNavItems: NavItem[] = [
     isGroup: true,
     subItems: [
       { href: "/admin/content/gallery", label: "Welcome Gallery", icon: Images },
+      { href: "/admin/content/who-we-are", label: "Who We Are Page", icon: Users },
       { href: "/admin/content/rules", label: "House Rules", icon: ListChecks },
       { href: "/admin/content/house-guide", label: "House Guide", icon: BookOpenText },
       { href: "/admin/content/local-tips", label: "Local Tips", icon: Lightbulb },
@@ -115,4 +117,3 @@ export function AdminSidebarNav() {
     </SidebarMenu>
   );
 }
-

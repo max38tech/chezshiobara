@@ -91,3 +91,36 @@ export const commerceDisclosureContentSchema = z.object({
 
 export type CommerceDisclosureContentFormValues = z.infer<typeof commerceDisclosureContentSchema>;
 
+// --- Who We Are Page Schemas ---
+export const heroImageSchema = z.object({
+  src: z.string().url({ message: "Please enter a valid URL or upload an image." }).min(1, "Hero image URL is required."),
+  alt: z.string().min(3, "Alt text is required.").max(150, "Alt text too long."),
+  dataAiHint: z.string().min(1, "AI hint is required.").max(50, "AI hint too long."),
+});
+
+export const storyParagraphSchema = z.object({
+  id: z.string().min(1, "Paragraph ID is required."),
+  text: z.string().min(10, "Paragraph text is required.").max(2000, "Paragraph too long."),
+});
+
+export const philosophyItemSchema = z.object({
+  id: z.string().min(1, "Philosophy item ID is required."),
+  title: z.string().min(3, "Philosophy title is required.").max(100, "Title too long."),
+  description: z.string().min(10, "Philosophy description is required.").max(500, "Description too long."),
+});
+
+export const whoWeArePageContentSchema = z.object({
+  pageTitle: z.string().min(3, "Page title is required.").max(100, "Page title too long."),
+  heroImage: heroImageSchema,
+  ourStorySection: z.object({
+    title: z.string().min(3, "Story section title is required.").max(100, "Title too long."),
+    paragraphs: z.array(storyParagraphSchema).min(1, "At least one story paragraph is required."),
+  }),
+  ourPhilosophySection: z.object({
+    title: z.string().min(3, "Philosophy section title is required.").max(100, "Title too long."),
+    introParagraph: z.string().min(10, "Philosophy intro is required.").max(1000, "Intro too long."),
+    philosophyItems: z.array(philosophyItemSchema).min(1, "At least one philosophy item is required."),
+  }),
+});
+
+export type WhoWeArePageContentFormValues = z.infer<typeof whoWeArePageContentSchema>;

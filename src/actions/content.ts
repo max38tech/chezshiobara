@@ -429,3 +429,113 @@ export async function updateCommerceDisclosureContent(newContent: Omit<CommerceD
   }
 }
 
+// --- Who We Are Page Content ---
+export interface PhilosophyItem {
+  id: string;
+  title: string;
+  description: string;
+}
+export interface HeroImage {
+  src: string;
+  alt: string;
+  dataAiHint: string;
+}
+export interface WhoWeArePageContent {
+  pageTitle: string;
+  heroImage: HeroImage;
+  ourStorySection: {
+    title: string;
+    paragraphs: Array<{ id: string; text: string }>;
+  };
+  ourPhilosophySection: {
+    title: string;
+    introParagraph: string;
+    philosophyItems: PhilosophyItem[];
+  };
+  updatedAt?: any;
+}
+
+const initialWhoWeAreData: WhoWeArePageContent = {
+  pageTitle: "Meet Your Hosts",
+  heroImage: {
+    src: "https://placehold.co/600x750.png",
+    alt: "The hosts of Chez Shiobara B&B",
+    dataAiHint: "friendly couple",
+  },
+  ourStorySection: {
+    title: "Our Story",
+    paragraphs: [
+      { id: uuidv4(), text: "Welcome to Chez Shiobara! We are Shino and Shawn Shiobara, your hosts and the proud owners of this little piece of paradise. Our journey into the world of hospitality began with a shared dream: to create a welcoming space where guests could escape the everyday and immerse themselves in the beauty and tranquility of Shiobara." },
+      { id: uuidv4(), text: "Having explored many corners of the world and experienced various cultures, we fell in love with the unique charm of Shiobara. Its breathtaking natural landscapes, rich history, and warm local community inspired us to establish a B&B that reflects our passion for travel, comfort, and genuine connection." },
+      { id: uuidv4(), text: "We've poured our hearts into every detail of Chez Shiobara, from the carefully curated decor to the locally sourced ingredients for your breakfast. Our goal is to offer more than just a place to stay; we aim to provide an experience that feels like a home away from home, filled with warmth, personal touches, and the discovery of local wonders." },
+    ],
+  },
+  ourPhilosophySection: {
+    title: "Our Philosophy",
+    introParagraph: "At Chez Shiobara, we believe in:",
+    philosophyItems: [
+      { id: uuidv4(), title: "Genuine Hospitality", description: "Making you feel truly welcome and cared for." },
+      { id: uuidv4(), title: "Local Immersion", description: "Helping you connect with the authentic culture and nature of Shiobara." },
+      { id: uuidv4(), title: "Comfort and Quality", description: "Ensuring every aspect of your stay is comfortable and of high quality." },
+      { id: uuidv4(), title: "Sustainable Practices", description: "Respecting our environment and supporting our local community." },
+    ],
+  },
+};
+
+export async function getWhoWeArePageContent(): Promise<WhoWeArePageContent> {
+  try {
+    const docRef = doc(db, "siteContent", "whoWeArePage");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const storedData = docSnap.data() as Partial<WhoWeArePageContent>;
+      // Merge with initial data to ensure all fields are present, especially for new fields
+      const mergedData: WhoWeArePageContent = {
+        pageTitle: storedData.pageTitle ?? initialWhoWeAreData.pageTitle,
+        heroImage: {
+          src: storedData.heroImage?.src ?? initialWhoWeAreData.heroImage.src,
+          alt: storedData.heroImage?.alt ?? initialWhoWeAreData.heroImage.alt,
+          dataAiHint: storedData.heroImage?.dataAiHint ?? initialWhoWeAreData.heroImage.dataAiHint,
+        },
+        ourStorySection: {
+          title: storedData.ourStorySection?.title ?? initialWhoWeAreData.ourStorySection.title,
+          paragraphs: (storedData.ourStorySection?.paragraphs && storedData.ourStorySection.paragraphs.length > 0)
+            ? storedData.ourStorySection.paragraphs.map(p => ({ id: p.id || uuidv4(), text: p.text || "" }))
+            : initialWhoWeAreData.ourStorySection.paragraphs.map(p => ({ ...p, id: p.id || uuidv4() })),
+        },
+        ourPhilosophySection: {
+          title: storedData.ourPhilosophySection?.title ?? initialWhoWeAreData.ourPhilosophySection.title,
+          introParagraph: storedData.ourPhilosophySection?.introParagraph ?? initialWhoWeAreData.ourPhilosophySection.introParagraph,
+          philosophyItems: (storedData.ourPhilosophySection?.philosophyItems && storedData.ourPhilosophySection.philosophyItems.length > 0)
+            ? storedData.ourPhilosophySection.philosophyItems.map(item => ({ id: item.id || uuidv4(), title: item.title || "", description: item.description || "" }))
+            : initialWhoWeAreData.ourPhilosophySection.philosophyItems.map(item => ({ ...item, id: item.id || uuidv4() })),
+        },
+        updatedAt: storedData.updatedAt ? (storedData.updatedAt as any).toDate() : undefined,
+      };
+      return mergedData;
+    } else {
+      console.log("'whoWeArePage' document does not exist. Creating and seeding.");
+      const dataToSeed = { ...initialWhoWeAreData, updatedAt: serverTimestamp() };
+      await setDoc(docRef, dataToSeed);
+      return { ...initialWhoWeAreData, updatedAt: new Date() };
+    }
+  } catch (error) {
+    console.error("Error fetching Who We Are page content from Firestore: ", error);
+    return { ...initialWhoWeAreData, updatedAt: new Date() };
+  }
+}
+
+export async function updateWhoWeArePageContent(newContent: Omit<WhoWeArePageContent, 'updatedAt'>): Promise<{ success: boolean; message: string }> {
+  try {
+    const docRef = doc(db, "siteContent", "whoWeArePage");
+    const dataToSet = {
+      ...newContent,
+      updatedAt: serverTimestamp(),
+    };
+    await setDoc(docRef, dataToSet, { merge: true }); // Use merge: true to avoid overwriting other fields if structure differs
+    return { success: true, message: "'Who We Are' page content updated successfully." };
+  } catch (error) {
+    console.error("Error updating 'Who We Are' page content in Firestore: ", error);
+    return { success: false, message: "Failed to update 'Who We Are' page content." };
+  }
+}
