@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import NextImage from "next/image";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { app } from "@/lib/firebase"; 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const storage = getStorage(app);
 
@@ -217,18 +217,16 @@ export function EditableGalleryImageList() {
                 <CardHeader className="flex-shrink-0">
                   <CardTitle className="font-headline text-lg flex items-center justify-between">
                     <span>Image #{index + 1}</span>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive/80"
-                        onClick={() => setItemToDelete({ index, src: currentItem?.src })}
-                        aria-label="Remove gallery image"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
-                    </AlertDialogTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive/80"
+                      onClick={() => setItemToDelete({ index, src: currentItem?.src })}
+                      aria-label="Remove gallery image"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 flex-grow flex flex-col">
@@ -258,8 +256,6 @@ export function EditableGalleryImageList() {
                         accept="image/*"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
-                            // If there's an existing Firebase image, ideally delete it first
-                            // For simplicity here, we're replacing. Consider adding pre-delete if src is Firebase.
                             handleFileUpload(e.target.files[0], index, fieldItem.id);
                           }
                         }}
