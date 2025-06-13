@@ -558,7 +558,7 @@ const initialWelcomePageTextData: WelcomePageTextContent = {
   introParagraph: "Discover a hidden gem nestled in Yokohama, perfectly positioned for exploring the greater Tokyo area. Experience unparalleled comfort, charming hospitality, and unforgettable moments. Your perfect getaway starts here.",
   exploreSectionTitle: "Explore Our B&B",
   exploreCard1Title: "Comfortable Guest Room",
-  exploreCard1Description: "Unwind in our thoughtfully designed guest room, a sanctuary of peace offering modern comforts and a touch of local charm, ensuring a restful and rejuvenating stay.",
+  exploreCard1Description: "Unwind in our bright and comfortable guest room. This room is quite flexible! It has Japanese shudders that can be close to make the room pretty dark even on the brightest days. Great for recovering from jet lag! Speaking of bright days, the room lets in a lot of light, and a view of your very own white rose garden. (overstated LOL) The bed can be used as a western style bed with an actual mattress, or as a tatami platform and futon for the \"ryokan\" or traditional Japanese sleeping experience. There's also a desk at which you can either sit or stand (adjustable height). You'll have your own climate control as well. There's also room in the closet for you, with drawers and hanging space - as well as lots of room under the bed for luggage and things. You might even forget you're traveling (at least while home)!",
   exploreCard2Title: "Explore the Region",
   exploreCard2Description: "Discover the vibrant culture and attractions of the greater Tokyo area. We'll share our favorite spots, from bustling cityscapes in Tokyo and historic temples in Kamakura to scenic local trails and authentic dining, helping you craft unforgettable memories.",
   exploreCard3Title: "Warm Hospitality",
@@ -604,3 +604,5 @@ export async function updateWelcomePageTextContent(newContent: Omit<WelcomePageT
     return { success: false, message: "Failed to update welcome page text content." };
   }
 }
+
+    
