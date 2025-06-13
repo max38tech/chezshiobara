@@ -539,3 +539,68 @@ export async function updateWhoWeArePageContent(newContent: Omit<WhoWeArePageCon
     return { success: false, message: "Failed to update 'Who We Are' page content." };
   }
 }
+
+// --- Welcome Page Text Content ---
+export interface WelcomePageTextContent {
+  introParagraph: string;
+  exploreSectionTitle: string;
+  exploreCard1Title: string;
+  exploreCard1Description: string;
+  exploreCard2Title: string;
+  exploreCard2Description: string;
+  exploreCard3Title: string;
+  exploreCard3Description: string;
+  bookingCallToActionParagraph: string;
+  updatedAt?: any; // Firestore ServerTimestamp
+}
+
+const initialWelcomePageTextData: WelcomePageTextContent = {
+  introParagraph: "Discover a hidden gem nestled in Yokohama, perfectly positioned for exploring the greater Tokyo area. Experience unparalleled comfort, charming hospitality, and unforgettable moments. Your perfect getaway starts here.",
+  exploreSectionTitle: "Explore Our B&B",
+  exploreCard1Title: "Comfortable Guest Room",
+  exploreCard1Description: "Unwind in our thoughtfully designed guest room, a sanctuary of peace offering modern comforts and a touch of local charm, ensuring a restful and rejuvenating stay.",
+  exploreCard2Title: "Explore the Region",
+  exploreCard2Description: "Discover the vibrant culture and attractions of the greater Tokyo area. We'll share our favorite spots, from bustling cityscapes in Tokyo and historic temples in Kamakura to scenic local trails and authentic dining, helping you craft unforgettable memories.",
+  exploreCard3Title: "Warm Hospitality",
+  exploreCard3Description: "As your hosts, Shino and Shawn are dedicated to making your visit special. We invite you to treat our home as your own – feel free to use the kitchen, store groceries in the fridge, relax with TV in the living room, or use the dining table as a workspace. Expect a personal touch, helpful advice, and a genuinely warm welcome.",
+  bookingCallToActionParagraph: "Ready to experience the charm of Chez Shiobara?",
+};
+
+export async function getWelcomePageTextContent(): Promise<WelcomePageTextContent> {
+  try {
+    const docRef = doc(db, "siteContent", "welcomePageText");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const storedData = docSnap.data();
+      const mergedData = { ...initialWelcomePageTextData, ...storedData } as WelcomePageTextContent;
+      if(storedData.updatedAt) {
+        mergedData.updatedAt = (storedData.updatedAt as any).toDate();
+      }
+      return mergedData;
+    } else {
+      console.log("'welcomePageText' document does not exist. Creating and seeding.");
+      const dataToSeed = { ...initialWelcomePageTextData, updatedAt: serverTimestamp() };
+      await setDoc(docRef, dataToSeed);
+      return { ...initialWelcomePageTextData, updatedAt: new Date() };
+    }
+  } catch (error) {
+    console.error("Error fetching welcome page text content: ", error);
+    return { ...initialWelcomePageTextData, updatedAt: new Date() };
+  }
+}
+
+export async function updateWelcomePageTextContent(newContent: Omit<WelcomePageTextContent, 'updatedAt'>): Promise<{ success: boolean; message: string }> {
+  try {
+    const docRef = doc(db, "siteContent", "welcomePageText");
+    const dataToSet = {
+      ...newContent,
+      updatedAt: serverTimestamp(),
+    };
+    await setDoc(docRef, dataToSet, { merge: true });
+    return { success: true, message: "Welcome page text content updated successfully." };
+  } catch (error) {
+    console.error("Error updating welcome page text content: ", error);
+    return { success: false, message: "Failed to update welcome page text content." };
+  }
+}

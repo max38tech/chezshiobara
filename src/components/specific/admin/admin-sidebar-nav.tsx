@@ -24,7 +24,8 @@ import {
   CreditCard,
   PencilLine,
   ShieldCheck,
-  Users, // Added for Who We Are
+  Users, 
+  Home, // Added for Welcome Page Text
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -46,6 +47,7 @@ const adminNavItems: NavItem[] = [
     icon: PencilLine,
     isGroup: true,
     subItems: [
+      { href: "/admin/content/welcome-page-text", label: "Welcome Page Text", icon: Home },
       { href: "/admin/content/gallery", label: "Welcome Gallery", icon: Images },
       { href: "/admin/content/who-we-are", label: "Who We Are Page", icon: Users },
       { href: "/admin/content/rules", label: "House Rules", icon: ListChecks },

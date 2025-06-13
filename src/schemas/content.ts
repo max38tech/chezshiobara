@@ -124,3 +124,18 @@ export const whoWeArePageContentSchema = z.object({
 });
 
 export type WhoWeArePageContentFormValues = z.infer<typeof whoWeArePageContentSchema>;
+
+// --- Welcome Page Text Content Schemas ---
+export const welcomePageTextContentSchema = z.object({
+  introParagraph: z.string().min(20, "Intro paragraph is too short.").max(1000, "Intro paragraph is too long."),
+  exploreSectionTitle: z.string().min(5, "Explore section title is too short.").max(100, "Explore section title is too long."),
+  exploreCard1Title: z.string().min(5, "Card 1 title is too short.").max(100, "Card 1 title is too long."),
+  exploreCard1Description: z.string().min(10, "Card 1 description is too short.").max(500, "Card 1 description is too long."),
+  exploreCard2Title: z.string().min(5, "Card 2 title is too short.").max(100, "Card 2 title is too long."),
+  exploreCard2Description: z.string().min(10, "Card 2 description is too short.").max(500, "Card 2 description is too long."),
+  exploreCard3Title: z.string().min(5, "Card 3 title is too short.").max(100, "Card 3 title is too long."),
+  exploreCard3Description: z.string().min(10, "Card 3 description is too short.").max(500, "Card 3 description is too long."),
+  bookingCallToActionParagraph: z.string().min(10, "Call to action text is too short.").max(200, "Call to action text is too long."),
+});
+
+export type WelcomePageTextContentFormValues = z.infer<typeof welcomePageTextContentSchema>;

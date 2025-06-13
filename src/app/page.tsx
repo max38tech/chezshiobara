@@ -7,10 +7,13 @@ import { SectionTitle } from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle as SectionCardTitle } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
 import { getWelcomePageGalleryContent } from '@/actions/content';
+import { getWelcomePageTextContent, type WelcomePageTextContent } from '@/actions/content';
 import { WelcomePageGallery } from '@/components/specific/welcome/welcome-page-gallery';
 
 export default async function WelcomePage() {
   const galleryContent = await getWelcomePageGalleryContent();
+  const textContent: WelcomePageTextContent = await getWelcomePageTextContent();
+  
   // Ensure images is always an array, even if galleryContent is null or galleryImages is undefined
   const images = galleryContent?.galleryImages || [];
 
@@ -20,8 +23,7 @@ export default async function WelcomePage() {
       
       <section className="text-center mb-12">
         <p className="font-body text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          Discover a hidden gem nestled in Yokohama, perfectly positioned for exploring the greater Tokyo area. Experience unparalleled comfort, 
-          charming hospitality, and unforgettable moments. Your perfect getaway starts here.
+          {textContent.introParagraph}
         </p>
       </section>
 
@@ -30,35 +32,35 @@ export default async function WelcomePage() {
       </section>
 
       <section className="mb-16 text-center">
-        <SectionTitle>Explore Our B&amp;B</SectionTitle>
+        <SectionTitle>{textContent.exploreSectionTitle}</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <SectionCardTitle className="font-headline text-2xl">Comfortable Guest Room</SectionCardTitle>
+              <SectionCardTitle className="font-headline text-2xl">{textContent.exploreCard1Title}</SectionCardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                Unwind in our thoughtfully designed guest room, a sanctuary of peace offering modern comforts and a touch of local charm, ensuring a restful and rejuvenating stay.
+                {textContent.exploreCard1Description}
               </p>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <SectionCardTitle className="font-headline text-2xl">Explore the Region</SectionCardTitle>
+              <SectionCardTitle className="font-headline text-2xl">{textContent.exploreCard2Title}</SectionCardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                Discover the vibrant culture and attractions of the greater Tokyo area. We'll share our favorite spots, from bustling cityscapes in Tokyo and historic temples in Kamakura to scenic local trails and authentic dining, helping you craft unforgettable memories.
+                {textContent.exploreCard2Description}
               </p>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <SectionCardTitle className="font-headline text-2xl">Warm Hospitality</SectionCardTitle>
+              <SectionCardTitle className="font-headline text-2xl">{textContent.exploreCard3Title}</SectionCardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-muted-foreground">
-                As your hosts, Shino and Shawn are dedicated to making your visit special. We invite you to treat our home as your own – feel free to use the kitchen, store groceries in the fridge, relax with TV in the living room, or use the dining table as a workspace. Expect a personal touch, helpful advice, and a genuinely warm welcome.
+                {textContent.exploreCard3Description}
               </p>
             </CardContent>
           </Card>
@@ -67,7 +69,7 @@ export default async function WelcomePage() {
       
       <section className="text-center pb-8"> {/* Added pb-8 for spacing before footer */}
         <p className="font-body text-lg md:text-xl text-muted-foreground mb-6">
-          Ready to experience the charm of Chez Shiobara?
+          {textContent.bookingCallToActionParagraph}
         </p>
         <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
           <Link href="/booking">

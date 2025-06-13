@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, ShieldCheck, Users } from "lucide-react"; 
+import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, ShieldCheck, Users, Home } from "lucide-react"; 
 
 export default function AdminDashboardPage() {
   return (
@@ -34,6 +34,11 @@ export default function AdminDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
+            <Button asChild variant="outline">
+              <Link href="/admin/content/welcome-page-text">
+                <Home className="mr-2 h-4 w-4" /> Edit Welcome Text
+              </Link>
+            </Button>
             <Button asChild variant="outline">
               <Link href="/admin/content/gallery">
                 <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
