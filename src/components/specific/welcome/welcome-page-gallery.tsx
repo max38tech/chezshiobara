@@ -2,7 +2,7 @@
 "use client";
 
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from "react"; // Added useCallback
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Carousel,
@@ -26,8 +26,8 @@ export function WelcomePageGallery({ images }: WelcomePageGalleryProps) {
   const [currentDialogAltText, setCurrentDialogAltText] = useState<string>("");
 
   const handleImageClick = useCallback((image: GalleryImageItem, index: number) => {
-    setSelectedImageForTitle(image); // Used for initial dialog title
-    setCurrentDialogAltText(image.alt); // Set initial alt text for display
+    setSelectedImageForTitle(image); 
+    setCurrentDialogAltText(image.alt); 
     setStartIndexForDialog(index);
     setIsDialogOpen(true);
   }, []);
@@ -38,26 +38,24 @@ export function WelcomePageGallery({ images }: WelcomePageGalleryProps) {
     }
 
     const onSelect = () => {
-      if (dialogCarouselApi) {
-        const selectedIndex = dialogCarouselApi.selectedScrollSnap();
-        setCurrentDialogAltText(images[selectedIndex]?.alt || "");
-      }
+      const selectedIndex = dialogCarouselApi.selectedScrollSnap();
+      setCurrentDialogAltText(images[selectedIndex]?.alt || "");
     };
 
-    dialogCarouselApi.on("select", onSelect);
-    // Initial setup for alt text based on startIndex
-    // This ensures alt text is correct even if the carousel initializes to a non-zero index
-    // and the user doesn't swipe immediately.
+    // Set initial alt text
     const initialSelectedIndex = dialogCarouselApi.selectedScrollSnap();
      if (images[initialSelectedIndex]) {
         setCurrentDialogAltText(images[initialSelectedIndex].alt);
-     }
+     } else if (images.length > 0 && images[startIndexForDialog]) {
+        setCurrentDialogAltText(images[startIndexForDialog].alt);
+    }
 
+    dialogCarouselApi.on("select", onSelect);
 
     return () => {
       dialogCarouselApi?.off("select", onSelect);
     };
-  }, [dialogCarouselApi, images]);
+  }, [dialogCarouselApi, images, startIndexForDialog]);
 
 
   if (!images || images.length === 0) {
@@ -115,7 +113,7 @@ export function WelcomePageGallery({ images }: WelcomePageGalleryProps) {
             <DialogHeader className="sr-only">
               <DialogTitle>{selectedImageForTitle.alt}</DialogTitle>
             </DialogHeader>
-            <div className="relative w-full pt-4 pb-8 md:pb-10"> {/* Added padding for carousel controls and alt text */}
+            <div className="relative w-full pt-4 pb-8 md:pb-10">
               <Carousel
                 setApi={setDialogCarouselApi}
                 opts={{
@@ -127,17 +125,18 @@ export function WelcomePageGallery({ images }: WelcomePageGalleryProps) {
               >
                 <CarouselContent>
                   {images.map((image, index) => (
-                    <CarouselItem key={`dialog-img-${image.id || index}`} className="flex items-center justify-center">
-                      {/* Container for the image itself, ensuring it doesn't overflow CarouselItem */}
-                      <div className="relative w-auto max-w-full h-[65vh] sm:h-[75vh] md:h-[80vh] aspect-auto flex items-center justify-center">
-                        <Image
-                          src={image.src}
-                          alt={image.alt || `Gallery image ${index + 1}`}
-                          fill // Changed from width/height to fill for responsive containment
-                          className="object-contain rounded-md" // object-contain is key for fill
-                          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 70vw"
-                        />
-                      </div>
+                    <CarouselItem 
+                      key={`dialog-img-${image.id || index}`} 
+                      className="relative h-[65vh] sm:h-[70vh] md:h-[75vh]" // CarouselItem now provides relative positioning and height
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt || `Gallery image ${index + 1}`}
+                        fill 
+                        className="object-contain rounded-md" 
+                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 80vw, 70vw"
+                        priority // Prioritize loading images in the dialog
+                      />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -160,4 +159,3 @@ export function WelcomePageGallery({ images }: WelcomePageGalleryProps) {
     </>
   );
 }
-
