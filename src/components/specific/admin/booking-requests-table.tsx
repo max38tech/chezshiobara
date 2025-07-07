@@ -105,7 +105,9 @@ export function BookingRequestsTable() {
     setError(null);
     try {
       const requestsCollection = collection(db, 'bookingRequests');
-      const q = query(requestsCollection, orderBy('createdAt', 'desc'));
+      // The Firestore orderBy clause can cause permission issues with certain rule/index configurations.
+      // To bypass this, we fetch the data unsorted and then sort it on the client-side.
+      const q = query(requestsCollection);
       const querySnapshot = await getDocs(q);
       const requests = querySnapshot.docs.map(docSnapshot => {
         const data = docSnapshot.data();
@@ -118,6 +120,14 @@ export function BookingRequestsTable() {
           status: validStatus,
         } as BookingRequest;
       });
+
+      // Sort requests on the client-side to ensure newest are first.
+      requests.sort((a, b) => {
+        const dateA = a.createdAt?.toDate() || new Date(0);
+        const dateB = b.createdAt?.toDate() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+
       setBookingRequests(requests);
     } catch (err) {
       console.error("Error fetching booking requests:", err);
@@ -639,4 +649,3 @@ export function BookingRequestsTable() {
     </>
   );
 }
-
