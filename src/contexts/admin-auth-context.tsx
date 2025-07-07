@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { User } from "firebase/auth";
@@ -29,9 +28,31 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setAdminUser(user);
+      if (user) {
+        const loginTimestamp = localStorage.getItem('adminLoginTimestamp');
+        const now = new Date().getTime();
+        const ONE_HOUR_IN_MS = 60 * 60 * 1000; // 1 hour
+
+        // Check if the timestamp exists and if it's older than one hour
+        if (loginTimestamp && (now - parseInt(loginTimestamp, 10) > ONE_HOUR_IN_MS)) {
+          console.log("Admin session has expired. Logging out for security.");
+          // Sign out and clear the timestamp.
+          firebaseSignOut(auth).then(() => {
+            localStorage.removeItem('adminLoginTimestamp');
+          });
+          // onAuthStateChanged will be triggered again with user=null by signOut,
+          // which will then set the adminUser state to null.
+        } else {
+          setAdminUser(user);
+        }
+      } else {
+        // No user is signed in, or they have just been signed out.
+        localStorage.removeItem('adminLoginTimestamp');
+        setAdminUser(null);
+      }
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -40,7 +61,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
-      // User state will be updated by onAuthStateChanged
+      // On successful login, set the session start timestamp.
+      localStorage.setItem('adminLoginTimestamp', new Date().getTime().toString());
+      // User state will be updated by the onAuthStateChanged listener.
     } catch (err) {
       setError(err as AuthError);
     } finally {
@@ -53,7 +76,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       await firebaseSignOut(auth);
-      // User state will be updated by onAuthStateChanged
+      // The onAuthStateChanged listener will handle clearing the timestamp.
     } catch (err) {
       setError(err as AuthError);
     } finally {
