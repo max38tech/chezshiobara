@@ -1,4 +1,3 @@
-
 "use server";
 
 import { db } from "@/lib/firebase";
@@ -258,7 +257,7 @@ export interface LocalTipItem {
   description: string;
   category: string; // e.g., "Dining", "Sightseeing", "Activities", "Hidden Gem"
   imageUrl?: string;
-  dataAiHint?: string;
+  imageLinkUrl?: string;
 }
 
 export interface LocalTipsPageContent {
@@ -272,7 +271,7 @@ const initialLocalTipsData: LocalTipItem[] = [
     description: "Enjoy craft beers and delicious grilled food in a relaxed atmosphere. Great for an evening out.",
     category: "Dining",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "restaurant interior",
+    imageLinkUrl: "",
   },
   {
     id: uuidv4(),
@@ -280,7 +279,7 @@ const initialLocalTipsData: LocalTipItem[] = [
     description: "Explore a stunning collection of contemporary sculptures set against the backdrop of Hakone's mountains. A must-visit for art lovers.",
     category: "Sightseeing",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "outdoor sculpture",
+    imageLinkUrl: "",
   },
   {
     id: uuidv4(),
@@ -288,7 +287,7 @@ const initialLocalTipsData: LocalTipItem[] = [
     description: "Take a scenic boat cruise on Lake Ashi for breathtaking views of Mt. Fuji (on clear days) and the surrounding nature.",
     category: "Activities",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "lake boat",
+    imageLinkUrl: "",
   },
   {
     id: uuidv4(),
@@ -296,7 +295,7 @@ const initialLocalTipsData: LocalTipItem[] = [
     description: "Step back in time at this traditional tea house serving amazake (sweet, non-alcoholic rice drink) and mochi. A unique cultural experience.",
     category: "Hidden Gem",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "traditional teahouse",
+    imageLinkUrl: "",
   },
 ];
 
@@ -314,7 +313,7 @@ export async function getLocalTipsPageContent(): Promise<LocalTipsPageContent> {
           description: tip.description || "No description provided.",
           category: tip.category || "General",
           imageUrl: tip.imageUrl, // Optional
-          dataAiHint: tip.dataAiHint, // Optional
+          imageLinkUrl: tip.imageLinkUrl, // Optional
         }));
         return { localTips: validatedTips };
       } else {
@@ -605,4 +604,3 @@ export async function updateWelcomePageTextContent(newContent: Omit<WelcomePageT
   }
 }
 
-    

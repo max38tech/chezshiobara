@@ -1,4 +1,3 @@
-
 "use client";
 
 import { z } from "zod";
@@ -58,7 +57,7 @@ export const localTipItemSchema = z.object({
   description: z.string().min(10, "Description is required.").max(1000, "Description too long."),
   category: z.string().min(1, "Category is required.").max(50, "Category too long."),
   imageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
-  dataAiHint: z.string().max(50, "AI hint too long (max 2 words recommended).").optional().or(z.literal('')),
+  imageLinkUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 export type LocalTipItemFormValues = z.infer<typeof localTipItemSchema>;
