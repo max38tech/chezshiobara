@@ -105,10 +105,8 @@ export function BookingRequestsTable() {
     setError(null);
     try {
       const requestsCollection = collection(db, 'bookingRequests');
-      // The Firestore orderBy clause can cause permission issues with certain rule/index configurations.
-      // To bypass this, we fetch the data unsorted and then sort it on the client-side.
-      const q = query(requestsCollection);
-      const querySnapshot = await getDocs(q);
+      // Fetch the documents without any query constraints (like orderBy)
+      const querySnapshot = await getDocs(requestsCollection);
       const requests = querySnapshot.docs.map(docSnapshot => {
         const data = docSnapshot.data();
         const status = data.status;
@@ -649,3 +647,4 @@ export function BookingRequestsTable() {
     </>
   );
 }
+
