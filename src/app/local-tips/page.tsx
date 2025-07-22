@@ -1,4 +1,3 @@
-
 import Image from 'next/image';
 import { PageContentWrapper } from '@/components/layout/page-content-wrapper';
 import { PageTitle } from '@/components/ui/page-title';
@@ -57,20 +56,32 @@ export default async function LocalTipsPage() {
                   <Card key={tip.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
                     {tip.imageUrl && (
                       <div className="relative w-full h-48 rounded-t-lg overflow-hidden bg-muted">
-                        <Image
-                          src={tip.imageUrl}
-                          alt={tip.title}
-                          fill
-                          className="object-cover"
-                          data-ai-hint={tip.dataAiHint || "local scene"}
-                        />
+                        {tip.imageLinkUrl ? (
+                          <a href={tip.imageLinkUrl} target="_blank" rel="noopener noreferrer">
+                            <Image
+                              src={tip.imageUrl}
+                              alt={tip.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </a>
+                        ) : (
+                          <Image
+                            src={tip.imageUrl}
+                            alt={tip.title}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
                       </div>
                     )}
                     <CardHeader>
                       <ItemCardTitle className="font-headline text-2xl">{tip.title}</ItemCardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow">
-                      <CardDescription className="font-body text-base text-foreground leading-relaxed">{tip.description}</CardDescription>
+                      <CardDescription className="font-body text-base text-foreground leading-relaxed">
+                        {autoLinkify(tip.description)}
+                      </CardDescription>
                     </CardContent>
                   </Card>
                 ))}
@@ -81,4 +92,18 @@ export default async function LocalTipsPage() {
       )}
     </PageContentWrapper>
   );
+}
+
+// Add this utility function at the top (after imports):
+function autoLinkify(text: string) {
+  const urlRegex = /(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+)|(www\.[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/gi;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (!part) return null;
+    if (part.match(urlRegex)) {
+      const href = part.startsWith('http') ? part : `https://${part}`;
+      return <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="underline text-primary break-all">{part}</a>;
+    }
+    return <span key={i}>{part}</span>;
+  });
 }

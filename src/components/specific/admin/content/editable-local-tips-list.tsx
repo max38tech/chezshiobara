@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,6 +14,7 @@ import { localTipsPageContentFormSchema, type LocalTipsPageContentFormValues } f
 import { Loader2, PlusCircle, Trash2, Save, Image as ImageIcon } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import NextImage from "next/image";
+import { uploadImageAndGetUrl } from "@/lib/image-upload";
 
 const CATEGORY_SUGGESTIONS = ["Dining", "Sightseeing", "Activities", "Hidden Gem", "Shopping", "Nature"];
 
@@ -22,6 +22,7 @@ export function EditableLocalTipsList() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   const form = useForm<LocalTipsPageContentFormValues>({
     resolver: zodResolver(localTipsPageContentFormSchema),
@@ -46,7 +47,7 @@ export function EditableLocalTipsList() {
             ...item,
             id: item.id || uuidv4(),
             imageUrl: item.imageUrl || "", // Ensure imageUrl is a string
-            dataAiHint: item.dataAiHint || "", // Ensure dataAiHint is a string
+            imageLinkUrl: item.imageLinkUrl || "", // Ensure imageLinkUrl is a string
           }));
           form.reset({ localTips: itemsWithEnsuredIds });
         }
@@ -67,21 +68,25 @@ export function EditableLocalTipsList() {
   const onSubmit = async (data: LocalTipsPageContentFormValues) => {
     setIsSaving(true);
     try {
-      const itemsToSave = data.localTips.map(item => ({
-        ...item,
-        id: item.id || uuidv4(),
-        imageUrl: item.imageUrl === "" ? undefined : item.imageUrl, // Store as undefined if empty
-        dataAiHint: item.dataAiHint === "" ? undefined : item.dataAiHint, // Store as undefined if empty
-      }));
-
+      // Clean up data: remove any legacy fields, ensure all required fields exist
+      const itemsToSave = data.localTips.map(item => {
+        const cleaned = {
+          id: item.id || uuidv4(),
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          imageUrl: item.imageUrl === "" ? undefined : item.imageUrl,
+          imageLinkUrl: item.imageLinkUrl === "" ? undefined : item.imageLinkUrl,
+        };
+        return cleaned;
+      });
       const result = await updateLocalTipsPageContent(itemsToSave);
       if (result.success) {
         toast({
           title: "Success!",
           description: result.message,
         });
-        // Reset form with potentially updated/cleaned data (e.g. undefined for empty optional fields)
-        form.reset({ localTips: itemsToSave.map(item => ({...item, imageUrl: item.imageUrl || "", dataAiHint: item.dataAiHint || ""})) });
+        form.reset({ localTips: itemsToSave.map(item => ({...item, imageUrl: item.imageUrl || "", imageLinkUrl: item.imageLinkUrl || ""})) });
       } else {
         toast({
           title: "Save Failed",
@@ -89,11 +94,10 @@ export function EditableLocalTipsList() {
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error("Error saving local tips:", error);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred while saving. Please try again.",
+        description: error?.message || "An unexpected error occurred while saving. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,7 +112,7 @@ export function EditableLocalTipsList() {
       description: "",
       category: "Dining", // Default category
       imageUrl: "",
-      dataAiHint: "",
+      imageLinkUrl: "",
     });
   };
   
@@ -213,7 +217,7 @@ export function EditableLocalTipsList() {
                     control={form.control}
                     name={`localTips.${index}.imageUrl`}
                     render={({ field: controllerField }) => (
-                      <FormItem>
+                      <FormItem className="flex-1">
                         <FormLabel>Image URL (Optional)</FormLabel>
                         <FormControl>
                           <Input placeholder="https://example.com/image.png" {...controllerField} />
@@ -224,17 +228,44 @@ export function EditableLocalTipsList() {
                   />
                   <FormField
                     control={form.control}
-                    name={`localTips.${index}.dataAiHint`}
+                    name={`localTips.${index}.imageLinkUrl`}
                     render={({ field: controllerField }) => (
-                      <FormItem>
-                        <FormLabel>AI Hint for Image (Optional)</FormLabel>
+                      <FormItem className="flex-1">
+                        <FormLabel>Image Link URL (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 'restaurant interior'" {...controllerField} />
+                          <Input placeholder="https://example.com/target-page" {...controllerField} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      id={`upload-image-${index}`}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingIndex(index);
+                        try {
+                          const url = await uploadImageAndGetUrl(file, `local-tips/${fields[index].id || uuidv4()}`);
+                          form.setValue(`localTips.${index}.imageUrl`, url, { shouldValidate: true });
+                          toast({ title: "Image uploaded", description: "Image uploaded successfully." });
+                        } catch (err) {
+                          toast({ title: "Upload failed", description: "Could not upload image.", variant: "destructive" });
+                        } finally {
+                          setUploadingIndex(null);
+                        }
+                      }}
+                    />
+                    <label htmlFor={`upload-image-${index}`} className="cursor-pointer">
+                      <Button type="button" variant="outline" size="icon" asChild disabled={uploadingIndex === index}>
+                        <span>{uploadingIndex === index ? <Loader2 className="animate-spin w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}</span>
+                      </Button>
+                    </label>
+                  </div>
                 </CardContent>
               </Card>
             );
