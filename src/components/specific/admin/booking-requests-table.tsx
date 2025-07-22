@@ -4,8 +4,9 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { collection, getDocs, query, Timestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, Timestamp, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin'; // Use adminDb for server actions
 import {
   Table,
   TableBody,
@@ -40,7 +41,6 @@ import {
   calculateInvoiceDetails,
   updateBookingAndInvoiceDetails,
   deleteCalendarEntry,
-  type BookingCalculationRequest
 } from '@/actions/booking';
 import { getPricingConfiguration, type ClientSafePricingConfiguration } from '@/actions/pricing';
 import { getPaymentSettings, type PaymentSettings } from '@/actions/payment';
@@ -105,7 +105,7 @@ export function BookingRequestsTable() {
     setError(null);
     try {
       const requestsCollection = collection(db, 'bookingRequests');
-      // Fetch the documents without any query constraints (like orderBy)
+      // Fetch the documents without any query constraints
       const querySnapshot = await getDocs(requestsCollection);
       const requests = querySnapshot.docs.map(docSnapshot => {
         const data = docSnapshot.data();
@@ -203,7 +203,7 @@ export function BookingRequestsTable() {
   };
 
 
-  const performInvoiceCalculation = async (calcRequest: BookingCalculationRequest): Promise<InvoiceCalculationResult | null> => {
+  const performInvoiceCalculation = async (calcRequest: { checkInDate: Date, checkOutDate: Date, guests: number }): Promise<InvoiceCalculationResult | null> => {
     if (!pricingConfig) {
       toast({ title: "Error", description: "Pricing configuration not loaded.", variant: "destructive" });
       return null;
@@ -223,7 +223,7 @@ export function BookingRequestsTable() {
     setIsCalculatingInvoice(true);
     setCurrentInvoiceCalculation(null);
 
-    const initialCalcRequest: BookingCalculationRequest = {
+    const initialCalcRequest = {
       checkInDate: booking.checkInDate.toDate(),
       checkOutDate: booking.checkOutDate.toDate(),
       guests: booking.guests || 1,
@@ -250,7 +250,7 @@ export function BookingRequestsTable() {
     if (!editingBooking || !pricingConfig) return;
     setIsRecalculatingInvoice(true);
     const formValues = form.getValues();
-    const calcRequest: BookingCalculationRequest = {
+    const calcRequest = {
       checkInDate: formValues.checkInDate,
       checkOutDate: formValues.checkOutDate,
       guests: Number(formValues.guests),
@@ -291,7 +291,7 @@ export function BookingRequestsTable() {
               await fetchBookingRequests(); 
           } catch (fetchError) {
               console.error("Error refetching booking requests:", fetchError);
-              toastDescription += "\n(Could not refresh booking list, please refresh manually)";
+              toastDescription += "\\n(Could not refresh booking list, please refresh manually)";
           }
         }
 
@@ -647,4 +647,3 @@ export function BookingRequestsTable() {
     </>
   );
 }
-
