@@ -1,11 +1,8 @@
-// src/actions/booking.ts
-
 "use server";
 
 import type { BookingRequestFormValues, EditableBookingInvoiceFormValues, ManualCalendarEntryFormValues } from "@/schemas/booking";
-// 🎯 CHANGE: Import the ADMIN database instance instead of the client one
-import { adminDb } from "@/lib/firebase-admin"; 
-import { FieldValue, Timestamp, QueryDocumentSnapshot, getDoc } from "firebase-admin/firestore"; // 🎯 CHANGE: Use admin SDK's Timestamp and serverTimestamp
+import { adminDb } from "@/lib/firebase-admin";
+import { FieldValue, Timestamp, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { differenceInDays, format as formatDateFn } from 'date-fns';
 import type { ClientSafePricingConfiguration } from '@/actions/pricing';
@@ -13,17 +10,14 @@ import { getPaymentSettings, type PaymentSettings } from '@/actions/payment';
 import nodemailer from "nodemailer";
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
-  console.log("Booking request received:", data);
-
   try {
     const bookingData = {
       ...data,
       guests: Number(data.guests),
-      createdAt: FieldValue.serverTimestamp(), // 🎯 CHANGE: Use admin FieldValue
+      createdAt: FieldValue.serverTimestamp(),
       status: "pending",
     };
 
-    // 🎯 CHANGE: Use adminDb
     const docRef = await adminDb.collection("bookingRequests").add(bookingData);
     console.log("Document written with ID: ", docRef.id);
     
@@ -44,7 +38,6 @@ export async function handleBookingRequest(data: BookingRequestFormValues) {
 
 export async function approveBookingRequest(requestId: string) {
   try {
-    // 🎯 CHANGE: Use adminDb.doc() syntax
     const requestRef = adminDb.collection("bookingRequests").doc(requestId);
     await requestRef.update({
       status: "confirmed",
@@ -60,7 +53,6 @@ export async function approveBookingRequest(requestId: string) {
 
 export async function declineBookingRequest(requestId: string) {
   try {
-    // 🎯 CHANGE: Use adminDb.doc() syntax
     const requestRef = adminDb.collection("bookingRequests").doc(requestId);
     await requestRef.update({
       status: "declined",
@@ -86,7 +78,6 @@ export interface CalendarEvent {
 
 export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
   try {
-    // 🎯 CHANGE: Use adminDb
     const requestsCollection = adminDb.collection('bookingRequests');
     const q = requestsCollection.where('status', 'in', ['confirmed', 'blocked', 'manual_booking', 'paid', 'manual_confirmed']);
     const querySnapshot = await q.get();
@@ -94,12 +85,9 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
     const events = querySnapshot.docs.map((docSnapshot: QueryDocumentSnapshot) => {
       const data = docSnapshot.data();
       let entryType: CalendarEvent['entryType'] | undefined = undefined;
-      if (data.status === 'blocked') {
-        entryType = 'blocked';
-      } else if (data.status === 'manual_booking' || data.status === 'manual_confirmed') {
-        entryType = 'manual_booking';
-      }
-
+      if (data.status === 'blocked') entryType = 'blocked';
+      else if (data.status === 'manual_booking' || data.status === 'manual_confirmed') entryType = 'manual_booking';
+      
       return {
         id: docSnapshot.id,
         name: data.name || data.entryName || 'Unnamed Event',
@@ -117,11 +105,11 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
   }
 }
 
-// NO CHANGE NEEDED IN THIS FUNCTION
 export async function calculateInvoiceDetails(
   bookingDetails: { checkInDate: Date; checkOutDate: Date; guests: number; },
   pricingConfig: ClientSafePricingConfiguration
 ) {
+  // This function does not use Firebase, no changes needed.
   const { checkInDate, checkOutDate, guests } = bookingDetails;
   const nights = differenceInDays(new Date(checkOutDate), new Date(checkInDate));
   if (nights <= 0) return { totalAmount: 0, currency: pricingConfig.currency, breakdown: "Invalid dates", appliedStrategy: "Error" };
@@ -146,17 +134,12 @@ export async function calculateInvoiceDetails(
   return { totalAmount: parseFloat(bestTotal.toFixed(2)), currency: pricingConfig.currency, breakdown: `Calc: ${breakdownParts.join(' + ')}`, appliedStrategy: bestStrategy };
 }
 
-// NO CHANGE NEEDED IN THIS FUNCTION
 async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues, paymentSettings: PaymentSettings): Promise<{ success: boolean; message: string }> {
-  // This function does not interact with Firestore, so it remains unchanged.
-  // All its logic for sending email is correct.
-  console.log(`[sendPaymentLinkEmail] Attempting to send email for booking ID: ${bookingId}`);
+  // This function does not use Firebase, no changes needed.
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("[sendPaymentLinkEmail] Email credentials not set. Skipping email.");
     return { success: false, message: "Email not sent: Server email configuration missing." };
   }
   if (!details.invoiceRecipientEmail) {
-    console.warn(`[sendPaymentLinkEmail] No recipient email. Skipping email.`);
     return { success: false, message: "Email not sent: Recipient email missing." };
   }
   const baseUrl = process.env.NODE_ENV === 'production' ? 'https://chezshiobara.com' : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002');
@@ -180,39 +163,40 @@ export async function updateBookingAndInvoiceDetails(
   bookingId: string,
   details: EditableBookingInvoiceFormValues
 ): Promise<{ success: boolean; message: string }> {
-  console.log(`[updateBookingAndInvoiceDetails] Attempting update for ID: ${bookingId}`);
   try {
-    // 🎯 CHANGE: Use adminDb.doc() syntax
     const bookingRef = adminDb.collection("bookingRequests").doc(bookingId);
+    
+    // 👇 THIS IS THE FIX. Use .get() on the reference, not a separate getDoc() function.
+    const currentBookingSnap = await bookingRef.get();
+    
+    if (!currentBookingSnap.exists) {
+      throw new Error("Booking document not found.");
+    }
+    const currentBookingData = currentBookingSnap.data()!;
+    
     const dataToUpdate: any = {
       name: details.name,
       email: details.invoiceRecipientEmail,
-      checkInDate: Timestamp.fromDate(new Date(details.checkInDate)), // 🎯 CHANGE: Use admin Timestamp
-      checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)), // 🎯 CHANGE: Use admin Timestamp
+      checkInDate: Timestamp.fromDate(new Date(details.checkInDate)),
+      checkOutDate: Timestamp.fromDate(new Date(details.checkOutDate)),
       guests: Number(details.guests),
       finalInvoiceAmount: Number(details.finalInvoiceAmount),
       finalInvoiceCurrency: details.finalInvoiceCurrency,
       finalInvoiceBreakdown: details.finalInvoiceBreakdown,
       finalInvoiceStrategy: details.finalInvoiceStrategy,
       invoiceRecipientEmail: details.invoiceRecipientEmail,
-      invoiceUpdatedAt: FieldValue.serverTimestamp(), // 🎯 CHANGE: Use admin FieldValue
+      invoiceUpdatedAt: FieldValue.serverTimestamp(),
     };
 
-    const currentBookingSnap = await bookingRef.get();
-    if (!currentBookingSnap.exists) {
-      throw new Error("Booking document not found.");
-    }
-    const currentBookingData = currentBookingSnap.data()!;
     if (currentBookingData.status === 'pending' || (currentBookingData.status !== 'paid' && currentBookingData.status !== 'manual_confirmed')) {
       dataToUpdate.status = 'confirmed';
     } else if (currentBookingData.status === 'manual_booking') {
       dataToUpdate.status = 'manual_confirmed';
     }
 
-    await bookingRef.update(dataToUpdate); // This now uses the admin SDK and will succeed
-    console.log(`[updateBookingAndInvoiceDetails] Firestore updated for ${bookingId}.`);
-    
+    await bookingRef.update(dataToUpdate);
     revalidatePath('/admin-dashboard');
+    
     const paymentSettings = await getPaymentSettings();
     let emailStatusMessage = "";
     if (details.invoiceRecipientEmail) {
@@ -234,16 +218,15 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
     const entryData: any = {
       entryName: data.entryName,
       name: data.entryName,
-      checkInDate: Timestamp.fromDate(data.checkInDate), // 🎯 CHANGE
-      checkOutDate: Timestamp.fromDate(data.checkOutDate), // 🎯 CHANGE
+      checkInDate: Timestamp.fromDate(data.checkInDate),
+      checkOutDate: Timestamp.fromDate(data.checkOutDate),
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
       notes: data.notes || "",
-      createdAt: FieldValue.serverTimestamp(), // 🎯 CHANGE
+      createdAt: FieldValue.serverTimestamp(),
       email: data.entryType === 'manual_booking' ? 'manual@example.com' : 'blocked@internal.com',
       guests: data.entryType === 'manual_booking' ? 1 : 0,
     };
 
-    // 🎯 CHANGE: Use adminDb
     const docRef = await adminDb.collection("bookingRequests").add(entryData);
     revalidatePath('/admin-dashboard');
     return { success: true, message: `Entry "${data.entryName}" added.`, id: docRef.id };
@@ -254,16 +237,15 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
 
 export async function updateManualCalendarEntry(entryId: string, data: ManualCalendarEntryFormValues) {
   try {
-    // 🎯 CHANGE: Use adminDb.doc() syntax
     const entryRef = adminDb.collection("bookingRequests").doc(entryId);
     const entryData: any = {
       entryName: data.entryName,
       name: data.entryName,
-      checkInDate: Timestamp.fromDate(data.checkInDate), // 🎯 CHANGE
-      checkOutDate: Timestamp.fromDate(data.checkOutDate), // 🎯 CHANGE
+      checkInDate: Timestamp.fromDate(data.checkInDate),
+      checkOutDate: Timestamp.fromDate(data.checkOutDate),
       status: data.entryType === 'manual_booking' ? 'manual_confirmed' : 'blocked',
       notes: data.notes || "",
-      updatedAt: FieldValue.serverTimestamp(), // 🎯 CHANGE
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     await entryRef.update(entryData);
@@ -276,7 +258,6 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
 
 export async function deleteCalendarEntry(entryId: string): Promise<{ success: boolean; message: string }> {
   try {
-    // 🎯 CHANGE: Use adminDb.doc() syntax
     const entryRef = adminDb.collection("bookingRequests").doc(entryId);
     await entryRef.delete();
     revalidatePath('/admin-dashboard');
