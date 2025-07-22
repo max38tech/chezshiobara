@@ -32,6 +32,10 @@ const initialWelcomePageTextData: WelcomePageTextContent = { introParagraph: "Di
 // --- Rules Page Functions ---
 
 export async function getRulesPageContent(): Promise<RulesPageContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return { rulesList: initialRulesData };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("rulesPage");
     const docSnap = await docRef.get();
@@ -46,6 +50,10 @@ export async function getRulesPageContent(): Promise<RulesPageContent> {
 }
 
 export async function updateRulesPageContent(newRules: RuleItem[]): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("rulesPage");
     await docRef.set({ rulesList: newRules });
@@ -59,6 +67,10 @@ export async function updateRulesPageContent(newRules: RuleItem[]): Promise<{ su
 // --- House Guide Functions ---
 
 export async function getHouseGuideContent(): Promise<HouseGuidePageContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return { guideItems: initialHouseGuideData };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("houseGuidePage");
     const docSnap = await docRef.get();
@@ -73,6 +85,10 @@ export async function getHouseGuideContent(): Promise<HouseGuidePageContent> {
 }
 
 export async function updateHouseGuideContent(newItems: HouseGuideItem[]): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("houseGuidePage");
     await docRef.set({ guideItems: newItems });
@@ -86,6 +102,10 @@ export async function updateHouseGuideContent(newItems: HouseGuideItem[]): Promi
 // --- Welcome Page Gallery Functions ---
 
 export async function getWelcomePageGalleryContent(): Promise<WelcomePageGalleryContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return { galleryImages: initialGalleryData };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("welcomePageGallery");
     const docSnap = await docRef.get();
@@ -100,39 +120,53 @@ export async function getWelcomePageGalleryContent(): Promise<WelcomePageGallery
 }
 
 export async function updateWelcomePageGalleryContent(newImages: GalleryImageItem[]): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("welcomePageGallery");
     await docRef.set({ galleryImages: newImages });
     // revalidatePath('/'); // 🎯 Temporarily commented out
-    return { success: true, message: "Welcome gallery updated successfully." };
+    return { success: true, message: "Gallery content updated successfully." };
   } catch (error) {
-    return { success: false, message: "Failed to update welcome gallery." };
+    console.error("Error updating welcome gallery content:", error);
+    return { success: false, message: "Failed to update gallery content." };
   }
 }
 
 // --- Local Tips Functions ---
 
 export async function getLocalTipsPageContent(): Promise<LocalTipsPageContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return { localTips: initialLocalTipsData };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("localTipsPage");
     const docSnap = await docRef.get();
-    if (docSnap.exists()) return docSnap.data() as LocalTipsPageContent;
-    
+    if (docSnap.exists) return docSnap.data() as LocalTipsPageContent;
+
     await docRef.set({ localTips: initialLocalTipsData });
     return { localTips: initialLocalTipsData };
   } catch (error) {
-    console.error("Error fetching local tips:", error);
+    console.error("Error fetching local tips content:", error);
     return { localTips: initialLocalTipsData };
   }
 }
 
 export async function updateLocalTipsPageContent(newTips: LocalTipItem[]): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("localTipsPage");
     await docRef.set({ localTips: newTips });
     // revalidatePath('/local-tips'); // 🎯 Temporarily commented out
     return { success: true, message: "Local tips updated successfully." };
   } catch (error) {
+    console.error("Error updating local tips:", error);
     return { success: false, message: "Failed to update local tips." };
   }
 }
@@ -140,89 +174,125 @@ export async function updateLocalTipsPageContent(newTips: LocalTipItem[]): Promi
 // --- Commerce Disclosure Functions ---
 
 export async function getCommerceDisclosureContent(): Promise<CommerceDisclosureContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return initialCommerceDisclosureData;
+  }
   try {
-    const docRef = adminDb.collection("siteContent").doc("commerceDisclosurePage");
+    const docRef = adminDb.collection("siteContent").doc("commerceDisclosure");
     const docSnap = await docRef.get();
-    if (docSnap.exists()) {
-      const data = docSnap.data()!;
-      if (data.updatedAt) data.updatedAt = (data.updatedAt as Timestamp).toDate();
-      return data as CommerceDisclosureContent;
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      return {
+        ...data,
+        updatedAt: data?.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : null,
+      } as CommerceDisclosureContent;
     }
+    
     await docRef.set({ ...initialCommerceDisclosureData, updatedAt: FieldValue.serverTimestamp() });
-    return { ...initialCommerceDisclosureData, updatedAt: new Date() };
+    return initialCommerceDisclosureData;
   } catch (error) {
-    console.error("Error fetching commerce disclosure:", error);
-    return { ...initialCommerceDisclosureData, updatedAt: new Date() };
+    console.error("Error fetching commerce disclosure content:", error);
+    return initialCommerceDisclosureData;
   }
 }
 
-export async function updateCommerceDisclosureContent(newContent: Omit<CommerceDisclosureContent, 'updatedAt'>): Promise<{ success: boolean; message:string }> {
+export async function updateCommerceDisclosureContent(content: CommerceDisclosureContent): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
-    const docRef = adminDb.collection("siteContent").doc("commerceDisclosurePage");
-    await docRef.set({ ...newContent, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    const docRef = adminDb.collection("siteContent").doc("commerceDisclosure");
+    await docRef.set({ ...content, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     // revalidatePath('/commerce-disclosure'); // 🎯 Temporarily commented out
-    return { success: true, message: "Commerce Disclosure content updated successfully." };
+    return { success: true, message: "Commerce disclosure updated successfully." };
   } catch (error) {
-    return { success: false, message: "Failed to update Commerce Disclosure content." };
+    console.error("Error updating commerce disclosure:", error);
+    return { success: false, message: "Failed to update commerce disclosure." };
   }
 }
 
 // --- Who We Are Page Functions ---
 
 export async function getWhoWeArePageContent(): Promise<WhoWeArePageContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return initialWhoWeAreData;
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("whoWeArePage");
     const docSnap = await docRef.get();
-    if (docSnap.exists()) {
-        const data = docSnap.data()!;
-        if (data.updatedAt) data.updatedAt = (data.updatedAt as Timestamp).toDate();
-        return data as WhoWeArePageContent;
+    if (docSnap.exists) {
+      const data = docSnap.data() as WhoWeArePageContent;
+      return {
+        ...data,
+        updatedAt: (data.updatedAt as any)?.toDate ? (data.updatedAt as any).toDate().toISOString() : null,
+      };
     }
+    
     await docRef.set({ ...initialWhoWeAreData, updatedAt: FieldValue.serverTimestamp() });
-    return { ...initialWhoWeAreData, updatedAt: new Date() };
+    return initialWhoWeAreData;
   } catch (error) {
-    console.error("Error fetching who we are content:", error);
-    return { ...initialWhoWeAreData, updatedAt: new Date() };
+    console.error("Error fetching 'Who We Are' content:", error);
+    return initialWhoWeAreData;
   }
 }
 
-export async function updateWhoWeArePageContent(newContent: Omit<WhoWeArePageContent, 'updatedAt'>): Promise<{ success: boolean; message: string }> {
-    try {
-        const docRef = adminDb.collection("siteContent").doc("whoWeArePage");
-        await docRef.set({ ...newContent, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-        // revalidatePath('/about-us'); // 🎯 Temporarily commented out
-        return { success: true, message: "'Who We Are' page content updated successfully." };
-    } catch (error) {
-        return { success: false, message: "Failed to update 'Who We Are' page content." };
-    }
+export async function updateWhoWeArePageContent(content: WhoWeArePageContent): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
+  try {
+    const docRef = adminDb.collection("siteContent").doc("whoWeArePage");
+    await docRef.set({ ...content, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    // revalidatePath('/who-we-are'); // 🎯 Temporarily commented out
+    return { success: true, message: "'Who We Are' page updated successfully." };
+  } catch (error) {
+    console.error("Error updating 'Who We Are' content:", error);
+    return { success: false, message: "Failed to update 'Who We Are' page." };
+  }
 }
 
-// --- Welcome Page Text Functions ---
+// --- Welcome Page Text Content Functions ---
 
 export async function getWelcomePageTextContent(): Promise<WelcomePageTextContent> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Serving initial data.");
+    return initialWelcomePageTextData;
+  }
   try {
     const docRef = adminDb.collection("siteContent").doc("welcomePageText");
     const docSnap = await docRef.get();
-    if (docSnap.exists()) {
-        const data = docSnap.data()!;
-        if (data.updatedAt) data.updatedAt = (data.updatedAt as Timestamp).toDate();
-        return data as WelcomePageTextContent;
+    if (docSnap.exists) {
+      const data = docSnap.data() as WelcomePageTextContent;
+      return {
+        ...data,
+        updatedAt: (data.updatedAt as any)?.toDate ? (data.updatedAt as any).toDate().toISOString() : null,
+      };
     }
+    
     await docRef.set({ ...initialWelcomePageTextData, updatedAt: FieldValue.serverTimestamp() });
-    return { ...initialWelcomePageTextData, updatedAt: new Date() };
+    return initialWelcomePageTextData;
   } catch (error) {
-    console.error("Error fetching welcome text content:", error);
-    return { ...initialWelcomePageTextData, updatedAt: new Date() };
+    console.error("Error fetching welcome page text content:", error);
+    return initialWelcomePageTextData;
   }
 }
 
-export async function updateWelcomePageTextContent(newContent: Omit<WelcomePageTextContent, 'updatedAt'>): Promise<{ success: boolean; message: string }> {
-    try {
-        const docRef = adminDb.collection("siteContent").doc("welcomePageText");
-        await docRef.set({ ...newContent, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-        // revalidatePath('/'); // 🎯 Temporarily commented out
-        return { success: true, message: "Welcome page text content updated successfully." };
-    } catch (error) {
-        return { success: false, message: "Failed to update welcome page text content." };
-    }
+export async function updateWelcomePageTextContent(content: WelcomePageTextContent): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update content.");
+    return { success: false, message: "Database connection not available." };
+  }
+  try {
+    const docRef = adminDb.collection("siteContent").doc("welcomePageText");
+    await docRef.set({ ...content, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    // revalidatePath('/'); // 🎯 Temporarily commented out
+    return { success: true, message: "Welcome page text content updated successfully." };
+  } catch (error) {
+    console.error("Error updating welcome page text content:", error);
+    return { success: false, message: "Failed to update welcome page text content." };
+  }
 }
