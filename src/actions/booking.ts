@@ -8,8 +8,13 @@ import { differenceInDays, format as formatDateFn } from 'date-fns';
 import type { ClientSafePricingConfiguration } from '@/actions/pricing';
 import { getPaymentSettings, type PaymentSettings } from '@/actions/payment';
 import nodemailer from "nodemailer";
+import { getBookingConfirmationEmailContent } from '@/actions/content';
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot submit booking request.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const bookingData = {
       ...data,
@@ -37,6 +42,10 @@ export async function handleBookingRequest(data: BookingRequestFormValues) {
 }
 
 export async function approveBookingRequest(requestId: string) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot approve booking request.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const requestRef = adminDb.collection("bookingRequests").doc(requestId);
     await requestRef.update({
@@ -52,6 +61,10 @@ export async function approveBookingRequest(requestId: string) {
 }
 
 export async function declineBookingRequest(requestId: string) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot deny booking request.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const requestRef = adminDb.collection("bookingRequests").doc(requestId);
     await requestRef.update({
@@ -214,6 +227,10 @@ export async function updateBookingAndInvoiceDetails(
 }
 
 export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot add manual entry.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const entryData: any = {
       entryName: data.entryName,
@@ -236,6 +253,10 @@ export async function addManualCalendarEntry(data: ManualCalendarEntryFormValues
 }
 
 export async function updateManualCalendarEntry(entryId: string, data: ManualCalendarEntryFormValues) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update manual entry.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const entryRef = adminDb.collection("bookingRequests").doc(entryId);
     const entryData: any = {
@@ -256,7 +277,11 @@ export async function updateManualCalendarEntry(entryId: string, data: ManualCal
   }
 }
 
-export async function deleteCalendarEntry(entryId: string): Promise<{ success: boolean; message: string }> {
+export async function deleteManualCalendarEntry(entryId: string) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot delete manual entry.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const entryRef = adminDb.collection("bookingRequests").doc(entryId);
     await entryRef.delete();
@@ -264,5 +289,115 @@ export async function deleteCalendarEntry(entryId: string): Promise<{ success: b
     return { success: true, message: "Entry deleted." };
   } catch (error) {
     return { success: false, message: `Failed to delete. ${error instanceof Error ? error.message : "Unknown error"}` };
+  }
+}
+
+export async function sendFinalizedBookingEmail(bookingId: string, details: { name: string; checkInDate: string; checkOutDate: string; guests: number; invoiceRecipientEmail: string; totalAmount: string; }) {
+  console.log("Attempting to send finalized booking email for booking ID:", bookingId);
+
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error("Email credentials (EMAIL_USER, EMAIL_PASS) are not configured in .env.local");
+    return { success: false, message: "Email server is not configured." };
+  }
+
+  try {
+    const emailTemplate = await getBookingConfirmationEmailContent();
+    
+    // Replace placeholders
+    let subject = emailTemplate.subject.replace(/{{bookingId}}/g, bookingId);
+    let body = emailTemplate.body
+      .replace(/{{name}}/g, details.name)
+      .replace(/{{checkInDate}}/g, formatDateFn(new Date(details.checkInDate), 'PPP'))
+      .replace(/{{checkOutDate}}/g, formatDateFn(new Date(details.checkOutDate), 'PPP'))
+      .replace(/{{guests}}/g, details.guests.toString())
+      .replace(/{{totalAmount}}/g, details.totalAmount)
+      .replace(/{{bookingId}}/g, bookingId);
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`,
+      to: details.invoiceRecipientEmail,
+      subject: subject,
+      html: body,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Finalized booking email sent successfully to:", details.invoiceRecipientEmail);
+    return { success: true, message: "Email sent successfully." };
+  } catch (error: any) {
+    console.error("Failed to send finalized booking email:", error);
+    // Check for authentication errors specifically
+    if (error.code === 'EAUTH' || error.responseCode === 535) {
+      return { success: false, message: "Failed to send email: Authentication failed. Please check your EMAIL_USER and EMAIL_PASS in the .env.local file." };
+    }
+    return { success: false, message: `Failed to send email: ${error.message}` };
+  }
+}
+
+export async function getBookingRequests() {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot get booking requests.");
+    return [];
+  }
+  try {
+    const requestsCollection = adminDb.collection('bookingRequests');
+    const snapshot = await requestsCollection.orderBy('checkInDate', 'asc').get();
+
+    const bookingRequests = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return bookingRequests;
+  } catch (error) {
+    console.error("Error fetching booking requests: ", error);
+    return [];
+  }
+}
+
+export async function finalizeBooking(bookingId: string, finalDetails: { paymentMethod: string; totalAmount: string; invoiceRecipientEmail: string; }) {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot finalize booking.");
+    return { success: false, message: "Database connection not available." };
+  }
+  try {
+    const bookingRef = adminDb.collection("bookingRequests").doc(bookingId);
+    const bookingSnap = await bookingRef.get();
+
+    if (!bookingSnap.exists) {
+      return { success: false, message: "Booking not found." };
+    }
+
+    await bookingRef.update({
+      status: "paid",
+      paymentMethod: finalDetails.paymentMethod,
+      totalAmount: Number(finalDetails.totalAmount),
+      invoiceRecipientEmail: finalDetails.invoiceRecipientEmail,
+      finalizedAt: FieldValue.serverTimestamp(),
+    });
+
+    revalidatePath('/admin-dashboard');
+
+    // Send confirmation email
+    const emailDetails = {
+      name: bookingSnap.data()?.name,
+      checkInDate: bookingSnap.data()?.checkInDate,
+      checkOutDate: bookingSnap.data()?.checkOutDate,
+      guests: bookingSnap.data()?.guests,
+      invoiceRecipientEmail: finalDetails.invoiceRecipientEmail,
+      totalAmount: finalDetails.totalAmount,
+    };
+
+    await sendFinalizedBookingEmail(bookingId, emailDetails);
+
+    return { success: true, message: "Booking finalized successfully." };
+  } catch (error) {
+    console.error("Error finalizing booking: ", error);
+    return { success: false, message: "Failed to finalize booking." };
   }
 }
