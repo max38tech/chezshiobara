@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -71,12 +70,12 @@ export default function BookingEmailAdminPage() {
             <SectionTitle>Placeholders</SectionTitle>
             <p className="text-sm text-gray-600">You can use the following placeholders in the subject and body. They will be replaced with actual booking data:</p>
             <ul className="list-disc list-inside text-sm text-gray-600">
-              <li><code>{{name}}</code> - Guest's full name</li>
-              <li><code>{{bookingId}}</code> - Unique booking ID</li>
-              <li><code>{{checkInDate}}</code> - Check-in date</li>
-              <li><code>{{checkOutDate}}</code> - Check-out date</li>
-              <li><code>{{guests}}</code> - Number of guests</li>
-              <li><code>{{totalAmount}}</code> - Total booking amount</li>
+              <li><code>&#123;&#123;name&#125;&#125;</code> - Guest's full name</li>
+              <li><code>&#123;&#123;bookingId&#125;&#125;</code> - Unique booking ID</li>
+              <li><code>&#123;&#123;checkInDate&#125;&#125;</code> - Check-in date</li>
+              <li><code>&#123;&#123;checkOutDate&#125;&#125;</code> - Check-out date</li>
+              <li><code>&#123;&#123;guests&#125;&#125;</code> - Number of guests</li>
+              <li><code>&#123;&#123;totalAmount&#125;&#125;</code> - Total booking amount</li>
             </ul>
           </div>
           <Button onClick={handleSave}>Save Changes</Button>
