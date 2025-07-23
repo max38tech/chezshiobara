@@ -1,7 +1,42 @@
+# Settings for Backend (on Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
+runConfig:
+  minInstances: 0
+  # maxInstances: 100
+  # concurrency: 80
+  # cpu: 1
+  # memoryMiB: 512
+
+# Environment variables and secrets.
+# env:
+  # Configure environment variables.
+  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
+  # - variable: MESSAGE
+  #   value: Hello world!
+  #   availability:
+  #     - BUILD
+  #     - RUNTIME
+
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  # - variable: MY_SECRET
+  #   secret: mySecretRef
+
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
-runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
+backend:
+  runConfig:
+    # Increase this value if you'd like to automatically spin up
+    # more instances in response to increased traffic.
+    maxInstances: 1
+  buildConfig:
+    environmentVariables:
+      NEXT_PUBLIC_FIREBASE_API_KEY: "AIzaSyBdMZo9RWLHPR91b96GbQoF_BqmjTNWYfo"
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "chez-shiobara-bb.firebaseapp.com"
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: "chez-shiobara-bb"
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "chez-shiobara-bb.firebasestorage.app"
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "267308892096"
+      NEXT_PUBLIC_FIREBASE_APP_ID: "1:267308892096:web:dd2c8672454ade9df79225"
+      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: "G-8W63RSXEXR"
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_live_51RWENQHf5YeNeQ3PdcFKwjU5ZBrW0sNaPs6lJErZd5uYPtZ3ebZOk8kGmCsYwOF9va6kIFYLt4RmOhb4crWWSGkI003AcLgc5a"
