@@ -90,6 +90,10 @@ export interface CalendarEvent {
 }
 
 export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot get calendar events.");
+    return [];
+  }
   try {
     const requestsCollection = adminDb.collection('bookingRequests');
     const q = requestsCollection.where('status', 'in', ['confirmed', 'blocked', 'manual_booking', 'paid', 'manual_confirmed']);
@@ -176,6 +180,10 @@ export async function updateBookingAndInvoiceDetails(
   bookingId: string,
   details: EditableBookingInvoiceFormValues
 ): Promise<{ success: boolean; message: string }> {
+  if (!adminDb) {
+    console.error("Firebase Admin is not initialized. Cannot update booking details.");
+    return { success: false, message: "Database connection not available." };
+  }
   try {
     const bookingRef = adminDb.collection("bookingRequests").doc(bookingId);
     

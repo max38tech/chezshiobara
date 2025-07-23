@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useTransition } from 'react';
@@ -40,7 +39,7 @@ import {
   declineBookingRequest,
   calculateInvoiceDetails,
   updateBookingAndInvoiceDetails,
-  deleteCalendarEntry,
+  deleteManualCalendarEntry,
 } from '@/actions/booking';
 import { getPricingConfiguration, type ClientSafePricingConfiguration } from '@/actions/pricing';
 import { getPaymentSettings, type PaymentSettings } from '@/actions/payment';
@@ -182,7 +181,7 @@ export function BookingRequestsTable() {
   const handleDeleteEntry = async (entryId: string) => {
     setDeletingEntryId(entryId);
     try {
-      const result = await deleteCalendarEntry(entryId);
+      const result = await deleteManualCalendarEntry(entryId);
       toast({
         title: result.success ? "Entry Deleted" : "Deletion Failed",
         description: result.message,
