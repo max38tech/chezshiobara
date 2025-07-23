@@ -19,7 +19,7 @@ export interface PhilosophyItem { id: string; title: string; description: string
 export interface HeroImage { src: string; alt: string; dataAiHint: string; }
 export interface WhoWeArePageContent { pageTitle: string; heroImage: HeroImage; ourStorySection: { title: string; paragraphs: Array<{ id: string; text: string }>; }; ourPhilosophySection: { title: string; introParagraph: string; philosophyItems: PhilosophyItem[]; }; updatedAt?: any; }
 export interface WelcomePageTextContent { introParagraph: string; exploreSectionTitle: string; exploreCard1Title: string; exploreCard1Description: string; exploreCard2Title: string; exploreCard2Description: string; exploreCard3Title: string; exploreCard3Description: string; bookingCallToActionParagraph: string; updatedAt?: any; }
-export interface BookingConfirmationEmailContent { subject: string; body: string; updatedAt?: any; }
+export interface InvoiceEmailContent { subject: string; body: string; updatedAt?: any; }
 
 // --- Initial Data (No Changes) ---
 const initialRulesData: RuleItem[] = [ { id: "checkin-checkout", icon: "Clock", title: "Check-in & Check-out", description: "Check-in is after 3:00 PM. Check-out is before 11:00 AM.", }, { id: "no-smoking", icon: "CigaretteOff", title: "No Smoking", description: "Strictly no smoking inside.", }, { id: "guests-visitors", icon: "Users", title: "Guests & Visitors", description: "Only registered guests are permitted overnight.", }, { id: "quiet-hours", icon: "Volume2", title: "Quiet Hours", description: "Please observe quiet hours from 10:00 PM to 8:00 AM.", }, { id: "pets-policy", icon: "PawPrint", title: "Pets Policy", description: "Unfortunately, we cannot accommodate pets.", }, { id: "amenities-usage", icon: "Waves", title: "Amenities Usage", description: "Please use all amenities responsibly.", }, { id: "no-parties", icon: "PartyPopper", title: "No Parties or Events", description: "Parties or large gatherings are not permitted.", }, ];
@@ -29,33 +29,32 @@ const initialLocalTipsData: LocalTipItem[] = [ { id: uuidv4(), title: "Gora Brew
 const initialCommerceDisclosureData: CommerceDisclosureContent = { businessName: "Chez Shiobara B&B", legalName: "Shawn Shiobara", businessAddress: "16-7 Karasawa, Minami-ku\nYokohama, Kanagawa 232-0034\nJapan", contactEmail: "us@shiobara.love", contactPhone: "+81 070 9058 2258", businessRegistrationInfo: "Details...", descriptionOfGoods: "Accommodation services.", transactionCurrencyInfo: "All transactions are in USD.", paymentMethodsInfo: "Credit/Debit Cards via Stripe.", refundCancellationPolicy: "Please review the cancellation policy during booking.", deliveryShippingPolicy: "Not applicable.", privacyPolicySummary: "We respect your privacy. We do not sell your data.", termsOfServiceSummary: "By booking, you agree to our house rules.", exportRestrictionsInfo: "Not applicable.", customerServiceContactInfo: "Email: us@shiobara.love\nPhone: +81 070 9058 2258" };
 const initialWhoWeAreData: WhoWeArePageContent = { pageTitle: "Meet Your Hosts", heroImage: { src: "https://placehold.co/600x750.png", alt: "Hosts", dataAiHint: "friendly couple" }, ourStorySection: { title: "Our Story", paragraphs: [ { id: uuidv4(), text: "Welcome to Chez Shiobara! We are Shino and Shawn..." } ] }, ourPhilosophySection: { title: "Our Philosophy", introParagraph: "We believe in:", philosophyItems: [ { id: uuidv4(), title: "Genuine Hospitality", description: "Making you feel truly welcome." } ] } };
 const initialWelcomePageTextData: WelcomePageTextContent = { introParagraph: "Discover a hidden gem nestled in Yokohama...", exploreSectionTitle: "Explore Our B&B", exploreCard1Title: "Comfortable Guest Room", exploreCard1Description: "Unwind in our bright and comfortable guest room...", exploreCard2Title: "Explore the Region", exploreCard2Description: "Discover the vibrant culture...", exploreCard3Title: "Warm Hospitality", exploreCard3Description: "As your hosts, Shino and Shawn are dedicated...", bookingCallToActionParagraph: "Ready to experience the charm of Chez Shiobara?" };
-const initialBookingConfirmationEmailData: BookingConfirmationEmailContent = {
+const initialInvoiceEmailData: InvoiceEmailContent = {
   subject: "Booking Confirmation & Payment - Chez Shiobara (ID: {{bookingId}})",
   body: `
 <div>
   <h2>Booking Confirmed</h2>
   <p>Dear {{name}},</p>
-  <p>Thank you for your booking! Your stay at Chez Shiobara is confirmed.</p>
+  <p>Thank you for your booking! Your stay at Chez Shiobara is confirmed. Please find your booking and payment details below.</p>
   
   <div>
-    <h3>Booking Summary:</h3>
+    <h3>Booking Summary</h3>
     <ul>
-      <li>Name: {{name}}</li>
-      <li>Check-in: {{checkInDate}}</li>
-      <li>Check-out: {{checkOutDate}}</li>
-      <li>Guests: {{guests}}</li>
-      <li>Total Amount: {{totalAmount}}</li>
+      <li><strong>Booking ID:</strong> {{bookingId}}</li>
+      <li><strong>Name:</strong> {{name}}</li>
+      <li><strong>Check-in:</strong> {{checkInDate}}</li>
+      <li><strong>Check-out:</strong> {{checkOutDate}}</li>
+      <li><strong>Guests:</strong> {{guests}}</li>
     </ul>
   </div>
 
   <div>
-    <h3>Payment Instructions:</h3>
-    <p>A payment of {{totalAmount}} is due to finalize your booking. Please use one of the following options:</p>
-    <ul>
-      <li><a href="YOUR_STRIPE_LINK_HERE">Pay with Credit Card (via Stripe)</a></li>
-      <li><a href="YOUR_PAYPAL_LINK_HERE">Pay with PayPal</a></li>
-      <li><strong>Wise Transfer:</strong> Please send the payment to our email address: us@shiobara.love</li>
-    </ul>
+    <h3>Payment Information</h3>
+    <p><strong>Total Amount Due:</strong> {{totalAmount}}</p>
+    <p>To finalize your booking, please complete the payment using one of the options below.</p>
+    
+    {{paymentOptions}}
+
     <p>If you have any questions, please don't hesitate to contact us.</p>
   </div>
 
@@ -333,44 +332,44 @@ export async function updateWelcomePageTextContent(content: WelcomePageTextConte
   }
 }
 
-// --- Booking Confirmation Email Functions ---
+// --- Invoice Email Functions ---
 
-export async function getBookingConfirmationEmailContent(): Promise<BookingConfirmationEmailContent> {
+export async function getInvoiceEmailContent(): Promise<InvoiceEmailContent> {
   if (!adminDb) {
     console.error("Firebase Admin is not initialized. Serving initial data.");
-    return initialBookingConfirmationEmailData;
+    return initialInvoiceEmailData;
   }
   try {
-    const docRef = adminDb.collection("siteContent").doc("bookingConfirmationEmail");
+    const docRef = adminDb.collection("siteContent").doc("invoiceEmail"); // Changed from bookingConfirmationEmail
     const docSnap = await docRef.get();
     if (docSnap.exists) {
-      const data = docSnap.data() as BookingConfirmationEmailContent;
+      const data = docSnap.data() as InvoiceEmailContent;
       return {
         ...data,
         updatedAt: (data.updatedAt as any)?.toDate ? (data.updatedAt as any).toDate().toISOString() : null,
       };
     }
     
-    await docRef.set({ ...initialBookingConfirmationEmailData, updatedAt: FieldValue.serverTimestamp() });
-    return initialBookingConfirmationEmailData;
+    await docRef.set({ ...initialInvoiceEmailData, updatedAt: FieldValue.serverTimestamp() });
+    return initialInvoiceEmailData;
   } catch (error) {
-    console.error("Error fetching booking confirmation email content:", error);
-    return initialBookingConfirmationEmailData;
+    console.error("Error fetching invoice email content:", error);
+    return initialInvoiceEmailData;
   }
 }
 
-export async function updateBookingConfirmationEmailContent(content: BookingConfirmationEmailContent): Promise<{ success: boolean; message: string }> {
+export async function updateInvoiceEmailContent(content: InvoiceEmailContent): Promise<{ success: boolean; message: string }> {
   if (!adminDb) {
     console.error("Firebase Admin is not initialized. Cannot update content.");
     return { success: false, message: "Database connection not available." };
   }
   try {
-    const docRef = adminDb.collection("siteContent").doc("bookingConfirmationEmail");
+    const docRef = adminDb.collection("siteContent").doc("invoiceEmail"); // Changed from bookingConfirmationEmail
     await docRef.set({ ...content, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-    // revalidatePath('/admin/content/booking-email'); // 🎯 We will create this page
-    return { success: true, message: "Booking confirmation email template updated successfully." };
+    // revalidatePath('/admin/content/invoice-email');
+    return { success: true, message: "Invoice email template updated successfully." };
   } catch (error) {
-    console.error("Error updating booking confirmation email content:", error);
-    return { success: false, message: "Failed to update booking confirmation email content." };
+    console.error("Error updating invoice email content:", error);
+    return { success: false, message: "Failed to update invoice email content." };
   }
 }

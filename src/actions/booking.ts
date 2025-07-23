@@ -8,7 +8,7 @@ import { differenceInDays, format as formatDateFn } from 'date-fns';
 import type { ClientSafePricingConfiguration } from '@/actions/pricing';
 import { getPaymentSettings, type PaymentSettings } from '@/actions/payment';
 import nodemailer from "nodemailer";
-import { getBookingConfirmationEmailContent } from '@/actions/content';
+import { getInvoiceEmailContent } from '@/actions/content';
 
 export async function handleBookingRequest(data: BookingRequestFormValues) {
   if (!adminDb) {
@@ -152,26 +152,47 @@ export async function calculateInvoiceDetails(
 }
 
 async function sendPaymentLinkEmail(bookingId: string, details: EditableBookingInvoiceFormValues, paymentSettings: PaymentSettings): Promise<{ success: boolean; message: string }> {
-  // This function does not use Firebase, no changes needed.
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     return { success: false, message: "Email not sent: Server email configuration missing." };
   }
   if (!details.invoiceRecipientEmail) {
     return { success: false, message: "Email not sent: Recipient email missing." };
   }
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://chezshiobara.com' : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002');
-  const stripePaymentLink = `${baseUrl}/checkout/${bookingId}`;
-  const transporter = nodemailer.createTransport({ host: "smtp.gmail.com", port: 465, secure: true, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }});
-  let paymentOptionsHtml = "";
-  if (paymentSettings.isCardPaymentEnabled) paymentOptionsHtml += `<div><h4>Pay by Credit/Debit Card</h4><p><a href="${stripePaymentLink}">Pay with Card Now</a></p><p>URL: ${stripePaymentLink}</p></div>`;
-  if (paymentSettings.isPaypalEnabled && paymentSettings.paypalEmailOrLink) paymentOptionsHtml += `<div><h4>Pay with PayPal</h4><p>${paymentSettings.paypalEmailOrLink}</p></div>`;
-  if (paymentSettings.isWiseEnabled && paymentSettings.wiseInstructions) paymentOptionsHtml += `<div><h4>Pay with Wise</h4><div>${paymentSettings.wiseInstructions.replace(/\n/g, '<br>')}</div></div>`;
-  if (paymentOptionsHtml === "") paymentOptionsHtml = "<p>Contact us to arrange payment.</p>";
-  const mailOptions = { from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`, to: details.invoiceRecipientEmail, subject: `Booking Confirmation & Payment - Chez Shiobara (ID: ${bookingId})`, html: `<div><h2>Booking Confirmed</h2><p>Dear ${details.name},</p><p>Your stay is confirmed.</p><div><h3>Booking Summary:</h3><ul><li>Name: ${details.name}</li><li>Check-in: ${formatDateFn(new Date(details.checkInDate), 'PPP')}</li><li>Check-out: ${formatDateFn(new Date(details.checkOutDate), 'PPP')}</li><li>Guests: ${details.guests}</li></ul></div><div><h3>Payment Info:</h3><p>Amount: ${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}</p><p>Breakdown: ${details.finalInvoiceBreakdown || 'N/A'}</p></div><h3>Payment Options:</h3>${paymentOptionsHtml}<p>We look forward to welcoming you!</p></div>`};
+
   try {
+    const emailTemplate = await getInvoiceEmailContent();
+    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://chezshiobara.com' : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002');
+    const stripePaymentLink = `${baseUrl}/checkout/${bookingId}`;
+
+    let paymentOptionsHtml = "";
+    if (paymentSettings.isCardPaymentEnabled) paymentOptionsHtml += `<div><h4>Pay by Credit/Debit Card</h4><p><a href="${stripePaymentLink}">Click here to pay with your card</a></p></div>`;
+    if (paymentSettings.isPaypalEnabled && paymentSettings.paypalEmailOrLink) paymentOptionsHtml += `<div><h4>Pay with PayPal</h4><p>You can send payment to: ${paymentSettings.paypalEmailOrLink}</p></div>`;
+    if (paymentSettings.isWiseEnabled && paymentSettings.wiseInstructions) paymentOptionsHtml += `<div><h4>Pay with Wise</h4><div>${paymentSettings.wiseInstructions.replace(/\n/g, '<br>')}</div></div>`;
+    if (paymentOptionsHtml === "") paymentOptionsHtml = "<p>Please contact us to arrange payment.</p>";
+
+    const subject = emailTemplate.subject.replace(/{{bookingId}}/g, bookingId).replace(/{{name}}/g, details.name);
+    const body = emailTemplate.body
+      .replace(/{{bookingId}}/g, bookingId)
+      .replace(/{{name}}/g, details.name)
+      .replace(/{{checkInDate}}/g, formatDateFn(new Date(details.checkInDate), 'PPP'))
+      .replace(/{{checkOutDate}}/g, formatDateFn(new Date(details.checkOutDate), 'PPP'))
+      .replace(/{{guests}}/g, details.guests.toString())
+      .replace(/{{totalAmount}}/g, `${details.finalInvoiceAmount.toFixed(2)} ${details.finalInvoiceCurrency || 'USD'}`)
+      .replace(/{{paymentOptions}}/g, paymentOptionsHtml);
+
+    const transporter = nodemailer.createTransport({ host: "smtp.gmail.com", port: 465, secure: true, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }});
+    
+    const mailOptions = { 
+      from: `"Chez Shiobara B&B" <${process.env.EMAIL_USER}>`, 
+      to: details.invoiceRecipientEmail, 
+      subject: subject, 
+      html: body
+    };
+
     await transporter.sendMail(mailOptions);
     return { success: true, message: "Payment options email sent." };
   } catch (error) {
+    console.error("Error in sendPaymentLinkEmail:", error);
     return { success: false, message: `Failed to send email: ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
@@ -309,7 +330,7 @@ export async function sendFinalizedBookingEmail(bookingId: string, details: { na
   }
 
   try {
-    const emailTemplate = await getBookingConfirmationEmailContent();
+    const emailTemplate = await getInvoiceEmailContent();
     
     // Replace placeholders
     let subject = emailTemplate.subject.replace(/{{bookingId}}/g, bookingId);
@@ -319,7 +340,9 @@ export async function sendFinalizedBookingEmail(bookingId: string, details: { na
       .replace(/{{checkOutDate}}/g, formatDateFn(new Date(details.checkOutDate), 'PPP'))
       .replace(/{{guests}}/g, details.guests.toString())
       .replace(/{{totalAmount}}/g, details.totalAmount)
-      .replace(/{{bookingId}}/g, bookingId);
+      .replace(/{{bookingId}}/g, bookingId)
+      .replace(/{{paymentOptions}}/g, 'This should be replaced with actual payment options HTML');
+
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
