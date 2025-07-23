@@ -1,12 +1,14 @@
+"use client";
 
-import { PageTitle } from "@/components/ui/page-title";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, BookOpenText, Images, Lightbulb, CalendarCheck, Settings, DollarSign, CreditCard, ShieldCheck, Users, Home } from "lucide-react"; 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-title";
+import { Separator } from "@/components/ui/separator";
+import { BookOpen, CalendarCheck, CreditCard, DollarSign, Edit3, ImageIcon, Mail, MapPin, ScrollText, Shield, ShieldCheck, Users } from "lucide-react";
+import Link from "next/link";
+import { BookingRequestsTable } from "@/components/specific/admin/booking-requests-table";
 
-export default function AdminDashboardPage() {
+export default function AdminDashboard() {
   return (
     <div>
       <PageTitle className="text-3xl sm:text-4xl mb-8 text-left">Admin Dashboard</PageTitle>
@@ -33,42 +35,39 @@ export default function AdminDashboardPage() {
               Edit text and image content for various pages of your website.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-4">
-            <Button asChild variant="outline">
-              <Link href="/admin/content/welcome-page-text">
-                <Home className="mr-2 h-4 w-4" /> Edit Welcome Text
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/gallery">
-                <Images className="mr-2 h-4 w-4" /> Edit Welcome Gallery
-              </Link>
-            </Button>
-             <Button asChild variant="outline">
-              <Link href="/admin/content/who-we-are">
-                <Users className="mr-2 h-4 w-4" /> Edit Who We Are
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/rules">
-                <Edit className="mr-2 h-4 w-4" /> Edit House Rules
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/house-guide">
-                <BookOpenText className="mr-2 h-4 w-4" /> Edit House Guide
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/local-tips">
-                <Lightbulb className="mr-2 h-4 w-4" /> Edit Local Tips
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/content/commerce-disclosure">
-                <ShieldCheck className="mr-2 h-4 w-4" /> Edit Commerce Disclosure
-              </Link>
-            </Button>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link href="/admin/content/welcome" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <Edit3 className="w-5 h-5 mr-3" />
+              <span>Edit Welcome Text</span>
+            </Link>
+            <Link href="/admin/content/gallery" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <ImageIcon className="w-5 h-5 mr-3" />
+              <span>Edit Welcome Gallery</span>
+            </Link>
+            <Link href="/admin/content/who-we-are" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <Users className="w-5 h-5 mr-3" />
+              <span>Edit Who We Are</span>
+            </Link>
+            <Link href="/admin/content/rules" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <Edit3 className="w-5 h-5 mr-3" />
+              <span>Edit House Rules</span>
+            </Link>
+            <Link href="/admin/content/house-guide" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <BookOpen className="w-5 h-5 mr-3" />
+              <span>Edit House Guide</span>
+            </Link>
+            <Link href="/admin/content/local-tips" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <MapPin className="w-5 h-5 mr-3" />
+              <span>Edit Local Tips</span>
+            </Link>
+            <Link href="/admin/content/invoice-email" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+                <Mail className="w-5 h-5 mr-3" />
+                <span>Edit Invoice Email</span>
+            </Link>
+            <Link href="/admin/content/commerce-disclosure" className="flex items-center p-3 rounded-md hover:bg-muted transition-colors">
+              <Shield className="w-5 h-5 mr-3" />
+              <span>Edit Commerce Disclosure</span>
+            </Link>
           </CardContent>
         </Card>
 
