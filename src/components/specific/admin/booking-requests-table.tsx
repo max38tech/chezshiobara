@@ -441,7 +441,7 @@ export function BookingRequestsTable() {
                           </Button>
                         </>
                       )}
-                      {request.status === 'confirmed' && request.status !== 'paid' && (
+                      {request.status === 'confirmed' && (
                         <Button variant="destructive" size="sm" onClick={() => handleStatusUpdate(request.id, 'declined')} disabled={isUpdatingStatus[request.id]} title="Decline this booking">
                           {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <XCircle className="mr-1 h-4 w-4" />} Decline
                         </Button>
@@ -452,7 +452,9 @@ export function BookingRequestsTable() {
                           {isUpdatingStatus[request.id] ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-1 h-4 w-4" />} Approve
                         </Button>
                       )}
-                      {(request.status === 'pending' || request.status === 'confirmed' || request.status === 'manual_confirmed') && request.status !== 'paid' && request.status !== 'blocked' && (
+                      {(request.status === 'pending' ||
+                        request.status === 'confirmed' ||
+                        request.status === 'manual_confirmed') && (
                         <Button variant="outline" size="sm" onClick={() => handleOpenInvoiceModal(request)} disabled={isCalculatingInvoice || isUpdatingStatus[request.id]}>
                           {isCalculatingInvoice && editingBooking?.id === request.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}
                           Finalize Invoice
@@ -564,7 +566,7 @@ export function BookingRequestsTable() {
                               field.onChange(date);
                               const currentCheckout = form.getValues("checkOutDate");
                               if (date && currentCheckout && currentCheckout <= date) {
-                                form.setValue("checkOutDate", undefined, {shouldValidate: true});
+                                form.setValue("checkOutDate", undefined as any, {shouldValidate: true});
                               }
                             }}
                             placeholder="Select check-in"
