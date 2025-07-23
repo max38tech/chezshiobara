@@ -1,0 +1,2002 @@
+[
+  {
+    "textPayload": "Step #2 - \"pack\": Installing nextjs adaptor 14.0.17",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-418",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:09:39.213219107Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:39.406596461Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": === Node.js - Npm (google.nodejs.npm@1.1.0) ===",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-419",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:09:42.714781941Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:43.407131276Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ***** CACHE MISS: \"npm_modules\"",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-420",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:09:42.726776092Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:43.407131276Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Installing application dependencies.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-421",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:09:42.727488622Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:43.407131276Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": --------------------------------------------------------------------------------",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-422",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:09:42.859584668Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:43.407131276Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Running \"npm ci --quiet --no-fund --no-audit (NODE_ENV=development)\"",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-423",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:09:42.859603326Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:43.407131276Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-424",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:09:47.368980209Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:47.423896509Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-425",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:09:49.000652704Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:49.407607387Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": npm warn deprecated @types/handlebars@4.1.0: This is a stub types definition. handlebars provides its own type definitions, so you do not need this installed.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-426",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:09:50.647623184Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:51.426645114Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-427",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:09:53.120037380Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:09:53.405837709Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-428",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:10:22.411125279Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:23.422119300Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": added 794 packages in 39s",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-429",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:22.411139408Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:23.422119300Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Done \"npm ci --quiet --no-fund --no-audit (NODE_ENV=development)\" (39.612788007s)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-430",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:10:22.472435970Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:23.422119300Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": --------------------------------------------------------------------------------",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-431",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:30.034802108Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:30.420400164Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Running \"npm exec --prefix /layers/google.nodejs.firebasenextjs/npm_modules apphosting-adapter-nextjs-build\"",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-432",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:30.034818969Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:30.420400164Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Overriding Next Config to add configs optmized for Firebase App Hosting",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-433",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:32.296845424Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:32.426914566Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Successfully created next.config.ts with Firebase App Hosting overrides",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-434",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:10:32.298872861Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:32.426914566Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-435",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:32.496128910Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:33.412394656Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": > nextn@0.1.0 build",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-436",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:32.496142887Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:33.412394656Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": > next build",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-437",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:32.496144214Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:33.412394656Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-438",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:32.496144666Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:33.412394656Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    ▲ Next.js 15.4.2",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-439",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:33.848594938Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:34.419560526Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-440",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:10:33.849558978Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:34.419560526Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Creating an optimized production build ...",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-441",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:10:33.878444535Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:10:34.419560526Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":  ✓ Compiled successfully in 48s",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-442",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:27.630898629Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:28.444748643Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Skipping validation of types",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-443",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:27.633524658Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:28.444748643Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Skipping linting",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-444",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:27.634935972Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:28.444748643Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Collecting page data ...",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-445",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.031657035Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:28.444748643Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Firebase Configuration Error: NEXT_PUBLIC_FIREBASE_API_KEY is not defined. Missing Firebase API Key. CRITICAL: Check .env.local file in project root & RESTART server.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-446",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.895616057Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": [Error: Failed to collect configuration for /checkout/[bookingId]] {",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-447",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903676877Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":   [cause]: Error: Missing Firebase API Key. CRITICAL: Check .env.local file in project root & RESTART server.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-448",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903687312Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at 8010 (.next/server/app/checkout/[bookingId]/page.js:1:1149)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-449",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903688668Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at c (.next/server/webpack-runtime.js:1:128)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-450",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903689595Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at <unknown> (.next/server/app/checkout/[bookingId]/page.js:1:11812)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-451",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903690587Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at c.a (.next/server/webpack-runtime.js:1:688)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-452",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903691062Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at 16068 (.next/server/app/checkout/[bookingId]/page.js:1:11733)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-453",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903691646Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at Function.c (.next/server/webpack-runtime.js:1:128)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-454",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903692152Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": }",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-455",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.903692626Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-456",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.905856224Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": > Build error occurred",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-457",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.905867386Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": [Error: Failed to collect page data for /checkout/[bookingId]] {",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-458",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.912545506Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":   type: 'Error'",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-459",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.912569001Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": }",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-460",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.912569921Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": /layers/google.nodejs.firebasenextjs/npm_modules/node_modules/@apphosting/common/dist/index.js:36",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-461",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941425480Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":                 reject(new Error(`Build process exited with error code ${code}.`));",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-462",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941452538Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":                        ^",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-463",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941453945Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-464",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941454353Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Error: Build process exited with error code 1.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-465",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941454989Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":     at ChildProcess.<anonymous> (/layers/google.nodejs.firebasenextjs/npm_modules/node_modules/@apphosting/common/dist/index.js:36:24)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-466",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941455965Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":     at ChildProcess.emit (node:events:518:28)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-467",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941456564Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":     at ChildProcess._handle.onexit (node:internal/child_process:293:12)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-468",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941457207Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-469",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941457670Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Node.js v22.17.1",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-470",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.941458609Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Done \"npm exec --prefix /layers/google.nodejs.firebasenextjs/npm_m...\" (58.937023972s)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-471",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.966892271Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": --------------------------------------------------------------------------------",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-472",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973352059Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": failed to build: (error ID: 396a30c0):",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-473",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973375974Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": {\"reason\":\"Failed Framework Build\",\"code\":\"fah/failed-framework-build\",\"userFacingMessage\":\"Your application failed to run the framework build command 'npm exec --prefix /layers/google.nodejs.firebasenextjs/npm_modules apphosting-adapter-nextjs-build' successfully. Please check the raw log to address the error and confirm that your application builds locally before redeploying.\",\"rawLog\":\"(error ID: d0a693a9):",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-474",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973378245Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Overriding Next Config to add configs optmized for Firebase App Hosting",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-475",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973378933Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Successfully created next.config.ts with Firebase App Hosting overrides",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-476",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973379646Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-477",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973380153Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": > nextn@0.1.0 build",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-478",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973381244Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": > next build",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-479",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973381769Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-480",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973382090Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    ▲ Next.js 15.4.2",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-481",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973382765Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-482",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973383196Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Creating an optimized production build ...",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-483",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973383762Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":  ✓ Compiled successfully in 48s",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-484",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973384429Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Skipping validation of types",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-485",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973385239Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Skipping linting",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-486",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973385678Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":    Collecting page data ...",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-487",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973386250Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Firebase Configuration Error: NEXT_PUBLIC_FIREBASE_API_KEY is not defined. Missing Firebase API Key. CRITICAL: Check .env.local file in project root & RESTART server.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-488",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973387723Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": [Error: Failed to collect configuration for /checkout/[bookingId]] {",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-489",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973388356Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":   [cause]: Error: Missing Firebase API Key. CRITICAL: Check .env.local file in project root & RESTART server.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-490",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973389784Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at 8010 (.next/server/app/checkout/[bookingId]/page.js:1:1149)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-491",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973390339Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at c (.next/server/webpack-runtime.js:1:128)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-492",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973391028Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at <unknown> (.next/server/app/checkout/[bookingId]/page.js:1:11812)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-493",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973391677Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at c.a (.next/server/webpack-runtime.js:1:688)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-494",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973392235Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at 16068 (.next/server/app/checkout/[bookingId]/page.js:1:11733)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-495",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973392999Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":       at Function.c (.next/server/webpack-runtime.js:1:128)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-496",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973393599Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": }",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-497",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973394031Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-498",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973394731Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": > Build error occurred",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-499",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973395472Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": [Error: Failed to collect page data for /checkout/[bookingId]] {",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-500",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973396187Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":   type: 'Error'",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-501",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973397199Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": }",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-502",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973397527Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": /layers/google.nodejs.firebasenextjs/npm_modules/node_modules/@apphosting/common/dist/index.js:36",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-503",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973398062Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":                 reject(new Error(`Build process exited with error code ${code}.`));",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-504",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973398879Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":                        ^",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-505",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973399307Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-506",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973399610Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Error: Build process exited with error code 1.",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-507",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973400140Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":     at ChildProcess.<anonymous> (/layers/google.nodejs.firebasenextjs/npm_modules/node_modules/@apphosting/common/dist/index.js:36:24)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-508",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973401143Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":     at ChildProcess.emit (node:events:518:28)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-509",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973401787Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\":     at ChildProcess._handle.onexit (node:internal/child_process:293:12)",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-510",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973402380Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-511",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973402747Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": Node.js v22.17.1\"}",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-512",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.973403472Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ERROR: failed to build: exit status 1",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-513",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb",
+        "build_trigger_id": ""
+      }
+    },
+    "timestamp": "2025-07-23T10:11:28.975554674Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "Step #2 - \"pack\"",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:29.431230462Z"
+  },
+  {
+    "textPayload": "Step #2 - \"pack\": ERROR: failed to build: executing lifecycle: failed with status code: 51",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-514",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:35.688941617Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "Step #2 - \"pack\""
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:36.237459785Z"
+  },
+  {
+    "textPayload": "Finished Step #2 - \"pack\"",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-515",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:36.057631784Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "MAIN",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:36.237459785Z"
+  },
+  {
+    "textPayload": "ERROR",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-516",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44",
+        "project_id": "chez-shiobara-bb"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:36.057741382Z",
+    "severity": "INFO",
+    "labels": {
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK",
+      "build_step": "MAIN"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:36.237459785Z"
+  },
+  {
+    "textPayload": "ERROR: build step 2 \"gcr.io/k8s-skaffold/pack\" failed: step exited with non-zero status: 1",
+    "insertId": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44-517",
+    "resource": {
+      "type": "build",
+      "labels": {
+        "build_trigger_id": "",
+        "project_id": "chez-shiobara-bb",
+        "build_id": "6ea0838e-b9b5-4ccd-9bc5-57ebf0d38b44"
+      }
+    },
+    "timestamp": "2025-07-23T10:11:36.057765702Z",
+    "severity": "INFO",
+    "labels": {
+      "build_step": "MAIN",
+      "build_tags": "fah,build-2025-07-23-002,chez-shiobara-v2,p-fah,r-nodejs,b-nodejs_20250713_RC00,bt-PACK"
+    },
+    "logName": "projects/chez-shiobara-bb/logs/cloudbuild",
+    "receiveTimestamp": "2025-07-23T10:11:36.237459785Z"
+  }
+]
