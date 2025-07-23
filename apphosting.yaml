@@ -32,10 +32,7 @@ runConfig:
 
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyBdMZo9RWLHPR91b96GbQoF_BqmjTNWYfo"
-    availability:
-      - BUILD
-      - RUNTIME
+    secret: NEXT_PUBLIC_FIREBASE_API_KEY
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "chez-shiobara-bb.firebaseapp.com"
     availability:

@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+temp_api_key.txt
+*.log
 
 # debug
 npm-debug.log*
