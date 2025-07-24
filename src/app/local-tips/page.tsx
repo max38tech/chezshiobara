@@ -28,7 +28,7 @@ export default async function LocalTipsPage() {
   }, {} as Record<string, LocalTipItem[]>);
 
   return (
-    <PageContentWrapper>
+    <PageContentWrapper className="max-w-6xl mx-auto px-4">
       <PageTitle>Explore Like a Local</PageTitle>
       <p className="font-body text-lg text-muted-foreground text-center mb-10 max-w-2xl mx-auto">
         Discover our curated selection of local tips, attractions, and hidden gems. We hope these recommendations help you make the most of your visit!
@@ -51,17 +51,18 @@ export default async function LocalTipsPage() {
                 <CategoryIcon className="h-8 w-8 text-primary" />
                 {category}
               </SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8">
                 {items.map((tip) => (
                   <Card key={tip.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
                     {tip.imageUrl && (
-                      <div className="relative w-full h-48 rounded-t-lg overflow-hidden bg-muted">
+                      <div className="w-full rounded-t-lg overflow-hidden bg-muted">
                         {tip.imageLinkUrl ? (
                           <a href={tip.imageLinkUrl} target="_blank" rel="noopener noreferrer">
                             <Image
                               src={tip.imageUrl}
                               alt={tip.title}
-                              fill
+                              width={600}
+                              height={192}
                               className="object-cover"
                             />
                           </a>
@@ -69,7 +70,8 @@ export default async function LocalTipsPage() {
                           <Image
                             src={tip.imageUrl}
                             alt={tip.title}
-                            fill
+                            width={600}
+                            height={192}
                             className="object-cover"
                           />
                         )}
