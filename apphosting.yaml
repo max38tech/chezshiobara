@@ -33,9 +33,6 @@ runConfig:
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: NEXT_PUBLIC_FIREBASE_API_KEY
-    availability:
-      - BUILD
-      - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "chez-shiobara-bb.firebaseapp.com"
     availability:
@@ -73,31 +70,13 @@ env:
       - RUNTIME
   - variable: FIREBASE_PROJECT_ID
     secret: FIREBASE_PROJECT_ID
-    availability:
-      - BUILD
-      - RUNTIME
   - variable: FIREBASE_CLIENT_EMAIL
     secret: FIREBASE_CLIENT_EMAIL
-    availability:
-      - BUILD
-      - RUNTIME
   - variable: FIREBASE_PRIVATE_KEY
     secret: FIREBASE_PRIVATE_KEY
-    availability:
-      - BUILD
-      - RUNTIME
   - variable: EMAIL_USER
     secret: EMAIL_USER
-    availability:
-      - BUILD
-      - RUNTIME
   - variable: EMAIL_PASS
     secret: EMAIL_PASS
-    availability:
-      - BUILD
-      - RUNTIME
   - variable: STRIPE_SECRET_KEY
     secret: STRIPE_SECRET_KEY
-    availability:
-      - BUILD
-      - RUNTIME
